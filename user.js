@@ -29,9 +29,9 @@ export class characterRank extends plugin {
             return true
         }
         let name = msg
-        let id = Gscfg.roleNameToID(name,true)
+        let id = Gscfg.roleNameToID(characterName,true)
         if(!id){
-            id = Gscfg.roleNameToID(name,false)
+            id = Gscfg.roleNameToID(characterName,false)
         }
         if(id){
             name = Gscfg.roleIdToName(id)
