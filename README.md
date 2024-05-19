@@ -56,6 +56,9 @@ if(characterRank){
   }
 }
 ```
+效果：
+![8a6b16deee772c4d66d0fdae278335b6](https://github.com/NotIvny/yunzai-characterRank-js/assets/125482125/68b37c47-4642-4e86-a9c0-fb55498646c7)
+
 
 全服排名数据源于用户更新面板，目前数据量在3000左右
 
