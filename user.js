@@ -29,14 +29,14 @@ export class characterRank extends plugin {
             return true
         }
         let name = msg
-        let id = Gscfg.roleNameToID(characterName,true)
+        let id = Gscfg.roleNameToID(name,true)
         if(!id){
-            id = Gscfg.roleNameToID(characterName,false)
+            id = Gscfg.roleNameToID(name,false)
         }
         if(id){
             name = Gscfg.roleIdToName(id)
         }
-        const url = `http://8.147.110.49:3000/getRankData?id=${id}&uid=${uid}`
+        const url = `http://8.147.110.49:3000/getRankData?id=${id}&uid=${uid}&version=0.1.0`
         try {
             const response = await fetch(url)
             if(!response.ok){
@@ -51,7 +51,7 @@ export class characterRank extends plugin {
                     e.reply(`未查询到uid:${uid}的数据，请稍后再试...`)
                     break
                 case 100:
-                    e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret.rank}，伤害: ${ret.score.toFixed(2)}`)
+                    e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret.rank}，伤害评分: ${ret.score.toFixed(2)}`)
                     break
                 }
             }
@@ -69,7 +69,7 @@ export class characterRank extends plugin {
             name = Gscfg.roleIdToName(id)
         }
         let uid = await getTargetUid(e)
-        const url = `http://8.147.110.49:3000/getRankData?id=${id}&uid=${uid}`
+        const url = `http://8.147.110.49:3000/getRankData?id=${id}&uid=${uid}&version=0.1.0`
         try {
             const response = await fetch(url)
             if(!response.ok){
@@ -84,7 +84,7 @@ export class characterRank extends plugin {
                     //e.reply(`未查询到uid:${uid}的数据，请稍后再试...`)
                     break
                 case 100:
-                    e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret.rank}，伤害: ${ret.score.toFixed(2)}`)
+                    e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret.rank}，伤害评分: ${ret.score.toFixed(2)}`)
                     break
             }
         }catch(error){
