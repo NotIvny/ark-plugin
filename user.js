@@ -16,9 +16,23 @@ export class characterRank extends plugin {
                 {
                     reg: /^#(星铁|原神)?(群|群内)?.+(排名|排行)(榜)?$/,
                     fnc: 'playerRank',
+                },
+                {
+                    reg: /^#(星铁|原神)?(全部面板更新|更新全部面板|获取游戏角色详情|更新面板|面板更新)\s*(\d{9,10})?$/,
+                    fnc: 'refreshPanel',
                 }
             ]
         });
+    }
+    
+    async refreshPanel(e){
+        let type = e.msg.includes("星铁") ? 'sr' : 'gs'
+        let uid = type == 'sr' ? e.user?._games?.sr?.uid : e.user?._games?.gs?.uid;
+        const url = `http://8.147.110.49:3000/refreshPanel?type=${type}&uid=${uid}&version=0.1.0`
+        try{
+            const response = await fetch(url)
+        }catch(error){}
+        return false
     }
     async getRank(e){
         let msg = this.e.msg.replace('#角色排名', '').trim()
@@ -28,11 +42,8 @@ export class characterRank extends plugin {
             e.reply('命令格式错误，示例：#角色排名雷电将军123456789')
             return true
         }
-        let name = msg
-        let id = Gscfg.roleNameToID(name,true)
-        if(!id){
-            id = Gscfg.roleNameToID(name,false)
-        }
+        let name = characterName
+        let id = Gscfg.roleNameToID(name,true) || Gscfg.roleNameToID(name,false)
         if(id){
             name = Gscfg.roleIdToName(id)
         }
@@ -61,14 +72,11 @@ export class characterRank extends plugin {
     }
     async playerRank(e){
         let name = e.msg.replace(/(#|星铁|最强|最高分|第一|词条|双爆|双暴|极限|最高|最多|最牛|圣遗物|遗器|评分|群内|群|排名|排行|面板|面版|详情|榜)/g, '')
-        let id = Gscfg.roleNameToID(name,true)
-        if(!id){
-            id = Gscfg.roleNameToID(name,false)
-        }
+        let id = Gscfg.roleNameToID(name,true) || Gscfg.roleNameToID(name,false)
         if(id){
             name = Gscfg.roleIdToName(id)
         }
-        let uid = await getTargetUid(e)
+        let uid = id < 10000 ? e.user?._games?.sr?.uid : e.user?._games?.gs?.uid;
         const url = `http://8.147.110.49:3000/getRankData?id=${id}&uid=${uid}&version=0.1.0`
         try {
             const response = await fetch(url)
@@ -93,3 +101,4 @@ export class characterRank extends plugin {
         return false
     }
 }
+
