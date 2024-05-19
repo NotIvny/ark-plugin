@@ -30,6 +30,33 @@
 
 ## 其他
 
+嵌入面板伤害中：
+
+ProfileDetail.js修改
+```
+//导入gsCfg
+import Gscfg from '../../../genshin/model/gsCfg.js'
+//let renderData = ...前一行插入
+let characterRank
+const url = `http://8.147.110.49:3000/getRankData?id=${characterID}&uid=${uid}&version=0.1.0`
+try{
+  const response = await fetch(url)
+  const ret = await response.json()
+  switch(ret.retcode){
+      case 100:
+        characterRank = ret.rank
+          break
+  }
+}
+catch(error){}
+if(characterRank){
+  dmgCalc.dmgData[dmgCalc.dmgData.length] = {
+    title: '全服伤害排名',
+    unit: characterRank,
+  }
+}
+```
+
 全服排名数据源于用户更新面板，目前数据量在3000左右
 
 当前插件正在快速迭代，由于js插件无法自动更新，请您及时手动更新
