@@ -1,6 +1,9 @@
 import fetch from 'node-fetch'
 import { getTargetUid } from '../../plugins/miao-plugin/apps/profile/ProfileCommon.js'
 import Gscfg from '../../plugins/genshin/model/gsCfg.js'
+//import Player from '../miao-plugin/models/Player.js'
+import { Common, Data } from '../miao-plugin/components/index.js'
+import { Button, ProfileRank, Player, Character } from '../miao-plugin/models/index.js'
 export class characterRank extends plugin {
     constructor() {
         super({
@@ -20,6 +23,10 @@ export class characterRank extends plugin {
                 {
                     reg: /^#(星铁|原神)?(全部面板更新|更新全部面板|获取游戏角色详情|更新面板|面板更新)\s*(\d{9,10})?$/,
                     fnc: 'refreshPanel',
+                },
+                {
+                    reg: '^#(星铁|原神)?总排名(.*)$',
+                    fnc: 'getAllRank',
                 }
             ]
         });
@@ -100,5 +107,79 @@ export class characterRank extends plugin {
         }
         return false
     }
+    async getAllRank(e){
+        let uid = await getTargetUid(e)
+        if(!uid){
+            e._replyNeedUid || e.reply(['请先发送【#绑定+你的UID】来绑定查询目标\n星铁请使用【#星铁绑定+UID】', new Button(e).bindUid()])
+        return true
+        }
+        let isSelfUid = false
+        if(e.runtime && e.runtime?.user){
+            let uids = []
+            /*
+            let user = e.runtime.user
+            */
+            isSelfUid = uids.some(ds => ds === uid + '')
+        }
+        /*
+        let rank = false
+        let hasNew = false
+        let newCount = 0
+        let chars = []
+        */
+        let msg = ''
+        let newChar = {}
+        if (e.newChar) {
+            msg = '获取角色面板数据成功'
+            newChar = e.newChar
+        }
+        let player = Player.create(e)
+        let profiles = player.getProfiles()
+        let profile = []
+        for(let id in profiles){
+            profile.push(id)
+        }
+        const url = 'http://8.147.110.49:3000/getAllRank'
+        const data = {
+            id: profile,
+            uid: uid,
+            version: '0.1.0'
+        }
+        try{
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            if (!response.ok) {
+                e.reply('获取失败')
+                return false
+            }
+            const ret = await response.json()
+            switch(ret.retcode){
+                case 102:
+                    e.reply(`未查询到uid:${uid}的数据，请稍后再试...`)
+                    return true
+                    break
+                case 100:
+                    break
+            }
+            let count = 0
+            let msg = ''
+            let type = e.game === 'sr' ? '星铁' : '原神'
+            msg += `uid:${uid}的${type}全服排名数据:\n`
+            ret.rank.forEach(ret => {
+                if(ret.retcode === 100){
+                    msg += (`${Gscfg.roleIdToName(profile[count])}全服伤害排名为${ret.rank}，伤害评分: ${ret.score.toFixed(2)}\n`)
+                }
+                count++
+            })
+            e.reply(msg)
+        }catch(error){
+            e.reply('获取排名数据失败')
+        }
+    }                    
 }
 
