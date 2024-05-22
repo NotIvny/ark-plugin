@@ -44,82 +44,23 @@
 请确保角色放置在展柜中
 
 ## 其他
+相关排名API可嵌入面板/排名图中
 
-嵌入面板伤害中：
+嵌入面板中效果：
 
-ProfileDetail.js修改
-```
-//导入gsCfg
-import Gscfg from '../../../genshin/model/gsCfg.js'
-//let renderData = ...前一行插入
-let characterRank
-const url = `http://8.147.110.49:3000/getRankData?id=${characterID}&uid=${uid}&version=0.1.0`
-try{
-  const response = await fetch(url)
-  const ret = await response.json()
-  switch(ret.retcode){
-      case 100:
-        characterRank = ret.rank
-        break
-  }
-}
-catch(error){}
-if(characterRank){
-  dmgCalc.dmgData[dmgCalc.dmgData.length] = {
-    title: '全服伤害排名',
-    unit: characterRank,
-  }
-}
-```
-效果：
 ![8a6b16deee772c4d66d0fdae278335b6](https://github.com/NotIvny/yunzai-characterRank-js/assets/125482125/68b37c47-4642-4e86-a9c0-fb55498646c7)
+嵌入排名效果：
 
-嵌入排名中：
+![5dda9bdbcfe9d6926a3e38aa1bcb0a87](https://github.com/NotIvny/yunzai-characterRank-js/assets/125482125/625de99f-8bf0-47b3-be2a-cc177650731b)
 
-ProfileRank.js
-```
-//第286行上方插入
-list.forEach(item => {
-    const url = `http://8.147.110.49:3000/getRankData?id=${item.id}&uid=${item.uid}&update=false&version=0.1.0`
-    try{
-      const response = fetch(url)
-      const ret = response.json()
-      switch(ret.retcode){
-          case 100:
-            characterRank = ret.rank
-            break
-      }
-      item.dmg.totalrank = characterRank || ''
-    }
-    catch(error){}
-})
-```
-rank-profile-list.html
-```
-<!--替换第6~16行-->
-<style>
-body .container {
-  width: 1040px;
-}
-</style>
-{{else}}
-<style>
-body .container {
-  width: 1000px;
-}
-</style>
-```
-rank-profile-list.css(可选)
-```
-.char-dmg {
-  width: 135px;
-}
-```
+教程：
+[custom.md](https://github.com/NotIvny/yunzai-characterRank-js/blob/main/custom.md)
+
 全服排名数据源于用户更新面板，目前数据量在3000左右
 
 当前插件正在快速迭代，由于js插件无法自动更新，请您及时手动更新
 
 插件只会上传用户uid，不会上传其他信息
 
-角色排名图、圣遗物排名、分段数据未来将更新
+圣遗物排名、分段数据未来将更新
 
