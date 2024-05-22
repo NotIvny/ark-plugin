@@ -74,7 +74,47 @@ if(characterRank){
 效果：
 ![8a6b16deee772c4d66d0fdae278335b6](https://github.com/NotIvny/yunzai-characterRank-js/assets/125482125/68b37c47-4642-4e86-a9c0-fb55498646c7)
 
+嵌入排名中：
 
+ProfileRank.js
+```
+//第286行上方插入
+list.forEach(item => {
+    const url = `http://8.147.110.49:3000/getRankData?id=${item.id}&uid=${item.uid}&update=false&version=0.1.0`
+    try{
+      const response = fetch(url)
+      const ret = response.json()
+      switch(ret.retcode){
+          case 100:
+            characterRank = ret.rank
+            break
+      }
+      item.dmg.totalrank = characterRank || ''
+    }
+    catch(error){}
+})
+```
+rank-profile-list.html
+```
+<!--替换第6~16行-->
+<style>
+body .container {
+  width: 1040px;
+}
+</style>
+{{else}}
+<style>
+body .container {
+  width: 1000px;
+}
+</style>
+```
+rank-profile-list.css(可选)
+```
+.char-dmg {
+  width: 135px;
+}
+```
 全服排名数据源于用户更新面板，目前数据量在3000左右
 
 当前插件正在快速迭代，由于js插件无法自动更新，请您及时手动更新
