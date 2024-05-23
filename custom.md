@@ -32,7 +32,7 @@ if(characterRank){
 
 ProfileRank.js
 ```
-//第286行上方插入
+//const rankCfg = await ProfileRank.getGroupCfg(groupId)下方插入
 list.forEach(item => {
     const url = `http://8.147.110.49:3000/getRankData?id=${item.id}&uid=${item.uid}&update=false&version=0.1.0`
     try{
