@@ -4,9 +4,9 @@
 ProfileDetail.js修改
 ```
 //导入gsCfg
-let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
 import Gscfg from '../../../genshin/model/gsCfg.js'
 //let renderData = ...前一行插入
+let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
 let characterRank
 const url = `http://8.147.110.49:3000/getRankData?id=${characterID}&uid=${uid}&version=0.1.0`
 try{
