@@ -4,6 +4,7 @@
 ProfileDetail.js修改
 ```
 //导入gsCfg
+let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
 import Gscfg from '../../../genshin/model/gsCfg.js'
 //let renderData = ...前一行插入
 let characterRank
