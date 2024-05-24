@@ -62,6 +62,14 @@ body .container {
   width: 1000px;
 }
 </style>
+<!--第163行下方插入-->
+<div class="char-dmg line">
+      {{if ds.dmg}}
+      <div class="dmg-title">全服排名</div>
+      <div class="dmg-value">{{ds.dmg?.totalrank}}</div>
+      {{else}}
+      {{/if}}
+    </div>
 ```
 rank-profile-list.css(可选)
 ```
