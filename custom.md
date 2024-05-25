@@ -29,16 +29,16 @@ ProfileRank.js
 //导入api
 import api from '../../../example/api.js'
 //const rankCfg = await ProfileRank.getGroupCfg(groupId)下方插入
-let uids1 = []
+let uids_ = []
 list.forEach(item => {
-  uids1.push(item.uid)
+  uids_.push(item.uid)
 })
-let ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: uids1, update: 0})
+let ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: uids_, update: 0})
 let count = 0
 switch(ret.retcode){
   case 100:
     ret.rank.forEach(item => {
-      list[count].dmg.totalrank = item.rank || ''
+      list[count].dmg.totalrank = item.rank || '暂无数据'
       count++;
     })
 }
