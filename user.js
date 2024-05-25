@@ -1,7 +1,6 @@
-import fetch from 'node-fetch'
 import { getTargetUid } from '../../plugins/miao-plugin/apps/profile/ProfileCommon.js'
 import Gscfg from '../../plugins/genshin/model/gsCfg.js'
-//import Player from '../miao-plugin/models/Player.js'
+import api from './api.js'
 import { Common, Data } from '../miao-plugin/components/index.js'
 import { Button, ProfileRank, Player, Character } from '../miao-plugin/models/index.js'
 export class characterRank extends plugin {
@@ -10,11 +9,15 @@ export class characterRank extends plugin {
             name: '角色排名获取',
             dsc: '角色排名获取',
             event: 'message',
-            priority: -500,
+            priority: -3000,
             rule: [
                 {
                     reg: '^#角色排名(.*)$',
                     fnc: 'getRank',
+                },
+                {
+                    reg: '^#(星铁|原神)?总排名(.*)$',
+                    fnc: 'getAllRank',
                 },
                 {
                     reg: /^#(星铁|原神)?(群|群内)?.+(排名|排行)(榜)?$/,
@@ -23,22 +26,14 @@ export class characterRank extends plugin {
                 {
                     reg: /^#(星铁|原神)?(全部面板更新|更新全部面板|获取游戏角色详情|更新面板|面板更新)\s*(\d{9,10})?$/,
                     fnc: 'refreshPanel',
-                },
-                {
-                    reg: '^#(星铁|原神)?总排名(.*)$',
-                    fnc: 'getAllRank',
                 }
             ]
         });
     }
-    
     async refreshPanel(e){
         let type = e.msg.includes("星铁") ? 'sr' : 'gs'
         let uid = type == 'sr' ? e.user?._games?.sr?.uid : e.user?._games?.gs?.uid;
-        const url = `http://8.147.110.49:3000/refreshPanel?type=${type}&uid=${uid}&version=0.1.0`
-        try{
-            const response = await fetch(url)
-        }catch(error){}
+        api.sendApi('refreshPanel',{uid: uid, type: type}, '0.2.0')
         return false
     }
     async getRank(e){
@@ -54,28 +49,15 @@ export class characterRank extends plugin {
         if(id){
             name = Gscfg.roleIdToName(id)
         }
-        const url = `http://8.147.110.49:3000/getRankData?id=${id}&uid=${uid}&version=0.1.0`
-        try {
-            const response = await fetch(url)
-            if(!response.ok){
-                e.reply('获取失败')
-            }
-            const ret = await response.json()
-            switch(ret.retcode){
-                case 101:
-                    e.reply('角色名不存在')
-                    break
-                case 102:
-                    e.reply(`未查询到uid:${uid}的数据，请稍后再试...`)
-                    break
-                case 100:
-                    e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret.rank}，伤害评分: ${ret.score.toFixed(2)}`)
-                    break
-                }
-            }
-        catch(error){
-            e.reply('获取排名数据失败')
+        let ret = await api.sendApi('getRankData',{uid: uid, id: id, update: 1})
+        switch(ret.retcode){
+            case 100:
+                e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret.rank}，伤害评分: ${ret.score.toFixed(2)}`)
+                break
+            default:
+                e.reply(await this.dealError(ret.retcode))
         }
+        return false
     }
     async playerRank(e){
         let name = e.msg.replace(/(#|星铁|最强|最高分|第一|词条|双爆|双暴|极限|最高|最多|最牛|圣遗物|遗器|评分|群内|群|排名|排行|面板|面版|详情|榜)/g, '')
@@ -84,26 +66,13 @@ export class characterRank extends plugin {
             name = Gscfg.roleIdToName(id)
         }
         let uid = id < 10000 ? e.user?._games?.sr?.uid : e.user?._games?.gs?.uid;
-        const url = `http://8.147.110.49:3000/getRankData?id=${id}&uid=${uid}&version=0.1.0`
-        try {
-            const response = await fetch(url)
-            if(!response.ok){
-                e.reply('获取失败')
-            }
-            const ret = await response.json()
-            switch(ret.retcode){
-                case 101:
-                    //e.reply('角色名不存在')
-                    break
-                case 102:
-                    //e.reply(`未查询到uid:${uid}的数据，请稍后再试...`)
-                    break
-                case 100:
-                    e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret.rank}，伤害评分: ${ret.score.toFixed(2)}`)
-                    break
-            }
-        }catch(error){
-            //e.reply('获取排名数据失败');
+        let ret = await api.sendApi('getRankData',{id: id, uid: uid, update: 1})
+        switch(ret.retcode){
+            case 100:
+                e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret.rank}，伤害评分: ${ret.score.toFixed(2)}`)
+                break
+            default:
+                e.reply(await this.dealError(ret.retcode))
         }
         return false
     }
@@ -139,47 +108,36 @@ export class characterRank extends plugin {
         for(let id in profiles){
             profile.push(id)
         }
-        const url = 'http://8.147.110.49:3000/getAllRank'
-        const data = {
-            id: profile,
-            uid: uid,
-            version: '0.1.0'
+        let ret = await api.sendApi('selfAllRank', {ids: profile, uid: uid})
+        switch(ret.retcode){
+            case 100:
+                let msg = ''
+                let count = 0
+                let type = e.game === 'sr' ? '星铁' : '原神'
+                msg += `uid:${uid}的${type}全服排名数据:\n`
+                ret.rank.forEach(ret => {
+                    if(ret.retcode === 100){
+                        msg += (`${Gscfg.roleIdToName(profile[count])}全服伤害排名为${ret.rank}，伤害评分: ${ret.score.toFixed(2)}\n`)
+                    }
+                    count++
+                })
+                e.reply(msg)
+                break
+            default:
+                e.reply(await this.dealError(ret.retcode))
         }
-        try{
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-            if (!response.ok) {
-                e.reply('获取失败')
-                return false
-            }
-            const ret = await response.json()
-            switch(ret.retcode){
-                case 102:
-                    e.reply(`未查询到uid:${uid}的数据，请稍后再试...`)
-                    return true
-                    break
-                case 100:
-                    break
-            }
-            let count = 0
-            let msg = ''
-            let type = e.game === 'sr' ? '星铁' : '原神'
-            msg += `uid:${uid}的${type}全服排名数据:\n`
-            ret.rank.forEach(ret => {
-                if(ret.retcode === 100){
-                    msg += (`${Gscfg.roleIdToName(profile[count])}全服伤害排名为${ret.rank}，伤害评分: ${ret.score.toFixed(2)}\n`)
-                }
-                count++
-            })
-            e.reply(msg)
-        }catch(error){
-            e.reply('获取排名数据失败')
-        }
+    }
+    async dealError(retcode){
+       switch(retcode){
+            case 101:
+                return '角色ID不存在'
+            case 102:
+                return '未查询到角色信息'
+            case 103:
+                return '请求参数错误'
+            case 104:
+                return '请求超过速率限制'
+       }
     }                    
 }
 
