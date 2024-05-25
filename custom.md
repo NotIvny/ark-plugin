@@ -3,27 +3,21 @@
 
 ProfileDetail.js修改
 ```
-//导入gsCfg
+//导入gsCfg和api
 import Gscfg from '../../../genshin/model/gsCfg.js'
+import api from '../../../example/api.js'
 //let renderData = ...前一行插入
 let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
 let characterRank
-const url = `http://8.147.110.49:3000/getRankData?id=${characterID}&uid=${uid}&version=0.1.0`
-try{
-  const response = await fetch(url)
-  const ret = await response.json()
-  switch(ret.retcode){
-      case 100:
-        characterRank = ret.rank
-        break
-  }
-}
-catch(error){}
-if(characterRank){
-  dmgCalc.dmgData[dmgCalc.dmgData.length] = {
-    title: '全服伤害排名',
-    unit: characterRank,
-  }
+let ret = await api.sendApi('getRankData',{id: characterID, uid: uid, update: 0})
+switch(ret.retcode){
+  case 100:
+    characterRank = ret.rank
+    dmgCalc.dmgData[dmgCalc.dmgData.length] = {
+      title: '全服伤害排名',
+      unit: characterRank,
+    }
+    break
 }
 ```
 
@@ -32,21 +26,22 @@ if(characterRank){
 
 ProfileRank.js
 ```
+//导入api
+import api from '../../../example/api.js'
 //const rankCfg = await ProfileRank.getGroupCfg(groupId)下方插入
+let uids1 = []
 list.forEach(item => {
-    const url = `http://8.147.110.49:3000/getRankData?id=${item.id}&uid=${item.uid}&update=false&version=0.1.0`
-    try{
-      const response = fetch(url)
-      const ret = response.json()
-      switch(ret.retcode){
-          case 100:
-            characterRank = ret.rank
-            break
-      }
-      item.dmg.totalrank = characterRank || ''
-    }
-    catch(error){}
+  uids1.push(item.uid)
 })
+let ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: uids1, update: 0})
+let count = 0
+switch(ret.retcode){
+  case 100:
+    ret.rank.forEach(item => {
+      list[count].dmg.totalrank = item.rank || ''
+      count++;
+    })
+}
 ```
 rank-profile-list.html
 ```
