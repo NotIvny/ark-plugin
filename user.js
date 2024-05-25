@@ -108,7 +108,7 @@ export class characterRank extends plugin {
         for(let id in profiles){
             profile.push(id)
         }
-        let ret = await api.sendApi('selfAllRank', {ids: profile, uid: uid})
+        let ret = await api.sendApi('selfAllRank', {ids: profile, uid: uid, type: e.game})
         switch(ret.retcode){
             case 100:
                 let msg = ''
