@@ -6,8 +6,8 @@
 
 二选一
 ```
-方法①: 下载js后放到./plugin/example下
-方法②(unstable): git clone -b ark-plugin-alpha https://github.com/NotIvny/yunzai-characterRank-js.git ./plugins/ark-plugin
+方法①(不推荐): 下载js后放到./plugin/example下
+方法②(推荐): git clone -b ark-plugin-alpha https://github.com/NotIvny/yunzai-characterRank-js.git ./plugins/ark-plugin
 ```
 ## 使用方法
 ### 注意：老版本插件使用的api接口已弃用，请更新插件！
