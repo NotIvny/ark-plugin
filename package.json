@@ -1,0 +1,9 @@
+{
+  "name": "ark-plugin",
+  "version": "0.2.0",
+  "author": "NotIvny",
+  "description": "miao-plugin",
+  "type": "module",
+  "scripts": {},
+  "dependencies": {}
+}

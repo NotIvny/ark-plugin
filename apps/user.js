@@ -1,8 +1,8 @@
-import { getTargetUid } from '../../plugins/miao-plugin/apps/profile/ProfileCommon.js'
-import Gscfg from '../../plugins/genshin/model/gsCfg.js'
-import api from './api.js'
-import { Common, Data } from '../miao-plugin/components/index.js'
-import { Button, ProfileRank, Player, Character } from '../miao-plugin/models/index.js'
+import { getTargetUid } from '../../miao-plugin/apps/profile/ProfileCommon.js'
+import Gscfg from '../../genshin/model/gsCfg.js'
+import api from '../model/api.js'
+import { Common, Data } from '../../miao-plugin/components/index.js'
+import { Button, ProfileRank, Player, Character } from '../../miao-plugin/models/index.js'
 export class characterRank extends plugin {
     constructor() {
         super({
