@@ -3,9 +3,9 @@
 适用于Yunzai-Bot的全服角色排行插件
 
 ## 插件安装
-
-下载js后放到./plugin/example下
-
+```
+git clone -b ark-plugin-alpha https://github.com/NotIvny/yunzai-characterRank-js.git ./plugins/ark-plugin
+```
 ## 使用方法
 ### 注意：老版本插件使用的api接口已弃用，请更新插件！
 
