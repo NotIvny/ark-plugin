@@ -4,7 +4,7 @@
 
 ## 插件安装
 ```
-git clone -b ark-plugin-alpha https://github.com/NotIvny/yunzai-characterRank-js.git ./plugins/ark-plugin
+git clone https://github.com/NotIvny/yunzai-characterRank-js.git ./plugins/ark-plugin
 ```
 ## 使用方法
 
@@ -81,7 +81,6 @@ src path => dest path <=> dest-backup path
 使用 dest-backup path 中的文件替换到 dest path 中。
 
 ## 其他
-相关排名API可嵌入面板/排名图中
 
 嵌入面板中效果：
 
@@ -90,12 +89,10 @@ src path => dest path <=> dest-backup path
 
 ![5dda9bdbcfe9d6926a3e38aa1bcb0a87](https://github.com/NotIvny/yunzai-characterRank-js/assets/125482125/625de99f-8bf0-47b3-be2a-cc177650731b)
 
-教程：
-[custom.md](https://github.com/NotIvny/yunzai-characterRank-js/blob/main/custom.md)
 
-全服排名数据源于用户更新面板，目前数据量在3000左右
+全服排名数据源于用户更新面板，目前数据量在4000左右
 
-当前插件正在快速迭代，由于js插件无法自动更新，请您及时手动更新
+当前插件正在快速迭代，作者太菜，可能出现较多bug，还请见谅
 
 插件只会上传用户uid，不会上传其他信息
 
