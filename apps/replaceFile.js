@@ -22,12 +22,17 @@ export class replaceFile extends plugin {
                     reg: '^#ark替换文件(.*)$',
                     fnc: 'arkReplaceFile',
                     permission: 'master',
+                },
+                {
+                    reg: '^#ark备份文件(.*)$',
+                    fnc: 'arkBackupFile',
+                    permission: 'master',
                 }
             ]
         })
     }
     async arkCreateFile(e){
-        this.e.reply('请输入ID')
+        e.reply('请输入ID')
         this.setContext('readID')
     }
     async arkReplaceFile(e){
@@ -39,6 +44,11 @@ export class replaceFile extends plugin {
         let ID = e.msg.replace("#ark恢复文件", "").trim()
         await this.backupFile(ID, true)
         e.reply('恢复完毕，重启后生效')
+    }
+    async arkBackupFile(e){
+        let ID = e.msg.replace("#ark备份文件", "").trim()
+        await this.backupFile(ID, false)
+        e.reply('备份完毕')
     }
     async readID(){
         const id = this.e.msg
@@ -117,23 +127,18 @@ export class replaceFile extends plugin {
             this.e.reply(`未查找到ID:${ID}的备份数据`)
             return true
         }
-        let src = data.src
         let dest = data.dest
-        if(!src.endsWith('/')){
-            src += "-backup/"
-        }else{
-            src = src.slice(0, -1) + "-backup/"
-        }
+        let backup = `./plugins/ark-plugin/backup/${ID}-backup/`
         if(!dest.endsWith('/')){
             dest += "/"
         }
-        logger.error(src)
-        logger.error(dest)
         for(let i of data.srcfile){
             if(recover){
-                fs.cpSync(src + i, dest + i, { recursive: true }) 
+                fs.cpSync(backup + i, dest + i, { recursive: true }) 
             }else{
-                fs.cpSync(dest + i, src + i, { recursive: true }) 
+                logger.error(dest + i)
+                logger.error(backup + i)
+                fs.cpSync(dest + i, backup + i, { recursive: true }) 
             }
         }
     }

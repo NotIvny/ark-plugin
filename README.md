@@ -58,27 +58,25 @@ src path: 替换用的文件所在的文件夹。
 
 dest path: 被替换的文件所在的文件夹，即需要备份的文件所在的文件夹。
 
-创建备份后，插件会自动获取src path下的所有文件名，并储存在backup.json中，以后仅这些文件会被替换。
+创建备份后，插件会自动获取src path下的所有文件名，并储存在backup.json中，以后仅这些文件会被替换，备份文件将储存于backup文件夹中(以下称 dest-backup-path )。
 
-同时, src path 的同目录下会创建一个以 backup 为后缀的文件夹，该文件夹将保存备份数据（接下来称 dest-backup path）。
-
-为确保备份可用，建议您将替换用文件夹放在插件的backup文件夹，即指定src path在./plugins/ark-plugin/backup路径下。
-
-注意: 与常规备份插件不同，本插件额外提供了一个"注入文件"的功能(src path => dest path)，以安全地修改插件代码，关系图如下所示。
+注意: 与常规备份插件不同，本插件额外提供了一个"替换文件"的功能(src path => dest path)，以安全地修改插件代码，关系图如下所示。
 
 src path => dest path <=> dest-backup path
 
-于此同时，备份/替换的文件量不再由 dest path 决定，而是由 src path 决定。
-
-因此，该功能适用于备份 JS、CSS、HTML 文件等固有文件，不适合备份数据文件。
+如无需使用替换文件功能，请将 src path 和 dest path 都指定为需要备份的文件所在的文件夹
 
 ### #ark替换文件
 
-将 src path 中的文件替换到 dest path 中。
+将 src path 中的文件复制到 dest path 中。
+
+### #ark备份文件
+
+使用 dest path 中的文件复制到 dest-backup path 中。
 
 ### #ark恢复文件
 
-使用 dest-backup path 中的文件替换到 dest path 中。
+使用 dest-backup path 中的文件复制到 dest path 中。
 
 ## 其他
 
