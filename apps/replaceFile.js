@@ -79,7 +79,7 @@ export class replaceFile extends plugin {
             this.e.reply(`未找到ID:${ID}`)
             return true
         }
-        this.finish('readID')
+        this.finish('getID')
         fs.rmdirSync(data[ID].src, {recursive: true})
         fs.rmdirSync(`./plugins/ark-plugin/backup/${ID}-backup/`, {recursive: true})
         delete data[ID]
