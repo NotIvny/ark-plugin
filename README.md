@@ -66,6 +66,10 @@ src path => dest path <=> dest-backup path
 
 如无需使用替换文件功能，请将 src path 和 dest path 都指定为需要备份的文件所在的文件夹
 
+### #ark删除备份
+
+删除备份数据，src path 与 dest-backup path 都会被删除
+
 ### #ark替换文件
 
 将 src path 中的文件复制到 dest path 中。
