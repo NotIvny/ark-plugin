@@ -136,7 +136,7 @@ export class replaceFile extends plugin {
         let src = data.src
         let dest = data.dest
         src = await this.addSlash(src)
-        src = await this.addSlash(dest)
+        dest = await this.addSlash(dest)
         for(let i of data.srcfile){
             fs.cpSync(src + i, dest + i, { recursive: true }) 
         }
