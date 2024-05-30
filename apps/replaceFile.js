@@ -80,7 +80,6 @@ export class replaceFile extends plugin {
             return true
         }
         this.finish('getID')
-        fs.rmdirSync(data[ID].src, {recursive: true})
         fs.rmdirSync(`./plugins/ark-plugin/backup/${ID}-backup/`, {recursive: true})
         delete data[ID]
         fs.writeFileSync('./plugins/ark-plugin/config/backup.json', JSON.stringify(data, null, 2))
@@ -172,7 +171,4 @@ export class replaceFile extends plugin {
         }
         return path_
     } 
-    async logFiles(data){
-
-    }
 }
