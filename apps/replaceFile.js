@@ -108,7 +108,7 @@ export class replaceFile extends plugin {
                 const filePath = path.join(directory, file)
                 const relativePath = path.relative(redisdata.src, filePath)
                 const stats = fs.statSync(filePath)
-                if(stats.isFile()){
+                if(stats.isFile() && !relativePath.includes('node_modules')){
                     srcfile.push(relativePath)
                 }else if(stats.isDirectory()){
                     readDirectory(filePath)
