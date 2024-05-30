@@ -51,8 +51,14 @@ git clone https://github.com/NotIvny/yunzai-characterRank-js.git ./plugins/ark-p
 真理医生全服伤害排名为65 / 359，伤害评分: 36.78<br>
 花火全服伤害排名为455 / 538，伤害评分: 37.91<br>
 
-### #ark创建备份 
-创建备份，需提供ID和以下两个文件夹路径：
+### 文件备份与替换功能
+<details>
+
+<summary>展开查看</summary>
+
+### #ark创建备份
+
+创建备份时，需提供ID和以下两个文件夹路径：
 
 src path: 替换用的文件所在的文件夹。
 
@@ -81,6 +87,7 @@ src path => dest path <=> dest-backup path
 ### #ark恢复文件
 
 使用 dest-backup path 中的文件复制到 dest path 中。
+</details>
 
 ## 其他
 
