@@ -3,14 +3,19 @@ import path from 'path'
 export class replaceFile extends plugin {
     constructor() {
         super({
-            name: '注入排名',
-            dsc: '注入排名',
+            name: '替换文件',
+            dsc: '替换文件',
             event: 'message',
-            priority: -3000,
+            priority: -5,
             rule: [
                 {
                     reg: '^#ark创建备份$',
-                    fnc: 'arkCreateFile',
+                    fnc: 'arkCreateBackup',
+                    permission: 'master',
+                },
+                {
+                    reg: '^#ark删除备份$',
+                    fnc: 'arkRemoveBackup',
                     permission: 'master',
                 },
                 {
@@ -31,34 +36,55 @@ export class replaceFile extends plugin {
             ]
         })
     }
-    async arkCreateFile(e){
+    async arkCreateBackup(e){
         e.reply('请输入ID')
         this.setContext('readID')
+    }
+    async arkRemoveBackup(e){
+        e.reply('请输入ID')
+        this.setContext('getID')
     }
     async arkReplaceFile(e){
         let ID = e.msg.replace("#ark替换文件", "").trim()
         await this.replaceFile(ID)
-        e.reply('替换完毕，重启后生效')
     }
     async arkRecoverFile(e){
         let ID = e.msg.replace("#ark恢复文件", "").trim()
         await this.backupFile(ID, true)
-        e.reply('恢复完毕，重启后生效')
     }
     async arkBackupFile(e){
         let ID = e.msg.replace("#ark备份文件", "").trim()
         await this.backupFile(ID, false)
-        e.reply('备份完毕')
     }
     async readID(){
         const id = this.e.msg
+        let data_ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
+        if(data_[id]){
+            this.e.reply(`ID:${id}已存在`)
+            this.finish('readID')
+            return true
+        }
         let data = {
             ID: id
         }
+        this.finish('readID')
         await redis.set(`ark-plugin:addfile${this.e.user_id}`, JSON.stringify(data), { EX: 300 })
         this.e.reply('请输入src path')
-        this.finish('readID')
         this.setContext('readSrc')
+    }
+    async getID(){
+        const ID = this.e.msg
+        let data = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
+        if(!data[ID]){
+            this.e.reply(`未找到ID:${ID}`)
+            return true
+        }
+        this.finish('readID')
+        fs.rmdirSync(data[ID].src, {recursive: true})
+        fs.rmdirSync(`./plugins/ark-plugin/backup/${ID}-backup/`, {recursive: true})
+        delete data[ID]
+        fs.writeFileSync('./plugins/ark-plugin/config/backup.json', JSON.stringify(data, null, 2))
+        this.e.reply(`删除ID:${ID}成功`)
     }
     async readSrc(){
         const src = this.e.msg
@@ -93,7 +119,6 @@ export class replaceFile extends plugin {
         srcfile = srcfile.map(path => path.replace(/\\/g, '/'))
         redisdata.srcfile = srcfile
         let data = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
-        logger.error(redisdata)
         data[redisdata.ID] = redisdata
         let ID = redisdata.ID
         delete data[redisdata.ID].ID
@@ -110,15 +135,12 @@ export class replaceFile extends plugin {
         }
         let src = data.src
         let dest = data.dest
-        if(!src.endsWith('/')){
-            src += "/"
-        }
-        if(!dest.endsWith('/')){
-            dest += "/"
-        }
+        src = await this.addSlash(src)
+        src = await this.addSlash(dest)
         for(let i of data.srcfile){
             fs.cpSync(src + i, dest + i, { recursive: true }) 
         }
+        this.e.reply('替换完毕，重启后生效')
     }
     async backupFile(ID, recover){
         let data_ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
@@ -129,17 +151,28 @@ export class replaceFile extends plugin {
         }
         let dest = data.dest
         let backup = `./plugins/ark-plugin/backup/${ID}-backup/`
-        if(!dest.endsWith('/')){
-            dest += "/"
-        }
+        dest = await this.addSlash(dest)
         for(let i of data.srcfile){
             if(recover){
                 fs.cpSync(backup + i, dest + i, { recursive: true }) 
             }else{
-                logger.error(dest + i)
-                logger.error(backup + i)
                 fs.cpSync(dest + i, backup + i, { recursive: true }) 
             }
         }
+        if(recover){
+            this.e.reply('恢复完毕,重启后生效')
+        }else{
+            this.e.reply('备份完毕,重启后生效')
+        }
+        
+    }
+    async addSlash(path_){
+        if(!path_.endsWith('/')){
+            path_ += '/'
+        }
+        return path_
+    } 
+    async logFiles(data){
+
     }
 }
