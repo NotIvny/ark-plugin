@@ -51,7 +51,7 @@ git clone https://github.com/NotIvny/yunzai-characterRank-js.git ./plugins/ark-p
 真理医生全服伤害排名为65 / 359，伤害评分: 36.78<br>
 花火全服伤害排名为455 / 538，伤害评分: 37.91<br>
 
-### 文件备份与替换功能
+### 文件替换与备份功能
 <details>
 
 <summary>展开查看</summary>
