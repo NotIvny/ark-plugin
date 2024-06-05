@@ -1,7 +1,7 @@
 import { getTargetUid } from '../../miao-plugin/apps/profile/ProfileCommon.js'
 import Gscfg from '../../genshin/model/gsCfg.js'
 import api from '../model/api.js'
-import { Common, Data } from '../../miao-plugin/components/index.js'
+import Config from '../model/Config.js'
 import { Button, ProfileRank, Player, Character } from '../../miao-plugin/models/index.js'
 export class characterRank extends plugin {
     constructor() {
@@ -26,6 +26,14 @@ export class characterRank extends plugin {
                 {
                     reg: /^#(星铁|原神)?(全部面板更新|更新全部面板|获取游戏角色详情|更新面板|面板更新)\s*(\d{9,10})?$/,
                     fnc: 'refreshPanel',
+                },
+                {
+                    reg: '^#ark设置面板全服排名(开启|关闭)$',
+                    fnc: 'setPanelRank',
+                },
+                {
+                    reg: '^#ark设置角色全服排名(开启|关闭)$',
+                    fnc: 'setGroupRank',
                 }
             ]
         });
@@ -126,6 +134,22 @@ export class characterRank extends plugin {
             default:
                 e.reply(await this.dealError(ret.retcode))
         }
+    }
+    async setPanelRank(e){
+        if(e.msg.includes('开启')){
+            Config.set('config','panelRank',true)
+        }else{
+            Config.set('config','panelRank',false)
+        }
+        e.reply('设置成功')
+    }
+    async setGroupRank(e){
+        if(e.msg.includes('开启')){
+            Config.set('config','groupRank',true)
+        }else{
+            Config.set('config','groupRank',false)
+        }
+        e.reply('设置成功')
     }
     async dealError(retcode){
        switch(retcode){

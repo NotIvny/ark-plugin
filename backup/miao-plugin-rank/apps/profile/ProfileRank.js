@@ -284,18 +284,20 @@ async function renderCharRankList ({ e, uids, char, mode, groupId }) {
   }
 
   const rankCfg = await ProfileRank.getGroupCfg(groupId)
-  let uids_ = []
-  list.forEach(item => {
-    uids_.push(item.uid)
-  })
-  let ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: uids_, update: 0})
-  let count = 0
-  switch(ret.retcode){
-    case 100:
-      ret.rank.forEach(item => {
-        list[count].dmg.totalrank = item.rank || '暂无数据'
-        count++;
-      })
+  if(Config.get('config','groupRank')){
+    let uids_ = []
+    list.forEach(item => {
+      uids_.push(item.uid)
+    })
+    let ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: uids_, update: 0})
+    let count = 0
+    switch(ret.retcode){
+      case 100:
+        ret.rank.forEach(item => {
+          list[count].dmg.totalrank = item.rank || '暂无数据'
+          count++;
+        })
+    }
   }
   // 渲染图像
   return e.reply([await Common.render('character/rank-profile-list', {

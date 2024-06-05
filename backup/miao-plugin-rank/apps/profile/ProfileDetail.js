@@ -241,14 +241,16 @@ let ProfileDetail = {
     let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
     let characterRank
     let ret = await api.sendApi('getRankData',{id: characterID, uid: uid, update: 0})
-    switch(ret.retcode){
-    case 100:
-        characterRank = ret.rank
-        dmgCalc.dmgData[dmgCalc.dmgData.length] = {
-        title: '全服伤害排名',
-        unit: characterRank,
-        }
-        break
+    if(Config.get('config','panelRank')){
+      switch(ret.retcode){
+        case 100:
+          characterRank = ret.rank
+          dmgCalc.dmgData[dmgCalc.dmgData.length] = {
+            title: '全服伤害排名',
+            unit: characterRank,
+          }
+          break
+      }
     }
     let renderData = {
       save_id: uid,
