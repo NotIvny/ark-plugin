@@ -3,6 +3,7 @@ import { Data, Common, Format, Cfg } from '#miao'
 import { Button, Character, ProfileRank, ProfileDmg, Player } from '#miao.models'
 import lodash from 'lodash'
 import api from '../../../ark-plugin/model/api.js'
+import Config from '../../../ark-plugin/model/Config.js'
 
 export async function groupRank (e) {
   const groupRank = Common.cfg('groupRank')
