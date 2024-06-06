@@ -30,10 +30,12 @@ export class characterRank extends plugin {
                 {
                     reg: '^#ark设置面板全服排名(开启|关闭)$',
                     fnc: 'setPanelRank',
+                    permission: 'master',
                 },
                 {
                     reg: '^#ark设置角色全服排名(开启|关闭)$',
                     fnc: 'setGroupRank',
+                    permission: 'master',
                 }
             ]
         });
