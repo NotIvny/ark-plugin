@@ -3,6 +3,7 @@ import { getTargetUid, getProfileRefresh } from './ProfileCommon.js'
 import ProfileList from './ProfileList.js'
 import { Cfg, Common, Data, Format } from '#miao'
 import { Button, MysApi, ProfileRank, Character, Weapon, Artifact } from '#miao.models'
+import fs from 'fs'
 import Gscfg from '../../../genshin/model/gsCfg.js'
 import api from '../../../ark-plugin/model/api.js'
 import Config from '../../../ark-plugin/model/Config.js'
@@ -241,7 +242,9 @@ let ProfileDetail = {
     data.weapon = profile.getWeaponDetail()
     let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
     let characterRank
-    let ret = await api.sendApi('getRankData',{id: characterID, uid: uid, update: 0})
+    let playerData = fs.readFileSync(`./data/PlayerData/gs/${uid}.json`,'utf8');
+    let jsonData = JSON.parse(playerData).avatars[characterID];
+    let ret = await api.sendApi('getRankData',{id: characterID, uid: uid, update: 0, data: jsonData})
     if(Config.get('config','panelRank')){
       switch(ret.retcode){
         case 100:
