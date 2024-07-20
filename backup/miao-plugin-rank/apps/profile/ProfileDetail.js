@@ -242,7 +242,7 @@ let ProfileDetail = {
     data.weapon = profile.getWeaponDetail()
     let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
     let characterRank
-    let playerData = fs.readFileSync(`./data/PlayerData/gs/${uid}.json`,'utf8');
+    let playerData = fs.readFileSync(`./data/PlayerData/${game}/${uid}.json`,'utf8');
     let jsonData = JSON.parse(playerData).avatars[characterID];
     let ret = await api.sendApi('getRankData',{id: characterID, uid: uid, update: 0, data: jsonData})
     if(Config.get('config','panelRank')){
