@@ -2,6 +2,7 @@ import ProfileDetail from './ProfileDetail.js'
 import { Data, Common, Format, Cfg } from '#miao'
 import { Button, Character, ProfileRank, ProfileDmg, Player } from '#miao.models'
 import lodash from 'lodash'
+import fs from 'fs'
 import api from '../../../ark-plugin/model/api.js'
 import Config from '../../../ark-plugin/model/Config.js'
 
@@ -291,13 +292,37 @@ async function renderCharRankList ({ e, uids, char, mode, groupId }) {
       uids_.push(item.uid)
     })
     let ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: uids_, update: 0})
-    let count = 0
+    let count = 0,reqFromLocalList = [],data = []
+    let game = e.isSr ? 'sr' : 'gs'
     switch(ret.retcode){
       case 100:
         ret.rank.forEach(item => {
-          list[count].dmg.totalrank = item.rank || '暂无数据'
+          if(item.rank){
+            list[count].dmg.totalrank = item.rank 
+          }else{
+            list[count].dmg.totalrank = item.rank = null
+            let playerData = fs.readFileSync(`./data/PlayerData/${game}/${uids_[count]}.json`,'utf8');
+            let jsonData = JSON.parse(playerData).avatars[list[0].id];
+            data.push(jsonData)
+            reqFromLocalList.push(uids_[count])
+          }
           count++;
         })
+    }
+    if(reqFromLocalList.length != 0){
+      count = 0
+      ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: reqFromLocalList, update: 2, data: data})
+      switch(ret.retcode){
+        case 100:
+          ret.rank.forEach(item => {
+            for(const id of list){
+              if(!id.dmg.totalrank){
+                id.dmg.totalrank = item.rank 
+                break
+              }
+            }
+          })
+      }
     }
   }
   // 渲染图像
