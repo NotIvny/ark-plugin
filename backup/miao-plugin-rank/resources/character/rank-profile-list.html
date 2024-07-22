@@ -163,7 +163,7 @@ body .container {
     </div>
     <div class="char-dmg line">
         {{if ds.dmg}}
-        <div class="dmg-title">全服排名</div>
+        <div class="dmg-title">{{ds.dmg?.rankName}}</div>
         <div class="dmg-value">{{ds.dmg?.totalrank}}</div>
         {{else}}
         {{/if}}

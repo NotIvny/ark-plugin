@@ -167,8 +167,7 @@ export class characterRank extends plugin {
         let prefix = e.game == 'gs' ? '#' : '*'
         let user = e?.runtime?.user || {}
         let uid = await getTargetUid(e)
-        if (!user.hasCk && !e.isMaster) {
-            e.reply('为确保数据安全，目前仅允许绑定CK用户导出自己UID的面板数据，请联系Bot主人导出...')
+        if(!await this.checkPermission(e, user)){
             return true
         }
         let playerData = fs.readFileSync(`./data/PlayerData/${e.game}/${uid}.json`,'utf8')
@@ -185,11 +184,9 @@ export class characterRank extends plugin {
         e.game = e.game || 'gs'
         let user = e?.runtime?.user || {}
         let uid = await getTargetUid(e)
-        if (!user.hasCk && !e.isMaster) {
-            e.reply('为确保数据安全，目前仅允许绑定CK用户导入自己UID的面板数据，请联系Bot主人导入...')
+        if(!await this.checkPermission(e, user)){
             return true
         }
-
         let ret = await api.sendApi('downloadPanelData', {uid: uid, type: e.game})
         switch(ret.retcode){
             case 100:
@@ -199,6 +196,30 @@ export class characterRank extends plugin {
             default:
                 e.reply(await this.dealError(ret.retcode))
         }
+    }
+    async checkPermission(e, user){
+        switch(Config.get('config','localGroupRank')){
+            case 0:
+                return true
+            case 1:
+                if(!user.hasCk && !e.isMaster){
+                    e.reply('为确保数据安全，目前仅允许绑定CK用户导入/导出自己UID的面板数据，请联系Bot主人导入/导出...')
+                    return true
+                }
+                break
+            case 2:
+                if(!e.isMaster){
+                    e.reply('为确保数据安全，目前仅允许主人导入/导出自己UID的面板数据，请联系Bot主人导入/导出...')
+                    return true
+                }
+                break
+            case 3:
+                e.reply('当前功能已被禁用...')
+                return false
+            default:
+                return false
+        }
+        return false
     }
     async dealError(retcode){
        switch(retcode){
