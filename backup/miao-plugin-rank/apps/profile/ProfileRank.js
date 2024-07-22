@@ -297,10 +297,11 @@ async function renderCharRankList ({ e, uids, char, mode, groupId }) {
     switch(ret.retcode){
       case 100:
         ret.rank.forEach(item => {
+          list[count].dmg.rankName = '全服排名'
           if(item.rank){
             list[count].dmg.totalrank = item.rank 
           }else{
-            list[count].dmg.totalrank = item.rank = null
+            list[count].dmg.totalrank = '暂无数据'
             let playerData = fs.readFileSync(`./data/PlayerData/${game}/${uids_[count]}.json`,'utf8');
             let jsonData = JSON.parse(playerData).avatars[list[0].id];
             data.push(jsonData)
@@ -309,14 +310,15 @@ async function renderCharRankList ({ e, uids, char, mode, groupId }) {
           count++;
         })
     }
-    if(reqFromLocalList.length != 0){
+    if(reqFromLocalList.length != 0 && Config.get('config','localGroupRank')){
       count = 0
       ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: reqFromLocalList, update: 2, data: data})
       switch(ret.retcode){
         case 100:
           ret.rank.forEach(item => {
             for(const id of list){
-              if(!id.dmg.totalrank){
+              if(id.dmg.totalrank == '暂无数据'){
+                id.dmg.rankName = '全服排名(本地)'
                 id.dmg.totalrank = item.rank 
                 break
               }

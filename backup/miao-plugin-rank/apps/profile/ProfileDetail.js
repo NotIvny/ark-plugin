@@ -240,17 +240,24 @@ let ProfileDetail = {
       data.treeData = treeData
     }
     data.weapon = profile.getWeaponDetail()
-    let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
-    let characterRank
-    let playerData = fs.readFileSync(`./data/PlayerData/${game}/${uid}.json`,'utf8');
-    let jsonData = JSON.parse(playerData).avatars[characterID];
-    let ret = await api.sendApi('getRankData',{id: characterID, uid: uid, update: 0, data: jsonData})
+    //是否计算全服排名
     if(Config.get('config','panelRank')){
+      let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
+      let characterRank,ret
+      //是否使用本地数据计算排名
+      if(Config.get('config','localPanelRank')){
+        let playerData = fs.readFileSync(`./data/PlayerData/${game}/${uid}.json`,'utf8');
+        let jsonData = JSON.parse(playerData).avatars[characterID];
+        ret = await api.sendApi('getRankData',{id: characterID, uid: uid, update: 0, data: jsonData})
+      }else{
+        ret = await api.sendApi('getRankData',{id: characterID, uid: uid, update: 0})
+      }
       switch(ret.retcode){
         case 100:
-          characterRank = ret.rank
+          characterRank = Config.get('config','RankType') == 0 ? ret.rank : (ret.percent + '%')
+          let title = '全服伤害排名' + (Config.get('config','markRankType') ? '(本地)' : '')
           dmgCalc.dmgData[dmgCalc.dmgData.length] = {
-            title: '全服伤害排名',
+            title: title,
             unit: characterRank,
           }
           break
