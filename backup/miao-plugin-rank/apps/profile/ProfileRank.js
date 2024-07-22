@@ -286,6 +286,7 @@ async function renderCharRankList ({ e, uids, char, mode, groupId }) {
   }
 
   const rankCfg = await ProfileRank.getGroupCfg(groupId)
+  //是否计算全服排名
   if(Config.get('config','groupRank')){
     let uids_ = []
     list.forEach(item => {
@@ -310,6 +311,7 @@ async function renderCharRankList ({ e, uids, char, mode, groupId }) {
           count++;
         })
     }
+    //是否使用本地数据计算排名
     if(reqFromLocalList.length != 0 && Config.get('config','localGroupRank')){
       count = 0
       ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: reqFromLocalList, update: 2, data: data})
