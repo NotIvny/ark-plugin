@@ -12,7 +12,7 @@ import { profileArtis } from './ProfileArtis.js'
 import { ProfileWeapon } from './ProfileWeapon.js'
 
 let { diyCfg } = await Data.importCfg('profile')
-
+let changedProfile = false
 // 查看当前角色
 let ProfileDetail = {
   async detail (e) {
@@ -39,6 +39,7 @@ let ProfileDetail = {
       e.msg = '#喵喵面板变换'
       e.uid = pc.uid || await getTargetUid(e)
       profileChange = ProfileChange.getProfile(e.uid, pc.char, pc.change, pc.game)
+      changedProfile = profileChange
       if (profileChange && profileChange.char) {
         msg = `#${profileChange.char?.name}${pc.mode || '面板'}`
         e._profile = profileChange
@@ -241,14 +242,43 @@ let ProfileDetail = {
     }
     data.weapon = profile.getWeaponDetail()
     //是否计算全服排名
+    
     if(Config.get('config','panelRank')){
       let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
-      let characterRank,ret
+      let characterRank,ret,_uid
+      _uid = uid
       //是否使用本地数据计算排名
       if(Config.get('config','localPanelRank')){
         let playerData = fs.readFileSync(`./data/PlayerData/${game}/${uid}.json`,'utf8');
         let jsonData = JSON.parse(playerData).avatars[characterID];
-        ret = await api.sendApi('getRankData',{id: characterID, uid: uid, update: 0, data: jsonData})
+        if(e.msg.includes('喵喵面板变换')){
+          Object.keys(changedProfile._artis.artis).forEach(key => {
+            const item = changedProfile._artis.artis[key];
+            delete item.main;
+            delete item.attrs;
+            delete item.set;
+          });
+          //角色等级/天赋/命座
+          jsonData.level = changedProfile.level
+          Object.keys(changedProfile.talent).forEach(key => {
+            changedProfile.talent[key] = changedProfile.talent[key].level
+          });
+          jsonData.talent = changedProfile.talent
+          jsonData.cons = changedProfile.cons
+          //角色武器
+          jsonData.weapon.name = changedProfile.weapon.name
+          jsonData.weapon.level = changedProfile.weapon.level
+          jsonData.weapon.promote = changedProfile.weapon.promote
+          jsonData.weapon.affix = changedProfile.weapon.affix
+          jsonData.artis = changedProfile._artis.artis
+          //星铁额外处理
+          if(game == 'sr'){
+            jsonData.weapon.id = changedProfile.weapon.id
+          }
+          //暂时用999999999
+          _uid = '999999999'
+        }
+        ret = await api.sendApi('getRankData',{id: characterID, uid: _uid, update: 0, data: jsonData})
       }else{
         ret = await api.sendApi('getRankData',{id: characterID, uid: uid, update: 0})
       }
@@ -256,6 +286,7 @@ let ProfileDetail = {
         case 100:
           characterRank = Config.get('config','RankType') == 0 ? ret.rank : (ret.percent + '%')
           let title = '全服伤害排名' + (Config.get('config','markRankType') ? '(本地)' : '')
+          title =  '全服伤害排名' + ((changedProfile) ? '(面板变换)' : title)
           dmgCalc.dmgData[dmgCalc.dmgData.length] = {
             title: title,
             unit: characterRank,
@@ -263,6 +294,7 @@ let ProfileDetail = {
           break
       }
     }
+    changedProfile = false
     let renderData = {
       save_id: uid,
       uid,
