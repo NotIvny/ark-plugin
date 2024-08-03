@@ -1,0 +1,16 @@
+# 是否启用面板排名
+panelRank: true
+# 是否启用群排名
+groupRank: true
+# 排名展示类型：0-位次排名，1-百分比排名, 2-混合排名
+RankType: 0
+# 允许使用本地数据计算面板排名
+localPanelRank: true
+# 允许使用本地数据计算群排名
+localGroupRank: true
+# 允许导出面板数据：0-任何人，1-有ck或主人，2-仅主人，3-禁用
+exportPanelData: 1
+# 允许导入面板数据：0-任何人，1-有ck或主人，2-仅主人，3-禁用
+importPanelData: 2
+# 是否注明本地数据
+markRankType: false
