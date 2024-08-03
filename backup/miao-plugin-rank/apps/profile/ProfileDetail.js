@@ -6,7 +6,7 @@ import { Button, MysApi, ProfileRank, Character, Weapon, Artifact } from '#miao.
 import fs from 'fs'
 import Gscfg from '../../../genshin/model/gsCfg.js'
 import api from '../../../ark-plugin/model/api.js'
-import Config from '../../../ark-plugin/model/Config.js'
+import ArkCfg from '../../../ark-plugin/components/Cfg.js'
 import ProfileChange from './ProfileChange.js'
 import { profileArtis } from './ProfileArtis.js'
 import { ProfileWeapon } from './ProfileWeapon.js'
@@ -241,14 +241,14 @@ let ProfileDetail = {
       data.treeData = treeData
     }
     data.weapon = profile.getWeaponDetail()
-    //是否计算全服排名
+    //是否计算总排名
     
-    if(Config.get('config','panelRank')){
+    if(ArkCfg.get('panelRank', true)){
       let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
       let characterRank,ret,_uid
       _uid = uid
       //是否使用本地数据计算排名
-      if(Config.get('config','localPanelRank')){
+      if(ArkCfg.get('localPanelRank', true)){
         let playerData = fs.readFileSync(`./data/PlayerData/${game}/${uid}.json`,'utf8');
         let jsonData = JSON.parse(playerData).avatars[characterID];
         if(e.msg.includes('喵喵面板变换')){
@@ -284,9 +284,9 @@ let ProfileDetail = {
       }
       switch(ret.retcode){
         case 100:
-          characterRank = Config.get('config','RankType') == 0 ? ret.rank : (ret.percent + '%')
-          let title = '全服伤害排名' + (Config.get('config','markRankType') ? '(本地)' : '')
-          title =  '全服伤害排名' + ((changedProfile) ? '(面板变换)' : title)
+          characterRank = ArkCfg.get('RankType', 0) == 0 ? ret.rank : (ret.percent + '%')
+          let title = '总伤害排名' + (ArkCfg.get('markRankType', true) ? '(本地)' : '')
+          title = changedProfile ? '总伤害排名(面板变换)' : title
           dmgCalc.dmgData[dmgCalc.dmgData.length] = {
             title: title,
             unit: characterRank,

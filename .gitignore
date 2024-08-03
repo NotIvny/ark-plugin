@@ -1,0 +1,6 @@
+/config/backup.json
+/node_modules/
+/config/help.js
+/config/cfg.js
+/resources/help/theme/*
+!/resources/help/theme/default

@@ -1,0 +1,44 @@
+{{extend defaultLayout}}
+{{block 'css'}}
+<link rel="stylesheet" type="text/css" href="{{_res_path}}/admin/index.css"/>
+{{/block}}
+{{block 'main'}}
+
+<div class="info_box">
+  <div class="head-box type{{bgType}}">
+    <div class="label">喵喵管理面板</div>
+    <div class="title">#喵喵设置</div>
+  </div>
+</div>
+{{each schema cfgGroup}}
+<div class="cfg-box">
+  <div class="cfg-group">{{cfgGroup.title}}</div>
+  <ul class="cfg-ul">
+    {{each cfgGroup.cfg cfgItem cfgKey}}
+    <li class="cfg-li">
+      <div class="cfg-line">
+        {{cfgItem.title}}
+        {{if !(cfgItem.miao && isMiao) }}
+        <span class="cfg-hint"> #喵喵设置{{cfgItem.key}}
+          {{if cfgItem.type==='num'}} {{cfgItem.def}}{{else}} 开启/关闭{{/if}}
+        </span>
+        {{/if}}
+        {{if cfgItem.type === 'num' ||  cfgItem.type === 'str'}}
+        <div class="cfg-status">{{cfg[cfgKey]}}</div>
+        {{else}}
+        {{if cfg[cfgKey] || (cfgItem.miao && isMiao)}}
+        <div class="cfg-status">{{cfgItem.miao && isMiao ? '默认开启' : '已开启'}}</div>
+        {{else}}
+        <div class="cfg-status status-off">已关闭</div>
+        {{/if}}
+        {{/if}}
+      </div>
+      {{if cfgItem.desc && cfgItem.showDesc!== false}}
+      <div class="cfg-desc">{{cfgItem.desc}}</div>
+      {{/if}}
+    </li>
+    {{/each}}
+  </ul>
+</div>
+{{/each}}
+{{/block}}

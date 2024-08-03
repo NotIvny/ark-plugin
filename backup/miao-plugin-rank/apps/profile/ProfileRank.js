@@ -4,7 +4,7 @@ import { Button, Character, ProfileRank, ProfileDmg, Player } from '#miao.models
 import lodash from 'lodash'
 import fs from 'fs'
 import api from '../../../ark-plugin/model/api.js'
-import Config from '../../../ark-plugin/model/Config.js'
+import ArkCfg from '../../../ark-plugin/components/Cfg.js'
 
 export async function groupRank (e) {
   const groupRank = Common.cfg('groupRank')
@@ -286,8 +286,7 @@ async function renderCharRankList ({ e, uids, char, mode, groupId }) {
   }
 
   const rankCfg = await ProfileRank.getGroupCfg(groupId)
-  //是否计算全服排名
-  if(Config.get('config','groupRank')){
+  if(ArkCfg.get('groupRank', true)){
     let uids_ = []
     list.forEach(item => {
       uids_.push(item.uid)
@@ -298,7 +297,7 @@ async function renderCharRankList ({ e, uids, char, mode, groupId }) {
     switch(ret.retcode){
       case 100:
         ret.rank.forEach(item => {
-          list[count].dmg.rankName = '全服排名'
+          list[count].dmg.rankName = '总排名'
           if(item.rank){
             list[count].dmg.totalrank = item.rank 
           }else{
@@ -311,8 +310,7 @@ async function renderCharRankList ({ e, uids, char, mode, groupId }) {
           count++;
         })
     }
-    //是否使用本地数据计算排名
-    if(reqFromLocalList.length != 0 && Config.get('config','localGroupRank')){
+    if(reqFromLocalList.length != 0 && ArkCfg.get('localGroupRank', false)){
       count = 0
       ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: reqFromLocalList, update: 2, data: data})
       switch(ret.retcode){
@@ -320,7 +318,7 @@ async function renderCharRankList ({ e, uids, char, mode, groupId }) {
           ret.rank.forEach(item => {
             for(const id of list){
               if(id.dmg.totalrank == '暂无数据'){
-                id.dmg.rankName = '全服排名(本地)'
+                id.dmg.rankName = '总排名(本地)'
                 id.dmg.totalrank = item.rank 
                 break
               }
