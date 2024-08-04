@@ -72,7 +72,7 @@ const readLogFile = function (root, versionCount = 4) {
   return { changelogs, currentVersion }
 }
 
-const { changelogs, currentVersion } = readLogFile('miao')
+const { changelogs, currentVersion } = readLogFile('ark')
 
 
 const yunzaiVersion = packageJson.version

@@ -24,8 +24,6 @@ export class Admin extends plugin {
   }
   async checkAuth (e) {
     if (!e.isMaster) {
-      e.reply(`只有主人才能命令喵喵哦~
-      (*/ω＼*)`)
       return false
     }
     return true

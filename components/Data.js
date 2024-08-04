@@ -8,7 +8,7 @@ const getRoot = (root = '') => {
     root = `${_path}/`
   } else if (root === 'root' || root === 'yunzai') {
     root = `${_path}/`
-  } else if (root === 'miao') {
+  } else if (root === 'ark') {
     root = `${_path}/plugins/ark-plugin/`
   } else {
     root = `${_path}/plugins/${root}/`
@@ -149,10 +149,10 @@ let Data = {
   },
 
   async importCfg (key) {
-    let sysCfg = await Data.importModule(`config/system/${key}_system.js`, 'miao')
-    let diyCfg = await Data.importModule(`config/${key}.js`, 'miao')
+    let sysCfg = await Data.importModule(`config/system/${key}_system.js`, 'ark')
+    let diyCfg = await Data.importModule(`config/${key}.js`, 'ark')
     if (diyCfg.isSys) {
-      console.error(`miao-plugin: config/${key}.js无效，已忽略`)
+      console.error(`ark-plugin: config/${key}.js无效，已忽略`)
       console.error(`如需配置请复制config/${key}_default.js为config/${key}.js，请勿复制config/system下的系统文件`)
       diyCfg = {}
     }

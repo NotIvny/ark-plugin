@@ -284,7 +284,15 @@ let ProfileDetail = {
       }
       switch(ret.retcode){
         case 100:
-          characterRank = ArkCfg.get('RankType', 0) == 0 ? ret.rank : (ret.percent + '%')
+          const rankType = ArkCfg.get('RankType', 0)
+          switch(rankType){
+            case 0:
+              rankType = ret.rank
+            case 1:
+              rankType = ret.percent
+            case 2:
+              rankType = `${ret.rank}(${ret.percent})`
+          }
           let title = '总伤害排名' + (ArkCfg.get('markRankType', true) ? '(本地)' : '')
           title = changedProfile ? '总伤害排名(面板变换)' : title
           dmgCalc.dmgData[dmgCalc.dmgData.length] = {

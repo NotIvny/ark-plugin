@@ -1,5 +1,6 @@
 import fetch from 'node-fetch'
-const version = '0.2.0'
+import { Version } from "../components/index.js"
+const version = Version.version
 export const sendApi = async function(type, data){
     data = {
         type: type,

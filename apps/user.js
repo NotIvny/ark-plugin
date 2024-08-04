@@ -2,6 +2,7 @@ import { getTargetUid } from '../../miao-plugin/apps/profile/ProfileCommon.js'
 import Gscfg from '../../genshin/model/gsCfg.js'
 import fs from 'fs'
 import api from '../model/api.js'
+import Cfg from '../components/Cfg.js'
 import { Button, ProfileRank, Player, Character } from '../../miao-plugin/models/index.js'
 export class characterRank extends plugin {
     constructor() {
@@ -140,7 +141,7 @@ export class characterRank extends plugin {
         let prefix = e.game == 'gs' ? '#' : '*'
         let user = e?.runtime?.user || {}
         let uid = await getTargetUid(e)
-        if(!await this.checkPermission(e, user)){
+        if(!await this.checkPermission(e, user, 'exportPanelData')){
             return true
         }
         let playerData = fs.readFileSync(`./data/PlayerData/${e.game}/${uid}.json`,'utf8')
@@ -157,7 +158,7 @@ export class characterRank extends plugin {
         e.game = e.game || 'gs'
         let user = e?.runtime?.user || {}
         let uid = await getTargetUid(e)
-        if(!await this.checkPermission(e, user)){
+        if(await this.checkPermission(e, user, 'importPanelData')){
             return true
         }
         let ret = await api.sendApi('downloadPanelData', {uid: uid, type: e.game})
@@ -170,20 +171,20 @@ export class characterRank extends plugin {
                 e.reply(await this.dealError(ret.retcode))
         }
     }
-    async checkPermission(e, user){
-        switch(Config.get('config','localGroupRank')){
+    async checkPermission(e, user, type){
+        switch(Cfg.get(type, 3)){
             case 0:
                 return true
             case 1:
                 if(!user.hasCk && !e.isMaster){
                     e.reply('为确保数据安全，目前仅允许绑定CK用户导入/导出自己UID的面板数据，请联系Bot主人导入/导出...')
-                    return true
+                    return false
                 }
                 break
             case 2:
                 if(!e.isMaster){
                     e.reply('为确保数据安全，目前仅允许主人导入/导出自己UID的面板数据，请联系Bot主人导入/导出...')
-                    return true
+                    return false
                 }
                 break
             case 3:
@@ -192,7 +193,7 @@ export class characterRank extends plugin {
             default:
                 return false
         }
-        return false
+        return true
     }
     async dealError(retcode){
        switch(retcode){
