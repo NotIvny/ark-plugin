@@ -241,8 +241,8 @@ let ProfileDetail = {
       data.treeData = treeData
     }
     data.weapon = profile.getWeaponDetail()
-    //是否计算总排名
     
+    //是否计算总排名
     if(ArkCfg.get('panelRank', true)){
       let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
       let characterRank,ret,_uid
