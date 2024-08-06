@@ -12,7 +12,7 @@ import { profileArtis } from './ProfileArtis.js'
 import { ProfileWeapon } from './ProfileWeapon.js'
 
 let { diyCfg } = await Data.importCfg('profile')
-let changedProfile = false
+let profile = false
 // 查看当前角色
 let ProfileDetail = {
   async detail (e) {
@@ -27,7 +27,6 @@ let ProfileDetail = {
     let profileChange = false
     let changeMsg = msg
     let pc = ProfileChange.matchMsg(msg)
-
     if (pc && pc.char && pc.change) {
       if (!Cfg.get('profileChange')) {
         e.reply('面板替换功能已禁用...')
@@ -39,7 +38,6 @@ let ProfileDetail = {
       e.msg = '#喵喵面板变换'
       e.uid = pc.uid || await getTargetUid(e)
       profileChange = ProfileChange.getProfile(e.uid, pc.char, pc.change, pc.game)
-      changedProfile = profileChange
       if (profileChange && profileChange.char) {
         msg = `#${profileChange.char?.name}${pc.mode || '面板'}`
         e._profile = profileChange
@@ -140,8 +138,7 @@ let ProfileDetail = {
       e.reply(`暂不支持自定义角色${char.name}的面板信息查看`)
       return true
     }
-
-    let profile = e._profile || await getProfileRefresh(e, char.id)
+    profile = e._profile || await getProfileRefresh(e, char.id)
     if (!profile) {
       return true
     }
@@ -241,44 +238,15 @@ let ProfileDetail = {
       data.treeData = treeData
     }
     data.weapon = profile.getWeaponDetail()
-    
     //是否计算总排名
+    
     if(ArkCfg.get('panelRank', true)){
       let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
-      let characterRank,ret,_uid
-      _uid = uid
+      let characterRank,ret,jsonData
       //是否使用本地数据计算排名
       if(ArkCfg.get('localPanelRank', true)){
-        let playerData = fs.readFileSync(`./data/PlayerData/${game}/${uid}.json`,'utf8');
-        let jsonData = JSON.parse(playerData).avatars[characterID];
-        if(e.msg.includes('喵喵面板变换')){
-          Object.keys(changedProfile._artis.artis).forEach(key => {
-            const item = changedProfile._artis.artis[key];
-            delete item.main;
-            delete item.attrs;
-            delete item.set;
-          });
-          //角色等级/天赋/命座
-          jsonData.level = changedProfile.level
-          Object.keys(changedProfile.talent).forEach(key => {
-            changedProfile.talent[key] = changedProfile.talent[key].level
-          });
-          jsonData.talent = changedProfile.talent
-          jsonData.cons = changedProfile.cons
-          //角色武器
-          jsonData.weapon.name = changedProfile.weapon.name
-          jsonData.weapon.level = changedProfile.weapon.level
-          jsonData.weapon.promote = changedProfile.weapon.promote
-          jsonData.weapon.affix = changedProfile.weapon.affix
-          jsonData.artis = changedProfile._artis.artis
-          //星铁额外处理
-          if(game == 'sr'){
-            jsonData.weapon.id = changedProfile.weapon.id
-          }
-          //暂时用999999999
-          _uid = '999999999'
-        }
-        ret = await api.sendApi('getRankData',{id: characterID, uid: _uid, update: 0, data: jsonData})
+        jsonData = JSON.parse(JSON.stringify(profile))
+        ret = await api.sendApi('getRankData',{id: characterID, uid: '999999999', update: 0, data: jsonData})
       }else{
         ret = await api.sendApi('getRankData',{id: characterID, uid: uid, update: 0})
       }
@@ -294,7 +262,7 @@ let ProfileDetail = {
               characterRank = `${ret.rank} (${ret.percent}%)`
           }
           let title = '总伤害排名' + (ArkCfg.get('markRankType', true) ? '(本地)' : '')
-          title = changedProfile ? '总伤害排名(面板变换)' : title
+          title = e.msg.includes('喵喵面板变换') ? '总伤害排名(面板变换)' : title
           dmgCalc.dmgData[dmgCalc.dmgData.length] = {
             title: title,
             unit: characterRank,
@@ -302,7 +270,7 @@ let ProfileDetail = {
           break
       }
     }
-    changedProfile = false
+    profile = false
     let renderData = {
       save_id: uid,
       uid,
