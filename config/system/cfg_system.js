@@ -53,7 +53,7 @@ export const cfgSchema = {
       markRankType: {
         title: '注明本地数据',
         key: '注明本地数据',
-        def: true,
+        def: false,
         desc: '注明本地数据，如总排名(本地)、总排名(面板替换)'
       }
     }
