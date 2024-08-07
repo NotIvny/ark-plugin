@@ -3,7 +3,7 @@
 适用于Yunzai-Bot的全服排行插件，提供角色全服排行，多文件备份等功能
 ### 插件安装
 ```
-git clone https://github.com/NotIvny/yunzai-characterRank-js.git ./plugins/ark-plugin
+git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 ```
 安装后输入 #ark替换文件miao-rank ，重启后即可使用全部功能
 
