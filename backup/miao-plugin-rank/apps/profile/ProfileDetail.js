@@ -256,13 +256,16 @@ let ProfileDetail = {
           switch(rankType){
             case 0:
               characterRank = ret.rank
+              break
             case 1:
               characterRank = ret.percent
+              break
             case 2:
               characterRank = `${ret.rank} (${ret.percent}%)`
+              break
           }
-          let title = '总伤害排名' + (ArkCfg.get('markRankType', true) ? '(本地)' : '')
-          title = e.msg.includes('喵喵面板变换') ? '总伤害排名(面板变换)' : title
+          let title = '总伤害排名' + (ArkCfg.get('markRankType', false) ? '(本地)' : '')
+          title = (e.msg.includes('喵喵面板变换') && ArkCfg.get('markRankType', false)) ? '总伤害排名(面板变换)' : title
           dmgCalc.dmgData[dmgCalc.dmgData.length] = {
             title: title,
             unit: characterRank,

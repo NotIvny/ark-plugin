@@ -318,7 +318,7 @@ async function renderCharRankList ({ e, uids, char, mode, groupId }) {
           ret.rank.forEach(item => {
             for(const id of list){
               if(id.dmg.totalrank == '暂无数据'){
-                id.dmg.rankName = '总排名(本地)'
+                id.dmg.rankName = ArkCfg.get('markRankType', false) ? '总排名(本地)' : '总排名'
                 id.dmg.totalrank = item.rank 
                 break
               }
