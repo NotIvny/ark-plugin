@@ -5,7 +5,6 @@ import fs from 'node:fs'
 
 let cfgData = {
   saveCfg (cfg) {
-
     let ret = []
     lodash.forEach(cfgSchema, (cfgGroup) => {
       ret.push(`/** ************ 【${cfgGroup.title}】 ************* */`)
@@ -26,7 +25,7 @@ let cfgData = {
   },
 
   async getCfg () {
-    let ret = lodash.toPlainObject(await Data.importModule('/config/cfg.js', 'miao'))
+    let ret = lodash.toPlainObject(await Data.importModule('/config/cfg.js', 'ark'))
     lodash.forEach(cfgSchema, (cfgGroup) => {
       lodash.forEach(cfgGroup.cfg, (cfgItem, cfgKey) => {
         ret[cfgKey] = Data.def(ret[cfgKey], cfgItem.def)
