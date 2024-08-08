@@ -15,7 +15,6 @@ const ArkInit = {
         if(true){
             return
         }
-        /*
         ProfileDetail.render = async (e, char, mode = 'profile', params = {}) => {
             let selfUser = await MysApi.initUser(e)
 
@@ -200,7 +199,7 @@ const ArkInit = {
             }
             return true
         }
-        CharRank.renderCharRankList = async function({ e, uids, char, mode, groupId }){
+        let a = async function({ e, uids, char, mode, groupId }){
             let list = []
             for (let ds of uids) {
               let uid = ds.uid || ds.value
@@ -360,7 +359,6 @@ const ArkInit = {
               pageGotoParams: { waitUntil: 'networkidle2' }
             }, { e, scale: 1.4, retType: 'base64' }), new Button(e).profile(char)])
         }
-        */
     }   
 }
 export default ArkInit
