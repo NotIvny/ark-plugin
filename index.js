@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import ArkInit from './model/init.js'
 if (!global.segment) {
   global.segment = (await import("oicq")).segment
 }
@@ -19,5 +20,6 @@ for (let i in files) {
   }
   apps[name] = ret[i].value[Object.keys(ret[i].value)[0]]
 }
+ArkInit.init()
 logger.info(logger.green("ark-plugin加载完毕"))
 export { apps }
