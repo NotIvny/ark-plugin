@@ -1,9 +1,9 @@
 import lodash from 'lodash'
 import fs from 'fs'
-import {getProfileRefresh } from '../../miao-plugin/apps/profile/ProfileCommon.js'
+import { getProfileRefresh } from '../../miao-plugin/apps/profile/ProfileCommon.js'
 import ProfileDetail from '../../miao-plugin/apps/profile/ProfileDetail.js'
-import CharRank from '../../miao-plugin/apps/profile/ProfileRank.js'
-import {Data, Common, Format, Cfg } from '../../miao-plugin/components/index.js'
+// import CharRank from '../../miao-plugin/apps/profile/ProfileRank.js'
+import { Data, Common, Format, Cfg } from '../../miao-plugin/components/index.js'
 import { Button, MysApi, ProfileRank, Weapon, Artifact, Player } from '../../miao-plugin/models/index.js'
 import Gscfg from '../../genshin/model/gsCfg.js'
 import api from '../../ark-plugin/model/api.js'
@@ -15,6 +15,7 @@ const ArkInit = {
         if(true){
             return
         }
+        /*
         ProfileDetail.render = async (e, char, mode = 'profile', params = {}) => {
             let selfUser = await MysApi.initUser(e)
 
@@ -359,6 +360,7 @@ const ArkInit = {
               pageGotoParams: { waitUntil: 'networkidle2' }
             }, { e, scale: 1.4, retType: 'base64' }), new Button(e).profile(char)])
         }
+        */
     }   
 }
 export default ArkInit
