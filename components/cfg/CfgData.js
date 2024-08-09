@@ -25,7 +25,7 @@ let cfgData = {
   },
 
   async getCfg () {
-    let ret = lodash.toPlainObject(await Data.importModule('/config/cfg.js', 'ark'))
+    let ret = lodash.toPlainObject(await Data.importModule('/config/cfg.js'))
     lodash.forEach(cfgSchema, (cfgGroup) => {
       lodash.forEach(cfgGroup.cfg, (cfgItem, cfgKey) => {
         ret[cfgKey] = Data.def(ret[cfgKey], cfgItem.def)

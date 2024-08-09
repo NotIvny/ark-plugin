@@ -70,5 +70,16 @@ export const cfgSchema = {
         desc: '可选值50~200，建议100。设置高精度会提高图片的精细度，但因图片较大可能会影响渲染与发送速度'
       }
     }
+  },
+  test: {
+    title: '测试功能',
+    cfg: {
+      overrideTest: {
+        title: '重写函数',
+        key: '重写函数',
+        def: false,
+        desc: '通过重写函数实现排名功能，启用后仅需使用一次 #ark替换文件miao-rank，在后续更新不再需要替换文件。测试功能，可能存在Bug'
+      }
+    }
   }
 }

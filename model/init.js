@@ -1,8 +1,8 @@
 import lodash from 'lodash'
 import fs from 'fs'
-import { getProfileRefresh } from '../../miao-plugin/apps/profile/ProfileCommon.js'
+import {getProfileRefresh } from '../../miao-plugin/apps/profile/ProfileCommon.js'
 import ProfileDetail from '../../miao-plugin/apps/profile/ProfileDetail.js'
-// import CharRank from '../../miao-plugin/apps/profile/ProfileRank.js'
+import CharRank from '../../miao-plugin/apps/profile/ProfileRank.js'
 import { Data, Common, Format, Cfg } from '../../miao-plugin/components/index.js'
 import { Button, MysApi, ProfileRank, Weapon, Artifact, Player } from '../../miao-plugin/models/index.js'
 import Gscfg from '../../genshin/model/gsCfg.js'
@@ -11,10 +11,6 @@ import ArkCfg from '../components/Cfg.js'
 import { ProfileWeapon } from '../../miao-plugin/apps/profile/ProfileWeapon.js'
 const ArkInit = {
     init() {
-        //Don't change to false now, unless you know how to edit ProfileRank.js
-        if(true){
-            return
-        }
         ProfileDetail.render = async (e, char, mode = 'profile', params = {}) => {
             let selfUser = await MysApi.initUser(e)
 
@@ -199,7 +195,7 @@ const ArkInit = {
             }
             return true
         }
-        let a = async function({ e, uids, char, mode, groupId }){
+        CharRank.renderCharRankList = async function({ e, uids, char, mode, groupId }){
             let list = []
             for (let ds of uids) {
               let uid = ds.uid || ds.value
@@ -318,7 +314,7 @@ const ArkInit = {
                   ret.rank.forEach(item => {
                     list[count].dmg.rankName = '总排名'
                     if(item.rank){
-                      list[count].dmg.totalrank = item.rank 
+                      list[count].dmg.totalrank = item.rank
                     }else{
                       list[count].dmg.totalrank = '暂无数据'
                       let playerData = fs.readFileSync(`./data/PlayerData/${game}/${uids_[count]}.json`,'utf8');

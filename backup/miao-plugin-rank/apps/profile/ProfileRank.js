@@ -5,7 +5,168 @@ import lodash from 'lodash'
 import fs from 'fs'
 import api from '../../../ark-plugin/model/api.js'
 import ArkCfg from '../../../ark-plugin/components/Cfg.js'
+const CharRank = {
+  async renderCharRankList ({ e, uids, char, mode, groupId }) {
+    let list = []
+    for (let ds of uids) {
+      let uid = ds.uid || ds.value
+      let player = Player.create(uid, e.isSr ? 'sr' : 'gs')
+      let avatar = player.getAvatar(ds.charId || char.id)
+      if (!avatar) {
+        continue
+      }
+      let profile = avatar.getProfile()
 
+      if (profile) {
+        let profileRank = await ProfileRank.create({ groupId, uid })
+        let data = await profileRank.getRank(profile, true)
+        let mark = data?.mark?.data
+        let tmp = {
+          uid,
+          isMax: !char,
+          ...avatar.getData('id,star,name,sName,level,fetter,cons,weapon,elem,talent,artisSet,imgs'),
+          artisMark: Data.getData(mark, 'mark,markClass,valid,crit')
+        }
+        let dmg = data?.dmg?.data
+        if (dmg && dmg.avg) {
+          let title = dmg.title
+          // 稍微缩短下title
+          if (title.length > 10) {
+            title = title.replace(/[ ·]*/g, '')
+          }
+          title = title.length > 10 ? title.replace(/伤害$/, '') : title
+          let tmpAvg = dmg.type !== 'text' ? Format.comma(dmg.avg, 1) : dmg.avg
+          tmp.dmg = {
+            title,
+            avg: tmpAvg,
+            rank: data.dmg.rank
+          }
+        }
+        if (uid) {
+          let userInfo = await ProfileRank.getUidInfo(uid)
+          try {
+            if (userInfo?.qq && e?.group?.pickMember) {
+              let member = e.group.pickMember(userInfo.qq)
+              if (member?.getAvatarUrl) {
+                let img = await member.getAvatarUrl()
+                if (img) {
+                  tmp.qqFace = img
+                }
+              }
+            }
+          } catch (e) {
+            // console.log(e)
+          }
+        }
+
+        if (mode === 'crit') {
+          tmp._mark = mark?._crit * 6.6044 || 0
+        } else if (mode === 'valid') {
+          tmp._mark = mark?._valid || 0
+        } else {
+          tmp._mark = mark?._mark || 0
+        }
+        tmp._formatmark = Format.comma(tmp._mark, 1)
+        tmp._dmg = (0 - tmp.dmg?.rank) || 0
+        tmp._star = 5 - tmp.star
+        list.push(tmp)
+      }
+    }
+    let title
+    if (char) {
+      let modeTitleMap = {}
+      if (e.isSr) {
+        modeTitleMap = {
+          dmg: '',
+          mark: '遗器评分',
+          crit: '双爆副词条',
+          valid: '加权有效词条'
+        }
+      } else {
+        modeTitleMap = {
+          dmg: '',
+          mark: '圣遗物评分',
+          crit: '双爆副词条',
+          valid: '加权有效词条'
+        }
+      }
+
+      // 特殊处理开拓者的情况
+      let titleName = {
+        穹·毁灭: '开拓者·毁灭',
+        星·毁灭: '开拓者·毁灭',
+        穹·存护: '开拓者·存护',
+        星·存护: '开拓者·存护',
+        穹·同谐: '开拓者·同谐',
+        星·同谐: '开拓者·同谐'
+      }
+      if (titleName[char.name]) {
+        title = `${e.isSr ? '*' : '#'}${titleName[char.name]}${modeTitleMap[mode]}排行`
+      } else {
+        title = `${e.isSr ? '*' : '#'}${char.name}${modeTitleMap[mode]}排行`
+      }
+      list = lodash.sortBy(list, mode === 'dmg' ? '_dmg' : '_mark').reverse()
+    } else {
+      title = `${e.isSr ? '*' : '#'}${mode === 'mark' ? '最高分' : '最强'}排行`
+      list = lodash.sortBy(list, ['uid', '_star', 'id'])
+    }
+
+    const rankCfg = await ProfileRank.getGroupCfg(groupId)
+    if(ArkCfg.get('groupRank', true)){
+      let uids_ = []
+      list.forEach(item => {
+        uids_.push(item.uid)
+      })
+      let ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: uids_, update: 0})
+      let count = 0,reqFromLocalList = [],data = []
+      let game = e.isSr ? 'sr' : 'gs'
+      switch(ret.retcode){
+        case 100:
+          ret.rank.forEach(item => {
+            list[count].dmg.rankName = '总排名'
+            if(item.rank){
+              list[count].dmg.totalrank = item.rank 
+            }else{
+              list[count].dmg.totalrank = '暂无数据'
+              let playerData = fs.readFileSync(`./data/PlayerData/${game}/${uids_[count]}.json`,'utf8');
+              let jsonData = JSON.parse(playerData).avatars[list[0].id];
+              data.push(jsonData)
+              reqFromLocalList.push(uids_[count])
+            }
+            count++;
+          })
+      }
+      if(reqFromLocalList.length != 0 && ArkCfg.get('localGroupRank', false)){
+        count = 0
+        ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: reqFromLocalList, update: 2, data: data})
+        switch(ret.retcode){
+          case 100:
+            ret.rank.forEach(item => {
+              for(const id of list){
+                if(id.dmg.totalrank == '暂无数据'){
+                  id.dmg.rankName = ArkCfg.get('markRankType', false) ? '总排名(本地)' : '总排名'
+                  id.dmg.totalrank = item.rank 
+                  break
+                }
+              }
+            })
+        }
+      }
+    }
+    // 渲染图像
+    return e.reply([await Common.render('character/rank-profile-list', {
+      save_id: char.id,
+      game: e.isSr ? 'sr' : 'gs',
+      list,
+      title,
+      elem: char.elem,
+      bodyClass: `char-${char.name}`,
+      rankCfg,
+      mode,
+      pageGotoParams: { waitUntil: 'networkidle2' }
+    }, { e, scale: 1.4, retType: 'base64' }), new Button(e).profile(char)])
+  }
+}
 export async function groupRank (e) {
   const groupRank = Common.cfg('groupRank')
   let msg = e.original_msg || e.msg
@@ -82,7 +243,7 @@ export async function groupRank (e) {
         uids = await ProfileRank.getGroupMaxUidList(groupId, mode, game)
       }
       if (uids.length > 0) {
-        return renderCharRankList({ e, uids, char, mode, groupId })
+        return CharRank.renderCharRankList({ e, uids, char, mode, groupId })
       } else {
         if (e.isSr) {
           e.reply(['暂无排名：请通过【*面板】查看角色面板以更新排名信息...', new Button(e).profile(char)])
@@ -180,163 +341,4 @@ export async function manageRank (e) {
   }
 }
 
-async function renderCharRankList ({ e, uids, char, mode, groupId }) {
-  let list = []
-  for (let ds of uids) {
-    let uid = ds.uid || ds.value
-    let player = Player.create(uid, e.isSr ? 'sr' : 'gs')
-    let avatar = player.getAvatar(ds.charId || char.id)
-    if (!avatar) {
-      continue
-    }
-    let profile = avatar.getProfile()
-
-    if (profile) {
-      let profileRank = await ProfileRank.create({ groupId, uid })
-      let data = await profileRank.getRank(profile, true)
-      let mark = data?.mark?.data
-      let tmp = {
-        uid,
-        isMax: !char,
-        ...avatar.getData('id,star,name,sName,level,fetter,cons,weapon,elem,talent,artisSet,imgs'),
-        artisMark: Data.getData(mark, 'mark,markClass,valid,crit')
-      }
-      let dmg = data?.dmg?.data
-      if (dmg && dmg.avg) {
-        let title = dmg.title
-        // 稍微缩短下title
-        if (title.length > 10) {
-          title = title.replace(/[ ·]*/g, '')
-        }
-        title = title.length > 10 ? title.replace(/伤害$/, '') : title
-        let tmpAvg = dmg.type !== 'text' ? Format.comma(dmg.avg, 1) : dmg.avg
-        tmp.dmg = {
-          title,
-          avg: tmpAvg,
-          rank: data.dmg.rank
-        }
-      }
-      if (uid) {
-        let userInfo = await ProfileRank.getUidInfo(uid)
-        try {
-          if (userInfo?.qq && e?.group?.pickMember) {
-            let member = e.group.pickMember(userInfo.qq)
-            if (member?.getAvatarUrl) {
-              let img = await member.getAvatarUrl()
-              if (img) {
-                tmp.qqFace = img
-              }
-            }
-          }
-        } catch (e) {
-          // console.log(e)
-        }
-      }
-
-      if (mode === 'crit') {
-        tmp._mark = mark?._crit * 6.6044 || 0
-      } else if (mode === 'valid') {
-        tmp._mark = mark?._valid || 0
-      } else {
-        tmp._mark = mark?._mark || 0
-      }
-      tmp._formatmark = Format.comma(tmp._mark, 1)
-      tmp._dmg = (0 - tmp.dmg?.rank) || 0
-      tmp._star = 5 - tmp.star
-      list.push(tmp)
-    }
-  }
-  let title
-  if (char) {
-    let modeTitleMap = {}
-    if (e.isSr) {
-      modeTitleMap = {
-        dmg: '',
-        mark: '遗器评分',
-        crit: '双爆副词条',
-        valid: '加权有效词条'
-      }
-    } else {
-      modeTitleMap = {
-        dmg: '',
-        mark: '圣遗物评分',
-        crit: '双爆副词条',
-        valid: '加权有效词条'
-      }
-    }
-
-    // 特殊处理开拓者的情况
-    let titleName = {
-      穹·毁灭: '开拓者·毁灭',
-      星·毁灭: '开拓者·毁灭',
-      穹·存护: '开拓者·存护',
-      星·存护: '开拓者·存护',
-      穹·同谐: '开拓者·同谐',
-      星·同谐: '开拓者·同谐'
-    }
-    if (titleName[char.name]) {
-      title = `${e.isSr ? '*' : '#'}${titleName[char.name]}${modeTitleMap[mode]}排行`
-    } else {
-      title = `${e.isSr ? '*' : '#'}${char.name}${modeTitleMap[mode]}排行`
-    }
-    list = lodash.sortBy(list, mode === 'dmg' ? '_dmg' : '_mark').reverse()
-  } else {
-    title = `${e.isSr ? '*' : '#'}${mode === 'mark' ? '最高分' : '最强'}排行`
-    list = lodash.sortBy(list, ['uid', '_star', 'id'])
-  }
-
-  const rankCfg = await ProfileRank.getGroupCfg(groupId)
-  if(ArkCfg.get('groupRank', true)){
-    let uids_ = []
-    list.forEach(item => {
-      uids_.push(item.uid)
-    })
-    let ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: uids_, update: 0})
-    let count = 0,reqFromLocalList = [],data = []
-    let game = e.isSr ? 'sr' : 'gs'
-    switch(ret.retcode){
-      case 100:
-        ret.rank.forEach(item => {
-          list[count].dmg.rankName = '总排名'
-          if(item.rank){
-            list[count].dmg.totalrank = item.rank 
-          }else{
-            list[count].dmg.totalrank = '暂无数据'
-            let playerData = fs.readFileSync(`./data/PlayerData/${game}/${uids_[count]}.json`,'utf8');
-            let jsonData = JSON.parse(playerData).avatars[list[0].id];
-            data.push(jsonData)
-            reqFromLocalList.push(uids_[count])
-          }
-          count++;
-        })
-    }
-    if(reqFromLocalList.length != 0 && ArkCfg.get('localGroupRank', false)){
-      count = 0
-      ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: reqFromLocalList, update: 2, data: data})
-      switch(ret.retcode){
-        case 100:
-          ret.rank.forEach(item => {
-            for(const id of list){
-              if(id.dmg.totalrank == '暂无数据'){
-                id.dmg.rankName = ArkCfg.get('markRankType', false) ? '总排名(本地)' : '总排名'
-                id.dmg.totalrank = item.rank 
-                break
-              }
-            }
-          })
-      }
-    }
-  }
-  // 渲染图像
-  return e.reply([await Common.render('character/rank-profile-list', {
-    save_id: char.id,
-    game: e.isSr ? 'sr' : 'gs',
-    list,
-    title,
-    elem: char.elem,
-    bodyClass: `char-${char.name}`,
-    rankCfg,
-    mode,
-    pageGotoParams: { waitUntil: 'networkidle2' }
-  }, { e, scale: 1.4, retType: 'base64' }), new Button(e).profile(char)])
-}
+export default CharRank
