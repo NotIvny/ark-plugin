@@ -1,9 +1,9 @@
 import lodash from 'lodash'
 import fs from 'fs'
-import {getProfileRefresh } from '../../miao-plugin/apps/profile/ProfileCommon.js'
+import { getProfileRefresh } from '../../miao-plugin/apps/profile/ProfileCommon.js'
 import ProfileDetail from '../../miao-plugin/apps/profile/ProfileDetail.js'
-import CharRank from '../../miao-plugin/apps/profile/ProfileRank.js'
-import {Data, Common, Format, Cfg } from '../../miao-plugin/components/index.js'
+// import CharRank from '../../miao-plugin/apps/profile/ProfileRank.js'
+import { Data, Common, Format, Cfg } from '../../miao-plugin/components/index.js'
 import { Button, MysApi, ProfileRank, Weapon, Artifact, Player } from '../../miao-plugin/models/index.js'
 import Gscfg from '../../genshin/model/gsCfg.js'
 import api from '../../ark-plugin/model/api.js'
@@ -199,7 +199,7 @@ const ArkInit = {
             }
             return true
         }
-        CharRank.renderCharRankList = async function({ e, uids, char, mode, groupId }){
+        let a = async function({ e, uids, char, mode, groupId }){
             let list = []
             for (let ds of uids) {
               let uid = ds.uid || ds.value
