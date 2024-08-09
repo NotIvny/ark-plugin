@@ -4,14 +4,10 @@ import util from 'node:util'
 
 const _path = process.cwd()
 const getRoot = (root = '') => {
-  if (!root) {
+  if (root === "root" || root === "yunzai") {
     root = `${_path}/`
-  } else if (root === 'root' || root === 'yunzai') {
-    root = `${_path}/`
-  } else if (root === 'ark') {
+  } else if (!root) {
     root = `${_path}/plugins/ark-plugin/`
-  } else {
-    root = `${_path}/plugins/${root}/`
   }
   return root
 }
@@ -149,8 +145,8 @@ let Data = {
   },
 
   async importCfg (key) {
-    let sysCfg = await Data.importModule(`config/system/${key}_system.js`, 'ark')
-    let diyCfg = await Data.importModule(`config/${key}.js`, 'ark')
+    let sysCfg = await Data.importModule(`config/system/${key}_system.js`)
+    let diyCfg = await Data.importModule(`config/${key}.js`)
     if (diyCfg.isSys) {
       console.error(`ark-plugin: config/${key}.js无效，已忽略`)
       console.error(`如需配置请复制config/${key}_default.js为config/${key}.js，请勿复制config/system下的系统文件`)

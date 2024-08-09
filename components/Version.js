@@ -109,7 +109,7 @@ let Version = {
     return changelogs
   },
   runtime () {
-    console.log(`未能找到e.runtime，请升级至最新版${isV3 ? 'V3' : 'V2'}-Yunzai以使用miao-plugin`)
+    console.log(`未能找到e.runtime，请升级至最新版${isV3 ? 'V3' : 'V2'}-Yunzai以使用ark-plugin`)
   },
   readLogFile
 }
