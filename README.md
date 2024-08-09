@@ -5,7 +5,7 @@
 ```
 git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 ```
-安装后输入 #ark替换文件miao-rank ，重启后即可使用全部功能
+安装后输入 #ark替换文件miao-rank 以及 #ark设置重写函数开启 (可选)，重启后即可使用全部功能
 
 ---
 
