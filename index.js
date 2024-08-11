@@ -21,8 +21,11 @@ for (let i in files) {
   }
   apps[name] = ret[i].value[Object.keys(ret[i].value)[0]]
 }
+
+if(!(fs.existsSync('./plugins/ark-plugin/config/backup.json'))){
+  fs.cpSync('./plugins/ark-plugin/defset/config/backup.json', './plugins/ark-plugin/config/backup.json', { recursive: true })
+}
 let ArkInit
-logger.error(Cfg.get('overrideTest', true))
 if(Cfg.get('overrideTest', true)){
   try{
     ArkInit = (await import("./model/init.js")).default
@@ -30,7 +33,6 @@ if(Cfg.get('overrideTest', true)){
     logger.error('ProfileRank.js未被替换，请输入 #ark替换miao-rank 后重启，以使用完整功能！')
   }
   if(ArkInit != undefined){
-    logger.error('1')
     ArkInit.init()
   }
 }
