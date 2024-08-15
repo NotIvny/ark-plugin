@@ -2,8 +2,8 @@ import { getTargetUid } from '../../miao-plugin/apps/profile/ProfileCommon.js'
 import Gscfg from '../../genshin/model/gsCfg.js'
 import fs from 'fs'
 import api from '../model/api.js'
-import Cfg from '../components/Cfg.js'
 import { Button, ProfileRank, Player, Character } from '../../miao-plugin/models/index.js'
+import { Cfg, Version, Common, Data } from '../components/index.js'
 export class characterRank extends plugin {
     constructor() {
         super({
@@ -12,6 +12,10 @@ export class characterRank extends plugin {
             event: 'message',
             priority: -3000,
             rule: [
+                {
+                    reg:  '^#(.*)排名统计$',
+                    fnc: 'getSpecificRank'
+                },
                 {
                     reg: '#(星铁|原神)?(导出面板数据)(.*)',
                     fnc: 'uploadPanelData',
@@ -194,6 +198,26 @@ export class characterRank extends plugin {
                 return false
         }
         return true
+    }
+    async getSpecificRank(e){
+        let name = this.e.msg.replace('排名统计', '').replace('#', '').trim()
+        let id = Gscfg.roleNameToID(name,true) || Gscfg.roleNameToID(name,false)
+        if(!name || !id){
+            return true
+        }
+        let characterName = Gscfg.roleIdToName(id)
+        let ret = await api.sendApi('getSpecificRank', {id: id, percent: 0})
+        switch(ret.retcode){
+            case 100:
+                return await Common.render('graph/stats', {
+                    rankData: ret.data.scores,
+                    characterName: characterName,
+                    total: ret.data.total,
+                    dmgTitle: ret.data.name
+                  }, { e, scale: 1.4 })
+            default:
+                e.reply(await this.dealError(ret.retcode))
+        }
     }
     async dealError(retcode){
        switch(retcode){

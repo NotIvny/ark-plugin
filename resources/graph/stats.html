@@ -1,0 +1,142 @@
+{{extend defaultLayout}}
+{{block 'css'}}
+    <script src="../../../../../plugins/ark-plugin/resources/graph/echarts.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{pluResPath}}graph/stats.css"/>
+{{/block}}
+
+{{block 'main'}}
+<div id="background-container"></div>
+        <div id="LineChart" style="width: 1200px; height: 600px;"></div>
+        <script>
+            var myChart = echarts.init(document.getElementById('LineChart'), null, { renderer : 'svg' })
+            var rankData_ = [
+                '{{rankData[0]}}',
+                '{{rankData[1]}}',
+                '{{rankData[2]}}',
+                '{{rankData[3]}}',
+                '{{rankData[4]}}',
+                '{{rankData[5]}}',
+                '{{rankData[6]}}',
+                '{{rankData[7]}}',
+                '{{rankData[8]}}',
+                '{{rankData[9]}}'
+            ];
+            var rankData = Array(100).fill(null)
+            rankData[0] = `{{rankData[0]}}`
+            rankData[4] = `{{rankData[1]}}`
+            rankData[9] = `{{rankData[2]}}`
+            rankData[19] = `{{rankData[3]}}`
+            rankData[29] = `{{rankData[4]}}`
+            rankData[49] = `{{rankData[5]}}`
+            rankData[69] = `{{rankData[6]}}`
+            rankData[89] = `{{rankData[7]}}`
+            rankData[94] = `{{rankData[8]}}`
+            rankData[98] = `{{rankData[9]}}`
+            var xAxisLabels = Array.from({ length: 100 }, (_, i) => `${i + 1}`)
+    
+            // 配置项
+            var option = {
+                title: {
+                    text: '{{characterName}}排名趋势图\n({{dmgTitle}})',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 20,
+                        color: '#ffffff'
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                xAxis: {
+                    type: 'value',
+                    name: '排名百分比',
+                    nameLocation: 'end',
+                    nameGap: 25,
+                    nameTextStyle: {
+                        fontSize: 14,
+                        color: '#ffffff'
+                    },
+                    splitLine: {
+                        show: true
+                    },
+                    axisLabel: {
+                        formatter: function(value) {
+                            return '';
+                        }
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '伤害',
+                    nameTextStyle: {
+                        fontSize: 14, 
+                        color: '#ffffff'
+                    },
+                    min: 0,
+                    max: Math.ceil(Math.max(...rankData_) * 1.1),
+                    interval: Math.ceil(Math.max(...rankData_) * 1.1 / 8),
+                    splitLine: {
+                        show: true
+                    },
+                    axisLabel: {
+                        fontSize: 18,
+                        color: '#ffffff',
+                        fontWeight: 'bold'
+                    }
+                },
+
+                animation: false,
+                series: [{
+                    data: rankData.map((val, index) => [index + 1, val]),
+                    type: 'line',
+                    smooth: true,
+                    connectNulls: true,
+                    label: {
+                        show: true,
+                        position: 'top',
+                        fontSize: 18,
+                        fontWeight: 'bold'
+                    },
+                    lineStyle: {
+                        color: '#33CCCC'
+                    },
+                    areaStyle: {
+                        opacity: 0.5
+                    },
+                    markLine: {
+                        symbol: ['none', 'none'],
+                        silent: true,
+                        label: {
+                            show: true,
+                            position: 'start',
+                            formatter: '{b}',
+                            fontSize: 18,
+                            color: '#ffffff',
+                            fontWeight: 'bold'
+                        },
+                        lineStyle: {
+                            type: 'solid',
+                            color: '#ffffff'
+                        },
+                        data: [
+                            { name: '1%', xAxis: 1 },
+                            { name: '5%', xAxis: 5 },
+                            { name: '10%', xAxis: 10 },
+                            { name: '20%', xAxis: 20 },
+                            { name: '30%', xAxis: 30 },
+                            { name: '50%', xAxis: 50 },
+                            { name: '70%', xAxis: 70 },
+                            { name: '90%', xAxis: 90 },
+                            { name: '95%', xAxis: 95 },
+                            { name: '99%', xAxis: 99 }
+                        ]
+                    }
+                }]
+            }
+    
+            myChart.setOption(option)
+        </script>
+{{/block}}

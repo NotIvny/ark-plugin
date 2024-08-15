@@ -25,7 +25,6 @@ const readLogFile = function (root, versionCount = 4) {
     if (fs.existsSync(logPath)) {
       logs = fs.readFileSync(logPath, 'utf8') || ''
       logs = logs.split('\n')
-
       let temp = {}
       let lastLine = {}
       lodash.forEach(logs, (line) => {

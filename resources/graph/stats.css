@@ -1,0 +1,9 @@
+        #container {
+            position: fixed;
+            width: 1200px;
+            background: url('../../../../plugins/ark-plugin/resources/graph/background.png') no-repeat center;
+            background-size: 100% auto;
+        }
+        #LineChart{
+            backdrop-filter: blur(12px);
+        }

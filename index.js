@@ -6,7 +6,7 @@ if (!global.segment) {
 }
 const files = fs.readdirSync('./plugins/ark-plugin/apps').filter(file => file.endsWith('.js'))
 let ret = []
-logger.info(logger.green(`正在加载ark-plugin v${Version.version}`))
+logger.info(logger.green(`正在加载ark-plugin`))
 files.forEach((file) => {
   ret.push(import(`./apps/${file}`))
 })
@@ -36,7 +36,6 @@ if(Cfg.get('overrideTest', true)){
     ArkInit.init()
   }
 }
-
 
 logger.info(logger.green("ark-plugin加载完毕"))
 export { apps }

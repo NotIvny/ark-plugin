@@ -6,7 +6,7 @@ const _path = process.cwd()
 const getRoot = (root = '') => {
   if (root === "root" || root === "yunzai") {
     root = `${_path}/`
-  } else if (!root) {
+  } else {
     root = `${_path}/plugins/ark-plugin/`
   }
   return root
