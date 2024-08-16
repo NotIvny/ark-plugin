@@ -40,7 +40,7 @@ export const helpList = [{
   }, {
     icon: 54,
     title: '#雷神排名统计',
-    desc: '查看排名统计图'
+    desc: '查看雷神排名统计图'
   }]
 }, {
   group: '文件备份，仅主人可用',
