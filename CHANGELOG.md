@@ -1,4 +1,4 @@
-# 0.3.0-beta
+# 0.3.0
 
 * 增加帮助和设置渲染图，模板: **yoimiya-kokomi/miao-plugin**
   * 可使用`#ark帮助` `#ark设置` 查看帮助和设置

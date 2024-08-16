@@ -21,6 +21,10 @@ export const helpList = [{
     icon: 66,
     title: '#星铁|原神总排名',
     desc: '查看所有角色的全服排名'
+  }, {
+    icon: 54,
+    title: '#雷神排名统计',
+    desc: '查看排名统计图'
   }]
 }, {
   group: '文件备份，仅主人可用',

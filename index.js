@@ -26,6 +26,14 @@ if(!(fs.existsSync('./plugins/ark-plugin/config/backup.json'))){
   fs.cpSync('./plugins/ark-plugin/defset/config/backup.json', './plugins/ark-plugin/config/backup.json', { recursive: true })
 }
 let ArkInit
+try{
+  ArkInit = (await import("./model/init.js")).default
+}catch(err){
+  logger.error('ProfileRank.js未被替换，请输入 #ark替换miao-rank 后重启，以使用完整功能！')
+}
+if(ArkInit != undefined){
+  ArkInit.init()
+}
 if(Cfg.get('overrideTest', true)){
   try{
     ArkInit = (await import("./model/init.js")).default
