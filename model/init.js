@@ -127,7 +127,7 @@ const ArkInit = {
             data.weapon = profile.getWeaponDetail()
             //是否计算总排名
             
-            if(ArkCfg.get('panelRank', true)){
+            if(ArkCfg.get('panelRank', true) && dmgCalc.dmgData !== undefined){
             let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
             let characterRank,ret,jsonData
             //是否使用本地数据计算排名
