@@ -30,13 +30,20 @@ git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 
 ---
 ### 功能列表
+<details>
+
+<summary>展开查看</summary>
+
 #### #xx排名 
 
-最右侧新增角色全服排名(需#更新面板后才可显示)
-
+最右侧新增角色全服排名
 #### #xx面板 
 
-伤害计算底部新增角色全服排名(需#更新面板后才可显示)
+伤害计算底部新增角色全服排名
+
+#### #xx排名统计 
+
+查看雷神排名统计图
 
 #### #角色排名雷神uid 
 
@@ -72,9 +79,6 @@ git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 花火全服伤害排名为455 / 538，伤害评分: 37.91<br>
 
 #### 文件替换与备份功能
-<details>
-
-<summary>展开查看</summary>
 
 `#ark创建备份`
 
@@ -109,7 +113,7 @@ src path => dest path <=> dest-backup path
 `#ark恢复文件`
 
 使用 dest-backup path 中的文件复制到 dest path 中。
-</details>
+</details> 
 
 ---
 ### 其他
