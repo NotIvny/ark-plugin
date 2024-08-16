@@ -15,10 +15,10 @@ git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 <summary>展开查看</summary>
 
 帮助图
-![1722704712304 87792608](https://github.com/user-attachments/assets/0b907709-4ab8-4241-849d-a304569ab411)
+![1723804352101 0815fa5c](https://github.com/user-attachments/assets/446622ae-5664-4892-8d64-52355bbe12d8)
 
 设置
-![1722710756688 695fd972](https://github.com/user-attachments/assets/266d6562-8315-492f-be83-172d87f26f43)
+![1723804349434 4fe96648](https://github.com/user-attachments/assets/a285e42a-7c21-456d-8214-184247be4f0b)
 
 嵌入面板中效果：
 
@@ -26,6 +26,10 @@ git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 嵌入排名效果：
 
 ![5dda9bdbcfe9d6926a3e38aa1bcb0a87](https://github.com/NotIvny/yunzai-characterRank-js/assets/125482125/625de99f-8bf0-47b3-be2a-cc177650731b)
+
+排名统计：
+![1723635427211 28e6e652](https://github.com/user-attachments/assets/e40c2214-b17e-406c-bbc2-0c62c62cfbe8)
+
 </details> 
 
 ---
