@@ -7,7 +7,7 @@ export const sendApi = async function(type, data){
         data: data,
         version: version
     }
-    const url = 'http://8.147.110.49:3000/api'
+    const url = 'http://49.233.157.77:3000/api'
     try{
         const response = await fetch(url, {
             method: 'POST',
