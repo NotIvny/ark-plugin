@@ -17,6 +17,10 @@ export class Help extends plugin {
         {
           reg: "^#ark帮助$",
           fnc: 'help'
+        },
+        {
+          reg: "^#ark版本$",
+          fnc: 'version'
         }
       ]
     })
@@ -74,6 +78,13 @@ export class Help extends plugin {
       helpGroup,
       ...themeData,
       element: 'default'
+    }, { e, scale: 1.2 })
+  }
+  async version (e) {
+    return await Common.render('help/version-info', {
+      currentVersion: Version.version,
+      changelogs: Version.changelogs,
+      elem: 'cryo'
     }, { e, scale: 1.2 })
   }
 }
