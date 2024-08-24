@@ -79,14 +79,18 @@ export class characterRank extends plugin {
             name = Gscfg.roleIdToName(id)
         }
         let uid = id < 10000 ? e.user?._games?.sr?.uid : e.user?._games?.gs?.uid
-        let ret = await api.sendApi('getRankData',{id: id, uid: uid, update: 1})
-        switch(ret.retcode){
-            case 100:
-                e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret.rank}，伤害评分: ${ret.score.toFixed(2)}`)
-                break
-            default:
-                e.reply(await this.dealError(ret.retcode))
-        }
+        setTimeout(async () => {
+            let ret = await api.sendApi('getRankData', { id: id, uid: uid, update: 1 });
+            switch (ret.retcode) {
+                case 100:
+                    e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret.rank}，伤害评分: ${ret.score.toFixed(2)}`)
+                    break
+                case 102:
+                    break
+                default:
+                    e.reply(await this.dealError(ret.retcode))
+            }
+        }, 0)
         return false
     }
     async getAllRank(e){
