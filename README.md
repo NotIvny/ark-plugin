@@ -122,7 +122,7 @@ src path => dest path <=> dest-backup path
 ---
 ### 其他
 
-总排名数据源于用户更新面板，目前数据量在50k左右
+总排名数据源于用户更新面板，目前数据量在60k左右
 
 插件只会上传用户uid和面板数据，不会上传其他信息
 
@@ -130,4 +130,13 @@ src path => dest path <=> dest-backup path
 
 图片与其他素材均来自于网络，如有侵权请联系我删除
 
+### 致谢
+
+|                           Nickname                            | Contribution     |
+|:-------------------------------------------------------------:|------------------|
+|      [miao-plugin](miao-plugin)      | 喵喵插件 |
+| [liangshi-calc](https://gitee.com/liangshi233/liangshi-calc/) | 梁氏伤害计算       |
+|      [Miao-Yunzai](https://gitee.com/yoimiya-kokomi/Miao-Yunzai)      | 喵喵的 Miao-Yunzai          |
+|     [TRSS-Yunzai](https://gitee.com/TimeRainStarSky/Yunzai)     | 时雨🌌星空的 TRSS-Yunzai        |
+| [miao-plugin 测试角色面板](https://gitee.com/euiko/Panel) | 部分伤害计算数据             |
 
