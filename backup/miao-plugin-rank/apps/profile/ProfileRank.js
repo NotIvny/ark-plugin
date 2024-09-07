@@ -123,15 +123,17 @@ const CharRank = {
       switch(ret.retcode){
         case 100:
           ret.rank.forEach(item => {
-            list[count].dmg.rankName = '总排名'
-            if(item.rank){
-              list[count].dmg.totalrank = item.rank 
-            }else{
-              list[count].dmg.totalrank = '暂无数据'
-              let playerData = fs.readFileSync(`./data/PlayerData/${game}/${uids_[count]}.json`,'utf8');
-              let jsonData = JSON.parse(playerData).avatars[list[0].id];
-              data.push(jsonData)
-              reqFromLocalList.push(uids_[count])
+            if(list[count] && list[count].dmg){
+              list[count].dmg.rankName = '总排名'
+              if(item.rank){
+                list[count].dmg.totalrank = item.rank
+              }else{
+                list[count].dmg.totalrank = '暂无数据'
+                let playerData = fs.readFileSync(`./data/PlayerData/${game}/${uids_[count]}.json`,'utf8');
+                let jsonData = JSON.parse(playerData).avatars[list[0].id];
+                data.push(jsonData)
+                reqFromLocalList.push(uids_[count])
+              }
             }
             count++;
           })
@@ -143,6 +145,9 @@ const CharRank = {
           case 100:
             ret.rank.forEach(item => {
               for(const id of list){
+                if(!id.dmg){
+                  continue
+                }
                 if(id.dmg.totalrank == '暂无数据'){
                   id.dmg.rankName = ArkCfg.get('markRankType', false) ? '总排名(本地)' : '总排名'
                   id.dmg.totalrank = item.rank 
