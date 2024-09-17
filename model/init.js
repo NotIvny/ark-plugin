@@ -128,37 +128,37 @@ const ArkInit = {
             //是否计算总排名
             
             if(ArkCfg.get('panelRank', true) && dmgCalc.dmgData !== undefined){
-            let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
-            let characterRank,ret,jsonData
-            //是否使用本地数据计算排名
-            if(ArkCfg.get('localPanelRank', true)){
-                jsonData = JSON.parse(JSON.stringify(profile))
-                ret = await api.sendApi('getRankData',{id: characterID, uid: '999999999', update: 0, data: jsonData})
-            }else{
-                ret = await api.sendApi('getRankData',{id: characterID, uid: uid, update: 0})
-            }
-            switch(ret.retcode){
-                case 100:
-                const rankType = ArkCfg.get('RankType', 0)
-                switch(rankType){
-                    case 0:
-                    characterRank = ret.rank
-                    break
-                    case 1:
-                    characterRank = ret.percent
-                    break
-                    case 2:
-                    characterRank = `${ret.rank} (${ret.percent}%)`
-                    break
-                }
-                let title = '总伤害排名' + (ArkCfg.get('markRankType', false) ? '(本地)' : '')
-                title = (e.msg.includes('喵喵面板变换') && ArkCfg.get('markRankType', false)) ? '总伤害排名(面板变换)' : title
-                dmgCalc.dmgData[dmgCalc.dmgData.length] = {
-                    title: title,
-                    unit: characterRank,
-                }
-                break
-            }
+              let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
+              let characterRank,ret,jsonData
+              //是否使用本地数据计算排名
+              if(ArkCfg.get('localPanelRank', true)){
+                  jsonData = JSON.parse(JSON.stringify(profile))
+                  ret = await api.sendApi('getRankData',{id: characterID, uid: '999999999', update: 0, data: jsonData})
+              }else{
+                  ret = await api.sendApi('getRankData',{id: characterID, uid: uid, update: 0})
+              }
+              switch(ret.retcode){
+                  case 100:
+                  const rankType = ArkCfg.get('RankType', 0)
+                  switch(rankType){
+                      case 0:
+                      characterRank = ret.rank
+                      break
+                      case 1:
+                      characterRank = ret.percent
+                      break
+                      case 2:
+                      characterRank = `${ret.rank} (${ret.percent}%)`
+                      break
+                  }
+                  let title = '总伤害排名' + (ArkCfg.get('markRankType', false) ? '(本地)' : '')
+                  title = (e.msg.includes('喵喵面板变换') && ArkCfg.get('markRankType', false)) ? '总伤害排名(面板变换)' : title
+                  dmgCalc.dmgData[dmgCalc.dmgData.length] = {
+                      title: title,
+                      unit: characterRank,
+                  }
+                  break
+              }
             }
             profile = false
             let renderData = {
@@ -302,49 +302,29 @@ const ArkInit = {
           
             const rankCfg = await ProfileRank.getGroupCfg(groupId)
             if(ArkCfg.get('groupRank', true)){
-              let uids_ = []
-              list.forEach(item => {
-                uids_.push(item.uid)
-              })
-              let ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: uids_, update: 0})
-              let count = 0,reqFromLocalList = [],data = []
+              let data = [], uids_ = list.map(item => item.uid), ret
               let game = e.isSr ? 'sr' : 'gs'
+              
+              //读取排名列表中用户的数据
+              if(ArkCfg.get('localGroupRank', false)){
+                uids_.forEach(uid => {
+                  try{
+                    data.push(JSON.parse(fs.readFileSync(`./data/PlayerData/${game}/${uid}.json`, 'utf8')).avatars[list[0].id])
+                  }catch(error){
+                    data.push(null)
+                  }
+                })
+              }
+
+              ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: uids_, update: 2, data: data.length ? data : null})
               switch(ret.retcode){
                 case 100:
-                  ret.rank.forEach(item => {
-                    if(list[count] && list[count].dmg){
-                      list[count].dmg.rankName = '总排名'
-                      if(item.rank){
-                        list[count].dmg.totalrank = item.rank
-                      }else{
-                        list[count].dmg.totalrank = '暂无数据'
-                        let playerData = fs.readFileSync(`./data/PlayerData/${game}/${uids_[count]}.json`,'utf8');
-                        let jsonData = JSON.parse(playerData).avatars[list[0].id];
-                        data.push(jsonData)
-                        reqFromLocalList.push(uids_[count])
-                      }
+                  ret.rank.forEach((item, index) => {
+                    if (list[index] && list[index].dmg) {
+                      list[index].dmg.rankName = (ArkCfg.get('markRankType', false) && ArkCfg.get('localGroupRank', false)) ? '总排名(本地)' : '总排名'
+                      list[index].dmg.totalrank = item.rank || '暂无数据'
                     }
-                    count++;
                   })
-              }
-              if(reqFromLocalList.length != 0 && ArkCfg.get('localGroupRank', false)){
-                count = 0
-                ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: reqFromLocalList, update: 2, data: data})
-                switch(ret.retcode){
-                  case 100:
-                    ret.rank.forEach(item => {
-                      for(const id of list){
-                        if(!id.dmg){
-                          continue
-                        }
-                        if(id.dmg.totalrank == '暂无数据'){
-                          id.dmg.rankName = ArkCfg.get('markRankType', false) ? '总排名(本地)' : '总排名'
-                          id.dmg.totalrank = item.rank 
-                          break
-                        }
-                      }
-                    })
-                }
               }
             }
             // 渲染图像
