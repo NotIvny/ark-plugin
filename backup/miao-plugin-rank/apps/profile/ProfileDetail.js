@@ -240,20 +240,29 @@ let ProfileDetail = {
     data.weapon = profile.getWeaponDetail()
     //是否计算总排名
     
-    if(ArkCfg.get('panelRank', true) && dmgCalc.dmgData !== undefined){
-      let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
-      let characterRank,ret,jsonData
+    if (ArkCfg.get('panelRank', true) && dmgCalc.dmgData !== undefined) {
+      let characterID = Gscfg.roleNameToID(char.name, true) || Gscfg.roleNameToID(char.name, false)
+      let characterRank, ret, jsonData
       //是否使用本地数据计算排名
-      if(ArkCfg.get('localPanelRank', true)){
+      if (ArkCfg.get('localPanelRank', true)) {
         jsonData = JSON.parse(JSON.stringify(profile))
-        ret = await api.sendApi('getRankData',{id: characterID, uid: '999999999', update: 0, data: jsonData})
-      }else{
-        ret = await api.sendApi('getRankData',{id: characterID, uid: uid, update: 0})
+        ret = await api.sendApi('getRankData', {
+          id: characterID,
+          uid: '999999999',
+          update: 0,
+          data: jsonData
+        })
+      } else {
+        ret = await api.sendApi('getRankData', {
+          id: characterID,
+          uid: uid,
+          update: 0
+        })
       }
-      switch(ret.retcode){
+      switch (ret.retcode) {
         case 100:
           const rankType = ArkCfg.get('RankType', 0)
-          switch(rankType){
+          switch (rankType) {
             case 0:
               characterRank = ret.rank
               break

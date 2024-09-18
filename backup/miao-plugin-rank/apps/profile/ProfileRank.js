@@ -112,23 +112,30 @@ const CharRank = {
     }
 
     const rankCfg = await ProfileRank.getGroupCfg(groupId)
-    if(ArkCfg.get('groupRank', true)){
-      let data = [], uids_ = list.map(item => item.uid), ret
+    if (ArkCfg.get('groupRank', true)) {
+      let data = [],
+        uids_ = list.map(item => item.uid),
+        ret
       let game = e.isSr ? 'sr' : 'gs'
-      
+    
       //读取排名列表中用户的数据
-      if(ArkCfg.get('localGroupRank', false)){
+      if (ArkCfg.get('localGroupRank', false)) {
         uids_.forEach(uid => {
-          try{
+          try {
             data.push(JSON.parse(fs.readFileSync(`./data/PlayerData/${game}/${uid}.json`, 'utf8')).avatars[list[0].id])
-          }catch(error){
+          } catch (error) {
             data.push(null)
           }
         })
       }
-
-      ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: uids_, update: 2, data: data.length ? data : null})
-      switch(ret.retcode){
+    
+      ret = await api.sendApi('groupAllRank', {
+        id: list[0].id,
+        uids: uids_,
+        update: 2,
+        data: data.length ? data : null
+      })
+      switch (ret.retcode) {
         case 100:
           ret.rank.forEach((item, index) => {
             if (list[index] && list[index].dmg) {

@@ -127,35 +127,44 @@ const ArkInit = {
             data.weapon = profile.getWeaponDetail()
             //是否计算总排名
             
-            if(ArkCfg.get('panelRank', true) && dmgCalc.dmgData !== undefined){
-              let characterID = Gscfg.roleNameToID(char.name,true) || Gscfg.roleNameToID(char.name,false)
-              let characterRank,ret,jsonData
+            if (ArkCfg.get('panelRank', true) && dmgCalc.dmgData !== undefined) {
+              let characterID = Gscfg.roleNameToID(char.name, true) || Gscfg.roleNameToID(char.name, false)
+              let characterRank, ret, jsonData
               //是否使用本地数据计算排名
-              if(ArkCfg.get('localPanelRank', true)){
-                  jsonData = JSON.parse(JSON.stringify(profile))
-                  ret = await api.sendApi('getRankData',{id: characterID, uid: '999999999', update: 0, data: jsonData})
-              }else{
-                  ret = await api.sendApi('getRankData',{id: characterID, uid: uid, update: 0})
+              if (ArkCfg.get('localPanelRank', true)) {
+                jsonData = JSON.parse(JSON.stringify(profile))
+                ret = await api.sendApi('getRankData', {
+                  id: characterID,
+                  uid: '999999999',
+                  update: 0,
+                  data: jsonData
+                })
+              } else {
+                ret = await api.sendApi('getRankData', {
+                  id: characterID,
+                  uid: uid,
+                  update: 0
+                })
               }
-              switch(ret.retcode){
-                  case 100:
+              switch (ret.retcode) {
+                case 100:
                   const rankType = ArkCfg.get('RankType', 0)
-                  switch(rankType){
-                      case 0:
+                  switch (rankType) {
+                    case 0:
                       characterRank = ret.rank
                       break
-                      case 1:
+                    case 1:
                       characterRank = ret.percent
                       break
-                      case 2:
+                    case 2:
                       characterRank = `${ret.rank} (${ret.percent}%)`
                       break
                   }
                   let title = '总伤害排名' + (ArkCfg.get('markRankType', false) ? '(本地)' : '')
                   title = (e.msg.includes('喵喵面板变换') && ArkCfg.get('markRankType', false)) ? '总伤害排名(面板变换)' : title
                   dmgCalc.dmgData[dmgCalc.dmgData.length] = {
-                      title: title,
-                      unit: characterRank,
+                    title: title,
+                    unit: characterRank,
                   }
                   break
               }
@@ -301,23 +310,30 @@ const ArkInit = {
             }
           
             const rankCfg = await ProfileRank.getGroupCfg(groupId)
-            if(ArkCfg.get('groupRank', true)){
-              let data = [], uids_ = list.map(item => item.uid), ret
+            if (ArkCfg.get('groupRank', true)) {
+              let data = [],
+                uids_ = list.map(item => item.uid),
+                ret
               let game = e.isSr ? 'sr' : 'gs'
-              
+            
               //读取排名列表中用户的数据
-              if(ArkCfg.get('localGroupRank', false)){
+              if (ArkCfg.get('localGroupRank', false)) {
                 uids_.forEach(uid => {
-                  try{
+                  try {
                     data.push(JSON.parse(fs.readFileSync(`./data/PlayerData/${game}/${uid}.json`, 'utf8')).avatars[list[0].id])
-                  }catch(error){
+                  } catch (error) {
                     data.push(null)
                   }
                 })
               }
-
-              ret = await api.sendApi('groupAllRank',{id: list[0].id, uids: uids_, update: 2, data: data.length ? data : null})
-              switch(ret.retcode){
+            
+              ret = await api.sendApi('groupAllRank', {
+                id: list[0].id,
+                uids: uids_,
+                update: 2,
+                data: data.length ? data : null
+              })
+              switch (ret.retcode) {
                 case 100:
                   ret.rank.forEach((item, index) => {
                     if (list[index] && list[index].dmg) {
