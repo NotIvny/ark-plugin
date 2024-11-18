@@ -1,6 +1,6 @@
 import fs from 'fs'
 import lodash from 'lodash'
-import cfgData from '../../miao-plugin/components/Cfg/CfgData.js'
+import cfgData from '../../miao-plugin/components/cfg/CfgData.js';
 import Cfg from '../components/Cfg.js'
 let lastMsg = {
     group_id: '',
