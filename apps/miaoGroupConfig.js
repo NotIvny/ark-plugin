@@ -12,7 +12,8 @@ export class miaoGroupConfig extends plugin {
             rule: [
                 {
                     reg: '^(.*)$',
-                    fnc: 'groupConfig'
+                    fnc: 'groupConfig',
+                    log: false
                 }
             ]
         })
