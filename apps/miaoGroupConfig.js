@@ -28,8 +28,6 @@ export class miaoGroupConfig extends plugin {
             e.raw_message = e.raw_message.replace('global', '').trim()
             setLastMsg('', '')
         } else {
-            e.isGroup = true
-            e.group_id = 66666666
             setLastMsg(e.isGroup ? e.group_id : '', '')
         }
         return false
