@@ -58,6 +58,17 @@ export const cfgSchema = {
       }
     }
   },
+  miaoGroupCfg: {
+    title: '喵喵群设置',
+    cfg: {
+      miaoGroupCfg: {
+        title: '喵喵群设置',
+        key: '喵喵群设置',
+        def: false,
+        desc: '是否为喵喵插件提供各群独立配置文件'
+      }
+    }
+  },
   sys: {
     title: '系统设置',
     cfg: {

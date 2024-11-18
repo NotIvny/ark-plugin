@@ -37,7 +37,11 @@ git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 <details>
 
 <summary>展开查看</summary>
+#### 群独立喵喵插件配置文件
 
+为每个群提供独立的喵喵插件配置文件，通过 #ark设置喵喵群设置开启 启用
+
+目前正在完善功能中，可能存在Bug
 #### #xx排名 
 
 最右侧新增角色全服排名
