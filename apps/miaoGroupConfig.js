@@ -29,8 +29,6 @@ export class miaoGroupConfig extends plugin {
             e.raw_message = e.raw_message.replace('global', '').trim()
             setLastMsg('', '', e.sender_role, e.isMaster)
         } else {
-            e.isGroup = true
-            e.group_id = 66666666
             setLastMsg(e.isGroup ? e.group_id : '', '', e.sender_role, e.isMaster)
             if (sysCfgReg.test(e.msg) && !e.msg.includes('喵喵更新图像')) {
                 e.isMaster = true
