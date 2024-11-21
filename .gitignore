@@ -4,5 +4,4 @@
 /config/cfg.js
 /resources/help/theme/*
 !/resources/help/theme/default
-/defset
 /config/config.yaml

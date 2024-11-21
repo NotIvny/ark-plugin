@@ -23,12 +23,18 @@ export class miaoGroupConfig extends plugin {
             return false
         }
         let globalSysCfgReg = new RegExp(`^global\\s*#喵喵设置\\s*(${keys.join('|')})?\\s*(.*)$`)
+        let sysCfgReg = new RegExp(`^#喵喵设置\\s*(${keys.join('|')})?\\s*(.*)$`)
         if (globalSysCfgReg.test(e.msg)) {
             e.msg = e.msg.replace('global', '').trim()
             e.raw_message = e.raw_message.replace('global', '').trim()
-            setLastMsg('', '')
+            setLastMsg('', '', e.sender_role, e.isMaster)
         } else {
-            setLastMsg(e.isGroup ? e.group_id : '', '')
+            e.isGroup = true
+            e.group_id = 66666666
+            setLastMsg(e.isGroup ? e.group_id : '', '', e.sender_role, e.isMaster)
+            if (sysCfgReg.test(e.msg) && !e.msg.includes('喵喵更新图像')) {
+                e.isMaster = true
+            }
         }
         return false
     }
