@@ -27,7 +27,6 @@ let changeConfig = function (fnc, name = 'miao-plugin') {
     fnc.default.get = (rote, def = '') => {
         let group_id = lastMsg.group_id
         let user_id = lastMsg.user_id
-        logger.error(group_id)
         if (!getAllowed(user_id, group_id, rote)) {
             return
         }
@@ -78,21 +77,21 @@ let changeConfig = function (fnc, name = 'miao-plugin') {
         return cfg
     }
     fnc.default.getCfgSchema = () => {
-        let cfg = getPMFile(lastMsg.user_id, lastMsg.group_id)
+        //let cfg = getPMFile(lastMsg.user_id, lastMsg.group_id)
         let schema = cfgData.getCfgSchema()
         Object.keys(schema).forEach(mainKey => {
-          const mainObj = schema[mainKey]
-          if (mainObj.cfg) {
-            Object.keys(mainObj.cfg).forEach(subKey => {
-              const subObj = mainObj.cfg[subKey];
-              if (subObj.cfgKey && !getAllowed(lastMsg.user_id, lastMsg.group_id, subObj.cfgKey)) {
-                  delete mainObj.cfg[subKey]
-              }
-            })
+            const mainObj = schema[mainKey];
+            if (mainObj.cfg) {
+                Object.keys(mainObj.cfg).forEach(subKey => {
+                    const subObj = mainObj.cfg[subKey]
+                    if (subObj.cfgKey && !getAllowed(lastMsg.user_id, lastMsg.group_id, subObj.cfgKey)) {
+                        delete mainObj.cfg[subKey]
+                    }
+                })
             }
-        if (Object.keys(mainObj.cfg).length === 0) {
-            delete schema[mainKey];
-        }
+            if (Object.keys(mainObj.cfg).length === 0) {
+                delete schema[mainKey]
+            }
         })
         return schema
     }
