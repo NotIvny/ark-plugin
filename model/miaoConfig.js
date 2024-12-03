@@ -27,9 +27,6 @@ let changeConfig = function (fnc, name = 'miao-plugin') {
     fnc.default.get = (rote, def = '') => {
         let group_id = lastMsg.group_id
         let user_id = lastMsg.user_id
-        if (!getAllowed(user_id, group_id, rote)) {
-            return
-        }
         let cfg = globalCfg
         if (group_id) {
             try {
