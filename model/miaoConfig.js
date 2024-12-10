@@ -25,6 +25,19 @@ let changeConfig = function (fnc, name = 'miao-plugin') {
         return false
     }
     fnc.default.get = (rote, def = '') => {
+        if([
+            'avatarList',
+            'avatarCard',
+            'uploadAbyssData',
+            'roleCombat',
+            'profileStat',
+            'help',
+            'gachaStat',
+            'avatarPoke'
+          ].includes(rote)
+        ) {
+            return true
+        }
         let group_id = lastMsg.group_id
         let user_id = lastMsg.user_id
         let cfg = globalCfg
