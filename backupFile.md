@@ -1,6 +1,6 @@
 ## 文件替换与备份功能
 
-`#ark创建备份`
+### `#ark创建备份`
 
 创建备份时，需提供ID和以下两个文件夹路径：
 
@@ -18,18 +18,18 @@ src path => dest path <=> dest-backup path
 
 如无需使用替换文件功能，请将 src path 和 dest path 都指定为需要备份的文件所在的文件夹
 
-`#ark删除备份`
+### `#ark删除备份`
 
 删除备份数据，src path 与 dest-backup path 都会被删除
 
-`#ark替换文件`
+### `#ark替换文件`
 
 将 src path 中的文件复制到 dest path 中。
 
-`#ark备份文件`
+### `#ark备份文件`
 
 使用 dest path 中的文件复制到 dest-backup path 中。
 
-`#ark恢复文件`
+### `#ark恢复文件`
 
 使用 dest-backup path 中的文件复制到 dest path 中。

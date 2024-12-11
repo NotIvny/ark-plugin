@@ -19,9 +19,13 @@ git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 ---
 ### 功能列表
 [喵喵帮助扩展](https://github.com/NotIvny/ark-plugin/blob/main/extendMiaoHelp.md)
+
 [角色排名扩展](https://github.com/NotIvny/ark-plugin/blob/main/extendMiaoRank.md)
+
 [喵喵设置扩展](https://github.com/NotIvny/ark-plugin/blob/main/extendMiaoSettings.md)
+
 [文件备份](https://github.com/NotIvny/ark-plugin/blob/main/backupFile.md)
+
 [功能优先级](https://github.com/NotIvny/ark-plugin/blob/main/priority.md)
 
 
