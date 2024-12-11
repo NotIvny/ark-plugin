@@ -25,6 +25,9 @@ for (let i in files) {
 if(!(fs.existsSync('./plugins/ark-plugin/config/backup.json'))){
   fs.cpSync('./plugins/ark-plugin/defset/config/backup.json', './plugins/ark-plugin/config/backup.json', { recursive: true })
 }
+if(!(fs.existsSync('./plugins/ark-plugin/config/backup-default.json'))){
+  fs.cpSync('./plugins/ark-plugin/defset/config/backup-default.json', './plugins/ark-plugin/config/backup-default.json', { recursive: true })
+}
 let ArkInit
 try{
   ArkInit = (await import("./model/init.js")).default
