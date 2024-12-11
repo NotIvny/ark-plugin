@@ -1,6 +1,6 @@
 export const cfgSchema = {
   apps: {
-    title: '面板相关设置',
+    title: '喵喵排名扩展',
     cfg: {
       panelRank: {
         title: '面板排名',
@@ -59,13 +59,32 @@ export const cfgSchema = {
     }
   },
   miaoGroupCfg: {
-    title: '喵喵群设置',
+    title: '喵喵设置扩展',
     cfg: {
       miaoGroupCfg: {
         title: '喵喵群设置',
         key: '喵喵群设置',
         def: false,
         desc: '是否为喵喵插件提供各群独立配置文件'
+      }
+    }
+  },
+  miaoHelp: {
+    title: '喵喵帮助扩展',
+    cfg: {
+      extendMiaoHelp: {
+        title: '喵喵帮助扩展功能',
+        key: '喵喵帮助扩展',
+        def: false,
+        desc: '是否启用喵喵帮助扩展'
+      },
+      miaoHelpDisable: {
+        title: '功能禁用联动',
+        key: '功能禁用',
+        type: 'num',
+        def: 0,
+        input: (n) => /[0-2]{1}/.test(n) ? (n * 1) : 0,
+        desc: '当绑定的命令不在白名单/处于黑名单里时的处理：0-不处理，1-不显示在帮助图中，2-显示禁用'
       }
     }
   },
