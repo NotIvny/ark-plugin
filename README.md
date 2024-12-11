@@ -1,6 +1,7 @@
 # ark-plugin
 
 适用于Yunzai-Bot的全服排行插件，提供角色全服排行，多文件备份等功能
+
 ### 插件安装
 ```
 git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
@@ -10,30 +11,14 @@ git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 ---
 
 ### 功能预览
-<details>
 
-<summary>展开查看</summary>
-
-帮助图
-![1723804352101 0815fa5c](https://github.com/user-attachments/assets/446622ae-5664-4892-8d64-52355bbe12d8)
-
-设置
-![1723804349434 4fe96648](https://github.com/user-attachments/assets/a285e42a-7c21-456d-8214-184247be4f0b)
-
-嵌入面板中效果：
-
-![8a6b16deee772c4d66d0fdae278335b6](https://github.com/NotIvny/yunzai-characterRank-js/assets/125482125/68b37c47-4642-4e86-a9c0-fb55498646c7)
-嵌入排名效果：
-
-![5dda9bdbcfe9d6926a3e38aa1bcb0a87](https://github.com/NotIvny/yunzai-characterRank-js/assets/125482125/625de99f-8bf0-47b3-be2a-cc177650731b)
-
-排名统计：
-![1723635427211 28e6e652](https://github.com/user-attachments/assets/e40c2214-b17e-406c-bbc2-0c62c62cfbe8)
-
-</details> 
+| 帮助图 | 设置 | 嵌入面板中效果 | 嵌入排名效果 | 排名统计 |
+|:------:|:----:|:------------:|:------------:|:-------:|
+| ![1723804352101 0815fa5c](https://github.com/user-attachments/assets/446622ae-5664-4892-8d64-52355bbe12d8) | ![1723804349434 4fe96648](https://github.com/user-attachments/assets/a285e42a-7c21-456d-8214-184247be4f0b) | ![8a6b16deee772c4d66d0fdae278335b6](https://github.com/NotIvny/yunzai-characterRank-js/assets/125482125/68b37c47-4642-4e86-a9c0-fb55498646c7) | ![5dda9bdbcfe9d6926a3e38aa1bcb0a87](https://github.com/NotIvny/yunzai-characterRank-js/assets/125482125/625de99f-8bf0-47b3-be2a-cc177650731b) | ![1723635427211 28e6e652](https://github.com/user-attachments/assets/e40c2214-b17e-406c-bbc2-0c62c62cfbe8) |
 
 ---
 ### 功能列表
+[喵喵帮助扩展](https://github.com/NotIvny/ark-plugin/blob/main/extendMiaoHelp.md)
 <details>
 
 <summary>展开查看</summary>
@@ -145,4 +130,3 @@ src path => dest path <=> dest-backup path
 |      [Miao-Yunzai](https://gitee.com/yoimiya-kokomi/Miao-Yunzai)      | 喵喵的 Miao-Yunzai          |
 |     [TRSS-Yunzai](https://gitee.com/TimeRainStarSky/Yunzai)     | 时雨🌌星空的 TRSS-Yunzai        |
 | [miao-plugin 测试角色面板](https://gitee.com/euiko/Panel) | 提供部分伤害计算数据             |
-
