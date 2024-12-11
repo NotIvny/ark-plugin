@@ -7,6 +7,7 @@ import HelpTheme from '../../miao-plugin/apps/help/HelpTheme.js'
 import { fileURLToPath } from 'url'
 import config from '../../../lib/config/config.js'
 import { Cfg as ArkCfg } from '../components/index.js'
+import loader from '../../../lib/plugins/loader.js'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const miaoPath = path.join(__dirname, '..').replace('ark-plugin', 'miao-plugin')
 const helpPath = `${miaoPath}/resources/help`
@@ -39,11 +40,12 @@ Help.render = async (e) => {
 
 	let helpConfig = lodash.defaults(diyCfg.helpCfg || {}, custom.helpCfg, sysCfg.helpCfg)
 	let helpList = diyCfg.helpList || custom.helpList || sysCfg.helpList
-
 	let helpGroup = []
 	let groupCfg = config.getGroup(null, e.group_id)
 	let extendMiaoHelp = ArkCfg.get('extendMiaoHelp', false)
 	let miaoHelpDisable = ArkCfg.get('miaoHelpDisable', 0)
+	let miaoHelpNotFound = ArkCfg.get('miaoHelpNotFound', 2)
+	const priorityList = loader.priority.map((plugin) => {return plugin.name})
 	lodash.forEach(helpList, (group) => {
 		if (group.auth && group.auth === 'master' && !e.isMaster) {
 			return true
@@ -62,8 +64,8 @@ Help.render = async (e) => {
 			if (extendMiaoHelp && help.auth && typeof help.auth === 'number') {
 				let pm = 0
 				if (e.isMaster) pm += 1000
-				if (e.isOwner) pm += 100
-				if (e.isAdmin) pm += 10
+				if (e.sender_role === 'owner') pm += 100
+				if (e.sender_role === 'admin') pm += 10
 				if (help.auth > pm) {
 					if (miaoHelpDisable == 1) {
 						group.list.splice(index, 1)
@@ -81,6 +83,16 @@ Help.render = async (e) => {
 					} else if (miaoHelpDisable == 2) {
 						help.disable = 'filter: grayscale(100%)'
 						help.desc = '已禁用'
+					}
+				}
+				if (!priorityList.includes('help.bind')) {
+					if (miaoHelpNotFound == 1) {
+						group.list.splice(index, 1)
+						index--
+						return true
+					} else if (miaoHelpNotFound == 2) {
+						help.disable = 'filter: grayscale(100%)'
+						help.desc = '功能不可用'
 					}
 				}
 		    }

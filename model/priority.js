@@ -46,23 +46,31 @@ class PriorityController {
     async getPriority(type) {
         const priorities = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/priority.json', 'utf-8'))
         let list
-        if (type) {
+        if (type === 1) {
             list = priorities
         } else {
             list = loader.priority
         }
         const priorityList = list.map((plugin, index) => {
-            let description = `序号：${index}，插件名: ${plugin.key}, 功能名: ${plugin.name}, 优先级: ${plugin.priority}`
-            const match = !type ? priorities.find(item => item.key === plugin.key && item.name === plugin.name) : false
-            if (match && match.priority !== match.default) {
-                description += `（默认：${match.default}）`
+            if (type < 2) {
+                let description = `序号：${index}，插件名: ${plugin.key}, 功能名: ${plugin.name}, 优先级: ${plugin.priority}`
+                const match = !type ? priorities.find(item => item.key === plugin.key && item.name === plugin.name) : false
+                if (match && match.priority !== match.default) {
+                    description += `（默认：${match.default}）`
+                }
+                return description
+            } else {
+                return plugin.name
             }
-            return description
         })
-        const msgList = []
-        for (let i = 0; i < priorityList.length; i += 20) {
-            const chunk = priorityList.slice(i, i + 20).join('\n')
-            msgList.push(chunk)
+        let msgList = []
+        if (type < 2) {
+            for (let i = 0; i < priorityList.length; i += 20) {
+                const chunk = priorityList.slice(i, i + 20).join('\n')
+                msgList.push(chunk)
+            }
+        } else {
+            msgList = priorityList
         }
         return msgList
     }
