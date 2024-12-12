@@ -50,7 +50,7 @@ export class characterRank extends plugin {
 	}
 	async wjx(e) {
 		if (!(await redis.get('ark-plugin:wjx20241212'))) {
-			Bot[Bot.uin].pickUser(cfg.masterQQ[0]).sendMsg('[Ark-Plugin]关于面板数据隐私的问卷调查\n=> https://www.wjx.cn/vm/tpPhHHR.aspx# <=')
+			e.bot.pickFriend(cfg.masterQQ[0]).sendMsg('[Ark-Plugin]关于面板数据隐私的问卷调查\n=> https://www.wjx.cn/vm/tpPhHHR.aspx# <=')
 		}
 		await redis.set('ark-plugin:wjx20241212', '1')
 		return false
