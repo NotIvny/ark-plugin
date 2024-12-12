@@ -6,6 +6,10 @@
 ```
 git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 ```
+如果网络不好，也可从gitee克隆
+```
+git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
+```
 安装后输入 #ark替换文件miao-rank、#ark替换文件miao-help ,重启后即可使用全部功能
 
 ---
