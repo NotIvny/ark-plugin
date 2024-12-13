@@ -55,6 +55,12 @@ export const cfgSchema = {
         key: '注明本地数据',
         def: false,
         desc: '注明本地数据，如总排名(本地)、总排名(面板替换)'
+      },
+      newUserPanel: { 
+        title: '首次更新自动获取面板',
+        key: '自动获取面板',
+        def: false,
+        desc: '测试配置，首次更新面板时，自动从API获取面板数据（需验证uid）'
       }
     }
   },

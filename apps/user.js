@@ -44,6 +44,14 @@ export class characterRank extends plugin {
 					reg: '^(.*)$',
 					fnc: 'wjx',
 					log: false
+				},
+				{
+					reg: /^#ark绑定(星铁|原神)uid$/,
+					fnc: 'arkGetBindUid',
+				},
+				{
+					reg: /^#ark验证(星铁|原神)uid$/,
+					fnc: 'arkBindUid',
 				}
 			]
 		})
@@ -58,6 +66,18 @@ export class characterRank extends plugin {
 	async refreshPanel(e) {
 		let type = e.msg.includes("星铁") ? 'sr' : 'gs'
 		let uid = type == 'sr' ? e.user?._games?.sr?.uid : e.user?._games?.gs?.uid
+		if (uid && Cfg.get('newUserPanel', false) && !fs.existsSync(`./data/PlayerData/${type}/${uid}.json`)) {
+			let ret = await api.sendApi('getPanelData', { uid: uid, type: type, qq: e.user_id })
+			logger.error(ret)
+			switch (ret.retcode) {
+				case 100:
+					fs.writeFileSync(`./data/PlayerData/${type}/${uid}.json`, JSON.stringify(ret.data.playerData, null, 2))
+					let player = new Player(uid, type)
+            		player.reload()
+					e.reply(`[ark-plugin]已自动从API获取${ Object.keys(ret.data.playerData.avatars).length }个数据`)
+					break
+			}
+		}
 		api.sendApi('refreshPanel', {
 			uid: uid,
 			type: type
@@ -250,6 +270,53 @@ export class characterRank extends plugin {
 				e.reply(await this.dealError(ret.retcode))
 		}
 	}
+	async arkGetBindUid(e) {
+		let type = ''
+		if (e.msg.includes('原神')) {
+			type = 'gs'
+			e.game = 'gs'
+		} else {
+			type = 'sr'
+			e.game = 'sr'
+		}
+		let ret = await api.sendApi('getVerifyCode',
+			{
+				uid: await getTargetUid(e),
+				type: type
+			}
+		)
+		switch (ret.retcode) {
+			case 100:
+				e.reply(`验证码: ${ret.data.verifyCode}\n使用方式：\n①原神：派蒙头像——右上角编辑资料——设置签名——填入验证码，待签名审核通过后输入 #ark验证原神uid\n②星铁：手机——右上角三点——漫游签证——设置签名——填入验证码，5-10分钟后输入 #ark验证星铁uid\n验证码有效期24小时，验证通过后自动与QQ绑定，在其他Bot上无需再次绑定`)
+				break
+			default:
+				e.reply(await this.dealError(ret.retcode))
+		}
+	}
+	async arkBindUid(e) {
+		let type = ''
+		if (e.msg.includes('原神')) {
+			type = 'gs'
+			e.game = 'gs'
+		} else {
+			type = 'sr'
+			e.game = 'sr'
+		}
+		let ret = await api.sendApi('verify',
+			{
+				uid: await getTargetUid(e),
+				qq: e.user_id,
+				type: type
+			}
+		)
+		switch (ret.retcode) {
+			case 100:
+				e.reply(`验证成功`)
+				break
+			default:
+				e.reply(await this.dealError(ret.retcode))
+		}
+	}
 	async dealError(retcode) {
 		switch (retcode) {
 			case -1:
@@ -270,6 +337,20 @@ export class characterRank extends plugin {
 				return '请求超过速率限制，请5分钟后重试'
 			case 202:
 				return '未发现该用户的数据，请重新导出面板'
+			case 301:
+				return '请求类型仅支持原神/星铁'
+			case 302:
+				return '验证失败，个人签名不匹配，请五分钟后重试'
+			case 303:
+				return '验证失败，请稍后再试'
+			case 304:
+				return '该uid未验证号主，请通过 #ark验证原神/星铁uid 验证uid'
+			case 305:
+				return '验证超时，请重新绑定'
+			case 306:
+				return '验证失败，未获取到签名，请五分钟后重试'
+			case 307:
+				return '服务器中无该uid数据...'
 			default:
 				return '未知错误'
 		}
