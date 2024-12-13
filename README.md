@@ -28,6 +28,8 @@ git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 
 [喵喵设置扩展](https://github.com/NotIvny/ark-plugin/blob/main/extendMiaoSettings.md)
 
+[面板功能拓展](https://github.com/NotIvny/ark-plugin/blob/main/extendMiaoPanel.md)
+
 [文件备份](https://github.com/NotIvny/ark-plugin/blob/main/backupFile.md)
 
 [功能优先级](https://github.com/NotIvny/ark-plugin/blob/main/priority.md)
