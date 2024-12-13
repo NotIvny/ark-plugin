@@ -2,7 +2,6 @@ import { getTargetUid } from '../../miao-plugin/apps/profile/ProfileCommon.js'
 import Gscfg from '../../genshin/model/gsCfg.js'
 import fs from 'fs'
 import api from '../model/api.js'
-import cfg from '../../../lib/config/config.js'
 import { Button, ProfileRank, Player, Character } from '../../miao-plugin/models/index.js'
 import { Cfg, Version, Common, Data } from '../components/index.js'
 export class characterRank extends plugin {
@@ -41,11 +40,6 @@ export class characterRank extends plugin {
 					fnc: 'refreshPanel',
 				},
 				{
-					reg: '^(.*)$',
-					fnc: 'wjx',
-					log: false
-				},
-				{
 					reg: /^#ark绑定(星铁|原神)uid$/,
 					fnc: 'arkGetBindUid',
 				},
@@ -55,13 +49,6 @@ export class characterRank extends plugin {
 				}
 			]
 		})
-	}
-	async wjx(e) {
-		if (!(await redis.get('ark-plugin:wjx20241212'))) {
-			e.bot.pickFriend(cfg.masterQQ[0]).sendMsg('[Ark-Plugin]关于面板数据隐私的问卷调查\n=> https://www.wjx.cn/vm/tpPhHHR.aspx# <=')
-		}
-		await redis.set('ark-plugin:wjx20241212', '1')
-		return false
 	}
 	async refreshPanel(e) {
 		let type = e.msg.includes("星铁") ? 'sr' : 'gs'
