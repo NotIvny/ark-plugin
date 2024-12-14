@@ -55,7 +55,6 @@ export class characterRank extends plugin {
 		let uid = type == 'sr' ? e.user?._games?.sr?.uid : e.user?._games?.gs?.uid
 		if (uid && Cfg.get('newUserPanel', false) && !fs.existsSync(`./data/PlayerData/${type}/${uid}.json`)) {
 			let ret = await api.sendApi('getPanelData', { uid: uid, type: type, qq: e.user_id })
-			logger.error(ret)
 			switch (ret.retcode) {
 				case 100:
 					fs.writeFileSync(`./data/PlayerData/${type}/${uid}.json`, JSON.stringify(ret.data.playerData, null, 2))
