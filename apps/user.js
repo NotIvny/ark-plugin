@@ -46,6 +46,10 @@ export class characterRank extends plugin {
 				{
 					reg: /^#ark验证(星铁|原神)uid$/,
 					fnc: 'arkBindUid',
+				},
+				{
+					reg: /^#(星铁|原神)导出面板$/,
+					fnc: 'exportPanel',
 				}
 			]
 		})
@@ -131,7 +135,6 @@ export class characterRank extends plugin {
 		let isSelfUid = false
 		if (e.runtime && e.runtime?.user) {
 			let uids = []
-
 			isSelfUid = uids.some(ds => ds === uid + '')
 		}
 		if (e.newChar) {
@@ -301,6 +304,25 @@ export class characterRank extends plugin {
 				break
 			default:
 				e.reply(await this.dealError(ret.retcode))
+		}
+	}
+	async exportPanel(e) {
+		let user = e?.runtime?.user || {}
+		let type = e.msg.includes("星铁") ? 'sr' : 'gs'
+		let uid = type == 'sr' ? e.user?._games?.sr?.uid : e.user?._games?.gs?.uid
+		if (!uid) {
+			e.reply('请先绑定uid')
+		}
+		let ret = ''
+		let pm = Cfg.get('exportPanelRequire', 1)
+		if (pm == 1) {
+			ret = await api.sendApi('verifyUser', { uid: uid, qq: e.user_id, type: type })
+		} 
+		if ((pm <= 2 && pm >= 1 && !user.hasCk) || (pm == 1 && ret?.retcode === 200) || pm === 3) {
+			if (e.group?.sendFile)
+				await e.group.sendFile(`./data/PlayerData/${type}/${uid}.json`)
+			else if (e.friend?.sendFile)
+				await e.friend.sendFile(`./data/PlayerData/${type}/${uid}.json`)
 		}
 	}
 	async dealError(retcode) {

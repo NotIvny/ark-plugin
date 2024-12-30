@@ -61,6 +61,13 @@ export const cfgSchema = {
         key: '自动获取面板',
         def: false,
         desc: '测试配置，首次更新面板时，自动从API获取面板数据（需验证uid）'
+      },
+      exportPanelRequire: {
+        title: '导出面板数据(新)',
+        key: '新导出面板',
+        def: 1,
+        input: (n) => /[0-3]{1}/.test(n) ? (n * 1) : 0,
+        desc: '测试配置，允许导出面板数据：0-任何人，1-有ck或验证了uid，2-有ck，3-禁用'
       }
     }
   },
