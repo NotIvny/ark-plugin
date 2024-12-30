@@ -22,5 +22,5 @@ API提供了以下接口
 
 ### 2024/12/30
 
--同步miao-plugin@df8364c
--fix: refreshPanel错误的返回数据（虽然无关紧要）
+- 同步miao-plugin@df8364c
+- fix: refreshPanel错误的返回数据（虽然无关紧要）
