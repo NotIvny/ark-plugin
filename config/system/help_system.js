@@ -41,6 +41,38 @@ export const helpList = [{
     icon: 54,
     title: '#雷神排名统计',
     desc: '查看雷神排名统计图'
+  },{
+    icon: 56,
+    title: '#ark绑定星铁|原神uid',
+    desc: '获取验证码'
+  },{
+    icon: 57,
+    title: '#ark验证星铁|原神uid',
+    desc: '验证uid拥有者'
+  },{
+    icon: 58,
+    title: '#星铁|原神导出面板',
+    desc: '导出面板数据为文件'
+  },]
+}, {
+  group: '管理插件优先级，仅主人可用',
+  auth: 'master',
+  list: [{
+    icon: 11,
+    title: '#刷新优先级',
+    desc: '刷新插件优先级'
+  }, {
+    icon: 12,
+    title: '#修改优先级',
+    desc: '修改插件优先级'
+  }, {
+    icon: 13,
+    title: '#重置优先级',
+    desc: '重置插件优先级'
+  }, {
+    icon: 14,
+    title: '#查询优先级',
+    desc: '查询插件优先级'
   }]
 }, {
   group: '文件备份，仅主人可用',
