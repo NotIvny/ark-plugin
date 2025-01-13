@@ -8,14 +8,18 @@ export const sendApi = async function(type, data) {
 		version: version
 	}
 	const url = 'http://49.233.157.77:3000/api'
+	const controller = new AbortController()
+	const timeout = setTimeout(() => controller.abort(), 10000)
 	try {
 		const response = await fetch(url, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify(data)
+			body: JSON.stringify(data),
+			signal: controller.signal
 		})
+		clearTimeout(timeout)
 		if (!response.ok) {
 			return {
 				retcode: 105
