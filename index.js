@@ -29,8 +29,13 @@ if(!(fs.existsSync('./plugins/ark-plugin/config/backup-default.json'))){
   fs.cpSync('./plugins/ark-plugin/defset/config/backup-default.json', './plugins/ark-plugin/config/backup-default.json', { recursive: true })
 }
 let ArkInit
-try{
-  ArkInit = (await import("./model/init.js")).default
+try {
+  let info = fs.readFileSync('./plugins/miao-plugin/CHANGELOG.md').toString()
+  if (info.includes('fork 1.0')) {
+    ArkInit = (await import('./model/init-qsyhh.js')).default
+  } else {
+    ArkInit = (await import('./model/init.js')).default
+  }
 }catch(err){
   logger.error('ProfileRank.js未被替换，请输入 #ark替换文件miao-rank 后重启，以使用完整功能！')
 }
