@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import { Data, Version, Cfg } from './components/index.js'
+import { Version } from './components/index.js'
 
 if (!global.segment) {
   global.segment = (await import("oicq")).segment
@@ -30,8 +30,7 @@ if(!(fs.existsSync('./plugins/ark-plugin/config/backup-default.json'))){
 }
 let ArkInit
 try {
-  let info = fs.readFileSync('./plugins/miao-plugin/CHANGELOG.md').toString()
-  if (info.includes('fork 1.0')) {
+  if (Version.isQsyhh) {
     ArkInit = (await import('./model/init-qsyhh.js')).default
   } else {
     ArkInit = (await import('./model/init.js')).default

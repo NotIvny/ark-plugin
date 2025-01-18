@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { Version } from '../components/index.js'
 export class replaceFile extends plugin {
 	constructor() {
 		super({
@@ -138,6 +139,9 @@ export class replaceFile extends plugin {
 		let data___ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
 		let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup-default.json', 'utf8'))
 		let data_ = { ...data___, ...data__ }
+		if (ID === 'miao-rank' && Version.isQsyhh) {
+			ID += '-qsyhh'
+		}
 		let data = data_[ID]
 		if (!data) {
 			this.e.reply(`未查找到ID:${ID}的备份数据`)
@@ -166,13 +170,18 @@ export class replaceFile extends plugin {
 		let dest = data.dest
 		let backup = `./plugins/ark-plugin/backup/${ID}-backup/`
 		dest = await this.addSlash(dest)
-		for (let i of data.srcfile) {
-			if (recover) {
-				fs.cpSync(backup + i, dest + i, { recursive: true })
-			} else {
-				fs.cpSync(dest + i, backup + i, { recursive: true })
+		try {
+			for (let i of data.srcfile) {
+				if (recover) {
+					fs.cpSync(backup + i, dest + i, { recursive: true })
+				} else {
+					fs.cpSync(dest + i, backup + i, { recursive: true })
+				}
 			}
+		} catch (err) {
+			this.e.reply(`${recover ? '恢复' : '备份'}失败\n${err.stack}`)
 		}
+		
 		if (recover) {
 			this.e.reply('恢复完毕,重启后生效')
 		} else {

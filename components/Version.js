@@ -77,8 +77,13 @@ const { changelogs, currentVersion } = readLogFile('ark')
 const yunzaiVersion = packageJson.version
 const isV3 = yunzaiVersion[0] === '3'
 let isMiao = false
+let isQsyhh = false
 let name = 'Yunzai-Bot'
 let isAlemonjs = false
+let info = fs.readFileSync('./plugins/miao-plugin/CHANGELOG.md').toString()
+if (info.includes('fork 1.0')) {
+  isQsyhh = true
+}
 if (packageJson.name === 'miao-yunzai') {
   isMiao = true
   name = 'Miao-Yunzai'
@@ -94,6 +99,7 @@ else if (packageJson.name === 'a-yunzai') {
 
 
 let Version = {
+  isQsyhh,
   isV3,
   isMiao,
   name,
