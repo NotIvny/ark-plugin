@@ -51,8 +51,9 @@ git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 
 |                           Nickname                            | Contribution     |
 |:-------------------------------------------------------------:|------------------|
-|      [miao-plugin](miao-plugin)      | 喵喵插件 |
+|      [miao-plugin](https://gitee.com/yoimiya-kokomi/miao-plugin)      | 喵喵插件 |
 | [liangshi-calc](https://gitee.com/liangshi233/liangshi-calc/) | 梁氏伤害计算       |
 |      [Miao-Yunzai](https://gitee.com/yoimiya-kokomi/Miao-Yunzai)      | 喵喵的 Miao-Yunzai          |
 |     [TRSS-Yunzai](https://gitee.com/TimeRainStarSky/Yunzai)     | 时雨🌌星空的 TRSS-Yunzai        |
 | [miao-plugin 测试角色面板](https://gitee.com/euiko/Panel) | 提供部分伤害计算数据             |
+|      [qsyhh/miao-plugin](https://gitee.com/qsyhh/miao-plugin)      | 提供部分伤害计算数据 |
