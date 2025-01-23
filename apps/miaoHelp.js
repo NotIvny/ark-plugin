@@ -53,8 +53,8 @@ if (extendMiaoHelp) {
 			if (group.auth && typeof group.auth === 'number') {
 				let pm = 0
 				if (e.isMaster) pm += 1000
-				if (e.isOwner) pm += 100
-				if (e.isAdmin) pm += 10
+				if (e.sender_role == 'owner') pm += 100
+				if (e.sender_role == 'admin') pm += 10
 				if (group.auth > pm) return true
 			}
 			lodash.forEach(group.list, (help, index) => {
