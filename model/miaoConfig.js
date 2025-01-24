@@ -61,8 +61,18 @@ let changeConfig = function (fnc, name = 'miao-plugin') {
             return
         }
         let cfg = globalCfg
-        if (group_id) {
-            let cfg = JSON.parse(fs.readFileSync(`./plugins/miao-plugin/config/group/${group_id}/cfg.json`, 'utf8'))
+        if (user_id === 'flag:override') {
+            const files = fs.readdirSync(`./plugins/miao-plugin/config/group/`)
+            const cfgs = files.filter(file => fs.statSync(`./plugins/miao-plugin/config/group/${file}`).isDirectory()).filter(file => file !== 'permission')
+            cfgs.forEach(id => {
+                try {
+                    cfg = JSON.parse(fs.readFileSync(`./plugins/miao-plugin/config/group/${id}/cfg.json`, 'utf8'))
+                    cfg[rote] = val
+                    fs.writeFileSync(`./plugins/miao-plugin/config/group/${id}/cfg.json`, JSON.stringify(cfg, null, '\t'))
+                } catch(err) {}
+            })
+        } else if (group_id) {
+            cfg = JSON.parse(fs.readFileSync(`./plugins/miao-plugin/config/group/${group_id}/cfg.json`, 'utf8'))
             cfg[rote] = val
             fs.writeFileSync(`./plugins/miao-plugin/config/group/${group_id}/cfg.json`, JSON.stringify(cfg, null, '\t'))
         } else {
