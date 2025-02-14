@@ -217,10 +217,15 @@ let ProfileDetail = {
     }
     data.weapon = profile.getWeaponDetail()
     //是否计算总排名
-    
     if (ArkCfg.get('panelRank', true) && dmgCalc.dmgData !== undefined) {
       let characterID = Gscfg.roleNameToID(char.name, true) || Gscfg.roleNameToID(char.name, false)
-      let characterRank, ret, jsonData
+      let ret, jsonData
+      let queryType = ArkCfg.get('queryType', 2)
+      const query = {
+        0: 'dmg',
+        1: 'mark',
+        2: 'all'
+      }[queryType]
       //是否使用本地数据计算排名
       if (ArkCfg.get('localPanelRank', true)) {
         jsonData = JSON.parse(JSON.stringify(profile))
@@ -228,36 +233,45 @@ let ProfileDetail = {
           id: characterID,
           uid: '999999999',
           update: 0,
+          query: query,
           data: jsonData
         })
       } else {
         ret = await api.sendApi('getRankData', {
           id: characterID,
           uid: uid,
+          query: query,
           update: 0
         })
       }
-      switch (ret.retcode) {
-        case 100:
-          const rankType = ArkCfg.get('RankType', 0)
-          switch (rankType) {
-            case 0:
-              characterRank = ret.rank
-              break
-            case 1:
-              characterRank = ret.percent
-              break
-            case 2:
-              characterRank = `${ret.rank} (${ret.percent}%)`
-              break
-          }
-          let title = '总伤害排名' + (ArkCfg.get('markRankType', false) ? '(本地)' : '')
-          title = (e.msg.includes('喵喵面板变换') && ArkCfg.get('markRankType', false)) ? '总伤害排名(面板变换)' : title
-          dmgCalc.dmgData[dmgCalc.dmgData.length] = {
-            title: title,
-            unit: characterRank,
-          }
-          break
+      const getRank = (index, baseTitle) => {
+        const retItem = ret[index]
+        if (retItem?.retcode !== 100) return
+        const rankType = ArkCfg.get('RankType', 0)
+        const characterRank = {
+          0: retItem.rank,
+          1: retItem.percent,
+          2: `${retItem.rank} (${retItem.percent}%)`
+        }[rankType]
+        const markRankType = ArkCfg.get('markRankType', false)
+        const isSpecialPanel = e.msg.includes('喵喵面板变换') && markRankType
+        const title = isSpecialPanel 
+          ? `${baseTitle}(面板变换)` 
+          : `${baseTitle}${markRankType ? '(本地)' : ''}`
+        dmgCalc.dmgData.push({ title, unit: characterRank })
+      }
+      ret = Array.isArray(ret) ? ret : [ret]
+      switch (queryType) {
+        case 0:
+          getRank(0, '总伤害排名')
+          break;
+        case 1:
+          getRank(0, '圣遗物排名')
+          break;
+        case 2:
+          getRank(0, '总伤害排名')
+          getRank(1, '圣遗物排名')
+          break;
       }
     }
     let background = await Common.getBackground("profile")

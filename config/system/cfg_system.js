@@ -14,13 +14,21 @@ export const cfgSchema = {
         def: true,
         desc: '启用后会在群排行中显示总排名'
       },
-      RankType: {
-        title: '排名展示类型',
+      queryType: {
+        title: '角色面板排名类型',
         key: '排名类型',
         type: 'num',
-        def: 0,
-        input: (n) => /[0-2]{1}/.test(n) ? (n * 1) : 0,
-        desc: '排名展示类型：0-位次排名，1-百分比排名, 2-混合排名'
+        def: 2,
+        input: (n) => /[0-2]{1}/.test(n) ? (n * 1) : 2,
+        desc: '角色面板伤害计算中显示的排名类型：0-伤害排名，1-圣遗物排名, 2-均显示'
+      },
+      RankType: {
+        title: '排名展示规则',
+        key: '排名展示规则',
+        type: 'num',
+        def: 2,
+        input: (n) => /[0-2]{1}/.test(n) ? (n * 1) : 2,
+        desc: '排名展示规则：0-位次排名，1-百分比排名, 2-混合排名'
       },
       localPanelRank: {
         title: '本地数据面板排名',
@@ -65,9 +73,10 @@ export const cfgSchema = {
       exportPanelRequire: {
         title: '导出面板数据(新)',
         key: '新导出面板',
+        type: 'num',
         def: 1,
         input: (n) => /[0-3]{1}/.test(n) ? (n * 1) : 0,
-        desc: '测试配置，允许导出面板数据：0-任何人，1-有ck或验证了uid，2-有ck，3-禁用'
+        desc: '允许导出面板数据：0-任何人，1-有ck或验证了uid，2-有ck，3-禁用'
       }
     }
   },
