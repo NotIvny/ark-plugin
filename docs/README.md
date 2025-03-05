@@ -22,17 +22,17 @@ git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 
 ---
 ### 功能列表
-[喵喵帮助扩展](https://github.com/NotIvny/ark-plugin/blob/main/extendMiaoHelp.md)
+[喵喵帮助扩展](https://github.com/NotIvny/ark-plugin/blob/main/docs/extendMiaoHelp.md)
 
-[角色排名扩展](https://github.com/NotIvny/ark-plugin/blob/main/extendMiaoRank.md)
+[角色排名扩展](https://github.com/NotIvny/ark-plugin/blob/main/docs/extendMiaoRank.md)
 
-[喵喵设置扩展](https://github.com/NotIvny/ark-plugin/blob/main/extendMiaoSettings.md)
+[喵喵设置扩展](https://github.com/NotIvny/ark-plugin/blob/main/docs/extendMiaoSettings.md)
 
-[面板功能拓展](https://github.com/NotIvny/ark-plugin/blob/main/extendMiaoPanel.md)
+[面板功能拓展](https://github.com/NotIvny/ark-plugin/blob/main/docs/extendMiaoPanel.md)
 
-[文件备份](https://github.com/NotIvny/ark-plugin/blob/main/backupFile.md)
+[文件备份](https://github.com/NotIvny/ark-plugin/blob/main/docs/backupFile.md)
 
-[功能优先级](https://github.com/NotIvny/ark-plugin/blob/main/priority.md)
+[功能优先级](https://github.com/NotIvny/ark-plugin/blob/main/docs/priority.md)
 
 
 ### 其他
