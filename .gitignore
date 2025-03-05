@@ -5,3 +5,4 @@
 /resources/help/theme/*
 !/resources/help/theme/default
 /config/config.yaml
+/config/backup.json

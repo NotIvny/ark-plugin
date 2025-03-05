@@ -114,10 +114,9 @@ const CharRank = {
     }
 
     const rankCfg = await ProfileRank.getGroupCfg(groupId)
+    let noRankFlag = true
     if (ArkCfg.get('groupRank', true)) {
-      let data = [],
-        uids_ = list.map(item => item.uid),
-        ret
+      let data = [], uids_ = list.map(item => item.uid), ret
       let game = e.isSr ? 'sr' : 'gs'
     
       //读取排名列表中用户的数据
@@ -130,23 +129,31 @@ const CharRank = {
           }
         })
       }
-    
-      ret = await api.sendApi('groupAllRank', {
-        id: list[0].id,
-        uids: uids_,
-        update: 2,
-        data: data.length ? data : null
-      })
-      switch (ret.retcode) {
-        case 100:
-          ret.rank.forEach((item, index) => {
-            if (list[index] && list[index].dmg) {
-              list[index].dmg.rankName = (ArkCfg.get('markRankType', false) && ArkCfg.get('localGroupRank', false)) ? '总排名(本地)' : '总排名'
-              list[index].dmg.totalrank = item.rank || '暂无数据'
-            }
-          })
-      }
+      if (mode === 'dmg' || mode === 'mark') {
+        let query = mode === 'mark' ? 'mark' : 'dmg'
+        let rankTitle = mode === 'mark' ? '圣遗物' : '伤害'
+        ret = await api.sendApi('groupAllRank', {
+          id: list[0]?.id,
+          uids: uids_,
+          update: 2,
+          query: query,
+          data: data.length ? data : null
+        })
+        switch (ret.retcode) {
+          case 100:
+            ret.rank.forEach((item, index) => {
+              if (list[index] && list[index].dmg) {
+                list[index].dmg.rankName = (ArkCfg.get('markRankType', false) && ArkCfg.get('localGroupRank', false)) ? `${rankTitle}排名(本地)` : `${rankTitle}排名`
+                list[index].dmg.totalrank = item.rank || '暂无数据'
+                if (item.rank) {
+                  noRankFlag = false
+                }
+              }
+            })
+        }
+      } 
     }
+    let cont_width = noRankFlag ? 820 : 1000
     // 渲染图像
     return e.reply([await Common.render('character/rank-profile-list', {
       save_id: char.id,
@@ -154,6 +161,8 @@ const CharRank = {
       list,
       title,
       elem: char.elem,
+      noRankFlag,
+      cont_width: cont_width,
       bodyClass: `char-${char.name}`,
       rankCfg,
       mode,
