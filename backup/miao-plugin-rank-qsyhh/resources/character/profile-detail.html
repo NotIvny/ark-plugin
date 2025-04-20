@@ -1,0 +1,589 @@
+{{extend elemLayout}}
+
+{{block 'css'}}
+<link rel="stylesheet" type="text/css" href="{{_res_path}}/character/profile-detail.css"/>
+{{if background}}{{@background}}{{/if}}
+{{/block}}
+
+{{set weapon = data.weapon}}
+
+{{set dataSource = data.dataSource}}
+{{set talentMap = game === 'sr' ? {a: '普攻', e: '战技', t:'天赋', q: '爆发'} : {a: '普攻', e: '战技', q: '爆发'} }}
+{{set {imgs, costumeSplash} = data }}
+{{set imgs = imgs || {} }}
+{{set gameHash = game === 'gs' ? '#':'*' }}
+
+{{block 'main'}}
+<div class="profile-cont game-{{game}}">
+  <div class="basic">
+    <div class="main-pic" style="background-image:url('{{_res_path}}{{costumeSplash||imgs?.splash}}')"></div>
+    <div class="detail">
+      <div class="char-name">{{data.name}}</div>
+      <div class="char-lv">UID {{uid}} - Lv.{{data.level}}
+        <span class="cons cons-{{data.cons}}">{{data.cons}}命</span></div>
+      <div>
+        {{if mode !== 'weapon'}}
+        {{if game === 'gs'}}
+        <div class="char-talents">
+          {{each talentMap tName key}}
+          {{set talent = data.talent[key] || {} }}
+          <div class="talent-item">
+            <div class="talent-icon
+               {{talent.level > talent.original ? `talent-plus`:``}}
+                {{talent.original >= 10 ? `talent-crown`:``}}">
+              <div class="talent-icon-img"
+                   style="background-image:url('{{_res_path}}{{imgs[key]}}')"></div>
+              <strong>{{talent.level}}</strong>
+            </div>
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+        <ul class="char-attr">
+          {{set attrMap = game === 'sr' ? {
+          hp:'生命值',atk:'攻击力',def:'防御力',speed:'速度',cpct:'暴击率',cdmg:'暴击伤害',dmg:'伤害加成',stance:'击破特攻',effPct:'效果命中',effDef:'效果抵抗',
+          heal:'治疗加成'
+          }:{
+          hp:'生命值',atk:'攻击力',def:'防御力',mastery:'元素精通',cpct:'暴击率',cdmg:'暴击伤害',recharge:'元素充能',dmg:'伤害加成'
+          } }}
+          {{set cw = artisDetail?.charWeight || {} }}
+          {{each attrMap title key}}
+          <li>
+            <div class="icon"><i class="i-{{key}}"></i></div>
+
+            <div class="title">{{title}}</div>
+            <div class="weight">
+              {{if cw[key]}}
+              <span class="{{cw[key]>=80?'gold':'normal'}}">{{cw[key]}}</span>
+              {{/if}}
+            </div>
+            <div class="value">
+              {{attr[key]}}
+            </div>
+            <div class="value2">
+              <span class="base {{attr[key+'Base'] === '0.0%' ? 'zero':''}}">{{attr[key+'Base']}}</span>
+              <span class="plus">+{{attr[key+'Plus']}}</span>
+            </div>
+
+          </li>
+          {{/each}}
+        </ul>
+        {{else}}
+        <div class="char-weapon">
+          <div class="img" style="background-image:url('{{_res_path}}{{weapon.img}}')"></div>
+          <div class="head">
+            <strong>{{weapon.sName || weapon.name}}</strong>
+            <div class="star star-{{weapon.star}}"></div>
+            <span><span class="affix affix-{{weapon.affix}}">精{{weapon.affix}}</span> Lv.{{weapon.leve || weapon.level}} </span>
+          </div>
+        </div>
+        {{/if}}
+      </div>
+    </div>
+    <div class="char-cons">
+      {{set cons = [1,2,3,4,5,6]}}
+      {{each cons idx}}
+      <div class="cons-item">
+        <div class="talent-icon {{idx * 1 > data.cons * 1 ? 'off' : '' }}">
+          <div class="talent-icon-img" style="background-image:url('{{_res_path}}{{imgs[`cons${idx}`]}}')"></div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+
+    <div class="data-info">
+      {{if data.dataSource}}
+      <span>数据源：{{ {change:"面板变换"}[data.dataSource]||data.dataSource }}</span>
+      {{/if}}
+      {{if data.updateTime}}
+      <span class="time">{{data.updateTime}}</span>
+      {{/if}}
+    </div>
+  </div>
+
+  {{if changeProfile}}
+  <div class="cont">
+    <div class="cont-footer dmg-desc">
+      <strong>该面板为非实际数据。当前替换命令：</strong> {{changeProfile}}
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- 【 武器+圣遗物列表】 -->
+  <div class="profile-detail">
+    {{if game === 'sr'}}
+    <!-- 【 星铁 天赋+行迹 】 -->
+    <div class="sr-talent">
+      <div class="char-talents">
+        {{each talentMap tName key}}
+        {{set talent = data.talent[key] || {} }}
+        <div class="talent-item">
+          <div class="talent-icon
+               {{talent.level > talent.original ? `talent-plus`:``}}
+                {{talent.original >= 10 ? `talent-crown`:``}}">
+            <div class="talent-icon-img" style="background-image:url('{{_res_path}}{{imgs[key]}}')"></div>
+            <strong>{{talent.level}}</strong>
+            <span>{{tName}}</span>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+
+      <div class="char-talents char-trees">
+        {{each data.treeData tCfg}}
+        {{if tCfg?.type === 'talent' }}
+        <div class="talent-item">
+          <div class="talent-icon {{tCfg.value ? '':'off'}}">
+            <div class="talent-icon-img" style="background-image:url('{{_res_path}}{{tCfg.img}}')"></div>
+          </div>
+        </div>
+        {{else}}
+        <div class="tree-item">
+          {{each tCfg tIdx}}
+          <div class="talent-icon  {{tIdx.value ? '':'off'}}">
+            <div class="talent-icon-img" style="background-image:url('{{_res_path}}{{tIdx.img}}')"></div>
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+        {{/each}}
+
+      </div>
+    </div>
+
+    {{if weapon && weapon.name}}
+    <!-- 【 星铁 武器 】 -->
+    <div class="sr-weapon">
+      <div class="weapon-img" style="background-image:url('{{_res_path}}{{weapon.splash}}')"></div>
+      <div class="weapon-info">
+        <div class="weapon-title">
+          <strong>{{weapon.name}}</strong>
+          <span>Lv.{{weapon.level}}</span>
+          <span>叠影{{weapon.affix}}阶</span>
+        </div>
+        <div class="weapon-attr">
+          {{set a = weapon.attrs}}
+          <div class="attr i-hp"><span>生命</span>{{a.hp}}</div>
+          <div class="attr i-atk"><span>攻击</span>{{a.atk}}</div>
+          <div class="attr i-def"><span>防御</span>{{a.def}}</div>
+        </div>
+        <div class="weapon-desc">
+          {{@weapon.desc?.desc}}
+        </div>
+      </div>
+    </div>
+    {{/if}}
+    {{/if}}
+
+
+    {{if mode === "profile"}}
+    {{set ad = artisDetail}}
+    <div class="cont arti-mark-cont">
+      <div class="arti-stat">
+        <div class="arti-stat-ret">
+          <div><span>圣遗物总分</span><strong>{{ad.mark}}</strong></div>
+          <div><span>圣遗物评级</span><strong class="mark-{{ad.markClass}}">{{ad.markClass}}</strong></div>
+        </div>
+        <div class="arti-class-title">评分规则：{{ad.classTitle}}</div>
+      </div>
+      <div class="arti-info">
+        <div class="arti-all-attr">
+          <ul class="detail attr arti-attr">
+            {{set sTitle = {暴击率:'暴击',暴击伤害:'爆伤',充能效率:'充能',元素精通:'精通',效果命中:'命中',效果抵抗:'抵抗',击破特攻:'击破',
+            大生命:'生命',大攻击:'攻击',大防御:'防御',小生命:'生命',小攻击:'攻击',小防御:'防御'}
+            }}
+            {{each ad.allAttr attr}}
+            {{if attr && attr.key}}
+            <li class="{{ad.charWeight[attr.key]*1 > 79.9 ?`great`:(ad.charWeight[attr.key]*1>0 ? `useful`:`nouse`)}}">
+              <span class="title">{{if attr.eff}}<i class="eff">{{attr.eff || ''}}</i>{{/if}} {{sTitle[artisKeyTitle[attr.key]] || artisKeyTitle[attr.key]}}</span>
+              <span class="val">+{{attr.value}}</span>
+            </li>
+            {{else}}
+            <li></li>
+            {{/if}}
+            {{/each}}
+          </ul>
+        </div>
+        <div class="dmg-desc arti-notice">
+          评分为<strong>喵喵版规则</strong>，仅供参考与娱乐。可使用<strong>{{gameHash}}{{data.abbr}}圣遗物</strong>来查看评分详情
+        </div>
+      </div>
+    </div>
+
+    <div class="artis">
+      {{ if game === 'gs' }}
+      <div class="artis-weapon">
+        <div class="item weapon">
+          <div class="img" style="background-image:url('{{_res_path}}{{weapon.img}}')"></div>
+          <div class="head">
+            <strong>{{weapon.sName || weapon.name}}</strong>
+            <span class="info"><span
+              class="affix affix-{{weapon.affix}}">精{{weapon.affix}}</span> Lv.{{weapon.leve || weapon.level}} </span>
+            <div class="weapon-attr">
+              <div><span>攻击</span> +{{weapon.attrs.atkBase}}</div>
+              {{each weapon.attrs v k}} {{if k!== 'atkBase' }}
+              {{ set titleMap = {atkPct:'攻击',mastery:'精通',dmg:'伤害',hpPct:'生命',defPct:'防御',
+              cpct:'暴击', cdmg:'爆伤', phy:'物伤', recharge:'充能', heal:'治疗', shield:'护盾'} }}
+              <div><span>{{ titleMap[k] }}</span> +{{v}}</div>
+              {{/if}} {{/each}}
+            </div>
+          </div>
+          <div class="weapon-desc-cont">
+            <div class="weapon-desc">{{@weapon.desc?.desc}}</div>
+          </div>
+        </div>
+
+      </div>
+      {{/if}}
+
+      {{each ad.artis ds idx}}
+      <div class="item arti arti-class-{{ds.markClass}}">
+        {{if ds && ds.name && ds.main && ds.main.key && ds.main.key!="undefined"}}
+        <div class="arti-icon">
+          <div class="img" style="background-image:url('{{_res_path}}{{ds.img}}')"></div>
+          <span>+{{ds.level}}</span>
+        </div>
+        <div class="head">
+          <strong>{{ds.abbr || ds.name}}</strong>
+          <span class="mark mark-{{ds.markClass}}"><span>{{ds.mark}}分</span> - {{ds.markClass}}</span>
+        </div>
+        <ul class="detail attr">
+          <li class="arti-main"><span class="title">{{artisKeyTitle[ds.main?.key]}}</span><span class="val">+{{ds.main.value}}</span>
+          </li>
+          {{each ds.attrs attr}}
+          {{if attr && attr.key}}
+          <li class="{{ad.charWeight[attr.key]*1 > 79.9 ?`great`:(ad.charWeight[attr.key]*1>0 ? `useful`:`nouse`)}}">
+          <span class="title">{{if attr.eff}}<i class="eff">{{attr.eff || ''}}</i>{{/if}}{{if attr.upNum}}<i
+            class="up-num up-{{attr.upNum}}"></i>{{/if}}{{artisKeyTitle[attr.key] || attr.key}}</span>
+            <span class="val">+{{attr.value}}</span>
+          </li>
+          {{/if}}
+          {{/each}}
+        </ul>
+        {{/if}}
+      </div>
+      {{/each}}
+    </div>
+    {{/if}}
+  </div>
+
+  
+  <!-- 【 伤害表格 】 -->
+  {{ set {dmgRet, dmgCfg, enemyLv, enemyName, dmgMsg, dmgData, createdBy} = dmgCalc }}
+    {{if dmgData?.length > 0}}
+    <div class="dmg-cont dmg-list cont">
+      <div class="cont-title">
+        伤害计算
+        <span class="not-dmg-mode dmg-desc">使用<strong>{{gameHash}}{{data.abbr}}伤害</strong>命令可以查看伤害详情</span>
+      </div>
+      <div class="cont-table">
+        <div class="tr thead">
+          <div class="title dmg-idx">#</div>
+          <div class="title dmg-title">伤害类型</div>
+          <div>暴击伤害</div>
+          <div>期望伤害</div>
+        </div>
+        {{each dmgData dmg idx}}
+        <div class="dmg tr">
+          <div class="title dmg-idx">{{idx+1}}</div>
+          <div class="title dmg-title">{{dmg.title}}</div>
+          {{if !dmg.dmg || dmg.dmg === "NaN"}}
+          <div class="value value-full">{{dmg.avg}}{{dmg.unit}}</div>
+          <div class="value value-none"></div>
+          {{else}}
+          <div class="value">{{dmg.dmg}}{{dmg.unit}}</div>
+          <div class="value">{{dmg.avg}}{{dmg.unit}}</div>
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+      <div class="cont-footer dmg-desc">
+        <span>目标为{{enemyLv}}级{{enemyName||'小宝'}}{{if game==='gs'}}，使用<strong>#敌人等级{{enemyLv}}</strong>命令可指定等级{{/if}}</span>
+        {{if createdBy}}
+        <!-- 优先展示calc.js中 返回的createdBy字段，用于展示伤害计算作者-->
+        <span class="dmg-created-by">伤害计算来源：<strong>{{createdBy}}</strong></span>
+        {{/if}}
+      </div>
+    </div>
+    {{/if}}
+    {{if dmgRankData && artisRankData}}
+    <div class="echarts-artis dmg-cont dmg-list cont">
+      <div class="damage-rank" style="width: 50%; float: left; position: relative;"> <!-- 添加 position: relative -->
+        <div class="chart-wrapper" style="transform: scale(0.35); transform-origin: 0% top;">
+          <div id="damageChart" style="width: 800px; height: 400px;"></div>
+        </div>
+        <div class="damage-type-label" style="top: 80%">伤害排名</div>
+        <div class="damage-type-label" style="top: 90%">{{scoreAndRank[0]}}</div>
+      </div>
+      <div class="damage-rank" style="width: 50%; float: left; position: relative;"> <!-- 添加 position: relative -->
+        <div class="chart-wrapper" style="transform: scale(0.35); transform-origin: 0% top;">
+          <div id="artisChart" style="width: 800px; height: 400px;"></div>
+        </div>
+        <div class="damage-type-label" style="top: 80%">圣遗物排名</div>
+        <div class="damage-type-label" style="top: 90%">{{scoreAndRank[1]}}</div>
+      </div>
+    </div>
+    
+    <style>
+      .damage-type-label {
+        /* 伤害类型标签样式 */
+        position: absolute;
+        top: 80%; /* 垂直居中 */
+        left: 50%;
+        transform: translate(-50%, -50%); /* 居中并反向缩放 */
+        color: white;
+        font-size: 15px;
+        border-radius: 3px;
+        text-align: center;
+        white-space: nowrap;
+      }
+      
+      .echarts-artis {
+        /* 根据缩放比例计算实际显示尺寸 */
+        display: block;
+        height: 185px; /* 400 * 0.3 = 120 + 上下边距 */
+        overflow: hidden; /* 隐藏超出部分 */
+      }
+      
+      .chart-wrapper {
+        /* 原始尺寸 */
+        width: 800px;
+        height: 400px;
+        margin-top: 10px;
+      }
+      
+      /* 清除浮动 */
+      .echarts-artis::after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+      
+      .damage-rank {
+        position: relative; /* 为绝对定位的子元素提供参考 */
+        height: 100%; /* 确保容器有高度 */
+      }
+    </style>
+        
+        <script src="../../../../../plugins/ark-plugin/resources/graph/echarts.min.js"></script>
+  <script>
+    var myChart,rankData_,rankData,target,targetScore
+    for(var i = 0; i < 2; i++){
+      if(i == 0){
+        myChart = echarts.init(document.getElementById('damageChart'), null, { renderer: 'svg' })
+        rankData_ = ['100', {{@dmgRankData}}, '0']
+        const ranks = [100, 99, 95, 90, 80, 70, 50, 30, 10, 5, 1, 0]
+        rankData = Array.from({ length: 101 }, (_, i) => 
+          ranks.includes(i) ? rankData_[ranks.indexOf(i)] : null
+        )
+        target = {{selfRank[0]}}
+        targetScore = {{selfRank[1]}}.toFixed(2)
+      }else{
+        myChart = echarts.init(document.getElementById('artisChart'), null, { renderer: 'svg' })
+        rankData_ = [{{top1}}, {{@artisRankData}}, '0']
+        const ranks = [100, 99, 95, 90, 80, 70, 50, 30, 10, 5, 1, 0]
+        rankData = Array.from({ length: 101 }, (_, i) => 
+          ranks.includes(i) ? rankData_[ranks.indexOf(i)] : null
+        )
+        target = {{selfRank[2]}}
+        targetScore = {{selfRank[3]}}.toFixed(2) * {{top1}} / 100
+      }
+      // 配置项
+      var option = {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'cross'
+          }
+        },
+        textStyle: {
+          fontFamily: 'Number, "汉仪文黑-65W", YS, PingFangSC-Medium, "PingFang SC", sans-serif',
+        },
+        xAxis: {
+          type: 'value',
+          name: '百分比',
+          nameLocation: 'end',
+          nameGap: 25,
+          nameTextStyle: {
+            fontSize: 18,
+            color: '#ffffff'
+          },
+          splitLine: {
+            show: false // 不显示竖条纹
+          },
+          axisLine: {
+            show: false
+          },
+          axisLabel: {
+            show: true, // 显示x轴数字
+            color: '#ffffff',
+            fontSize: 22,
+            fontWeight: 'bold',
+            formatter: function(value) {
+              // 只显示0,20,40,60,80,100
+              if ([0, 20, 40, 60, 80, 100].includes(value)) {
+                return 100 - value;
+              }
+              return '';
+            }
+          }
+        },
+        yAxis: {
+          type: 'value',
+          name: i == 0 ? '伤害评分' : '圣遗物评分',
+          nameTextStyle: {
+            fontSize: 18,
+            color: '#ffffff'
+          },
+          min: 0,
+          max: i == 0 ? 100 : parseInt({{top1}}) / 50 * 50,
+          interval: i == 0 ? 20 : 50,
+          splitLine: {
+            show: false
+          },
+          axisLabel: {
+            fontSize: 22,
+            color: '#ffffff',
+            fontWeight: 'bold'
+          }
+        },
+  
+        animation: false,
+        series: [{
+          data: rankData.map((val, index) => [index, val === null ? null : val]),
+          type: 'line',
+          smooth: true,
+          connectNulls: true,
+          label: {
+            show: false,
+            position: 'top',
+            fontSize: 18,
+            fontWeight: 'bold'
+          },
+          lineStyle: {
+            color: '#33CCCC'
+          },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+              {
+                offset: 0,
+                color: 'rgba(51, 204, 204, 0.5)'
+              },
+              {
+                offset: (100 - target) / 100,
+                color: 'rgba(51, 204, 204, 0.5)'
+              },
+              {
+                offset: (100 - target - 2.5) / 100,
+                color: 'rgba(255, 0, 0)'
+              },
+              {
+                offset: (100 - target + 2.5) / 100,
+                color: 'rgba(255, 0, 0)'
+              },
+              {
+                offset: (100 - target + 2.5) / 100,
+                color: 'rgba(51, 204, 204, 0.5)'
+              },
+              {
+                offset: 1,
+                color: 'rgba(51, 204, 204, 0.5)'
+              }
+            ])
+          },
+          markPoint: {
+            symbol: 'circle',
+            symbolSize: 0,
+            label: {
+              show: true,
+              position: 'top',
+              offset: [15, 0],
+              formatter: `${targetScore}`,
+              fontSize: 35,
+              fontWeight: 'bold',
+              color: '#ffffff',
+              borderRadius: 4
+            },
+            data: [{
+              coord: [100 - target, targetScore],
+              itemStyle: {
+                color: 'transparent'
+              }
+            }]
+          }
+        }],
+      }
+      myChart.setOption(option)
+    }
+  </script>
+  {{/if}}
+  <!-- 【 伤害变化详情 】 -->
+  <div>
+    {{if mode === "dmg"}}
+    {{if dmgCfg && dmgCfg.attr && dmgCfg.attr.length>0 && dmgRet}}
+    <div class="dmg-calc dmg-cont cont">
+      <div class="cont-title">
+        词条伤害计算<span>{{gameHash}}{{data.abbr}}伤害{{dmgCfg.userIdx+1}}: 当前计算为[{{dmgCfg.title}}]</span>
+      </div>
+      <div class="cont-table">
+        <div class="tr thead ">
+          <div class="td">词条变化</div>
+          {{each dmgCfg.attr attr}}
+          <div class="td">
+            <strong>{{attr?.title}}</strong>
+            <span>+{{attr?.text}}</span>
+          </div>
+          {{/each}}
+        </div>
+        {{each dmgRet row rowIdx}}
+        <div class="tr">
+          <div class="title">
+            <strong>{{dmgCfg.attr[rowIdx].title}}</strong>
+            <span>-{{dmgCfg.attr[rowIdx].text}}</span>
+          </div>
+          {{each row cell colIdx}}
+          {{if cell.type === "na"}}
+          <div class="td na">
+            <strong>-</strong>
+            <span>{{dmgCfg.basicRet.avg}}{{(dmgCfg.basicRet.dmg&&dmgCfg.basicRet.dmg!="NaN")?`/${dmgCfg.basicRet.dmg}`:''}}</span>
+          </div>
+          {{else}}
+          <div class="td {{cell.type}}">
+            <strong>{{cell.val}}</strong>
+
+            <span>{{cell.avg}}{{cell.dmg!="NaN"?`/${cell.dmg}`:''}}</span>
+          </div>
+          {{/if}}
+          {{/each}}
+        </div>
+        {{/each}}
+      </div>
+      <div class="cont-footer dmg-desc">
+        <ul>
+          <li>
+            大数字的含义为圣遗物副词条置换后<strong>平均伤害</strong>的变化，下方的详情数字为<strong>平均伤害</strong>/<strong>暴击伤害</strong>。
+          </li>
+          <li>关于<strong>平均伤害</strong>：是将暴击率计算在内的伤害期望，能反映综合的输出能力，不等于实际伤害数字。</li>
+          <li>可用于评估当前面板下圣遗物副词条的侧重方向。实际游戏情况更加复杂，结果供参考~</li>
+          <li>如需更换计算的伤害类型，可使用命令 <strong>{{gameHash}}{{data.abbr}}伤害+序号</strong>来切换，序号参见伤害计算板块</li>
+        </ul>
+      </div>
+    </div>
+    {{/if}}
+
+    <div class="dmg-cont dmg-msg cont">
+      <div class="cont-title">Buff列表<span>部分Buff的触发条件以及层数可能影响实际伤害结果</span></div>
+      <div class="cont-table">
+        {{each dmgMsg msg}}
+        <div class="tr">
+          <div class="th">{{msg[0]}}</div>
+          <div class="td">{{msg[1]}}</div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+  </div>
+</div>
+
+{{/block}}

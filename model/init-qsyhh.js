@@ -119,6 +119,10 @@ const ArkInit = {
             data.treeData = treeData
           }
           data.weapon = profile.getWeaponDetail()
+          /*
+          let selfRank = []
+          let scoreAndRank = []
+          */
           //是否计算总排名
           if (ArkCfg.get('panelRank', true) && dmgCalc.dmgData !== undefined) {
             let characterID = Gscfg.roleNameToID(char.name, true) || Gscfg.roleNameToID(char.name, false)
@@ -147,6 +151,10 @@ const ArkInit = {
                 update: 0
               })
             }
+            /*
+            scoreAndRank = [`${ret[0].rank} (${ret[0].percent}%)`, `${ret[1].rank} (${ret[1].percent}%)`]
+            selfRank = [ret[0].percent, ret[0].score, ret[1].percent, ret[1].score]
+            */
             const getRank = (index, baseTitle) => {
               const retItem = ret[index]
               if (retItem?.retcode !== 100) return
@@ -161,7 +169,7 @@ const ArkInit = {
               const title = isSpecialPanel 
                 ? `${baseTitle}(面板变换)` 
                 : `${baseTitle}${markRankType ? '(本地)' : ''}`
-              dmgCalc.dmgData.push({ title, unit: characterRank })
+              dmgCalc.dmgData.push({ title, unit: characterRank }) //需要切换echarts的话建议把这里注释了
             }
             ret = Array.isArray(ret) ? ret : [ret]
             switch (queryType) {
@@ -177,8 +185,26 @@ const ArkInit = {
                 break;
             }
           }
+          /*
+          let ret1 = await api.sendApi('getSpecificRank', {
+            id: Gscfg.roleNameToID(char.name, true) || Gscfg.roleNameToID(char.name, false),
+            percent: 0
+          })
+          let ret2 = await api.sendApi('getSpecificRank', {
+            id: Gscfg.roleNameToID(char.name, true) || Gscfg.roleNameToID(char.name, false),
+            artis: true,
+            percent: 0
+          })
+          */
           let background = await Common.getBackground("profile")
           let renderData = {
+            /*
+            dmgRankData: ret1.data.scores.map(score => (score / ret1.data.top1) * 100),
+            artisRankData: ret2.data.scores,
+            top1: ret2.data.top1,
+            scoreAndRank,
+            selfRank,
+            */
             save_id: uid,
             uid,
             game,
@@ -360,7 +386,7 @@ const ArkInit = {
             } 
           }
           let cont_width = noRankFlag ? 820 : 1000
-          // 渲染图像
+            // 渲染图像
           return e.reply([
             await Common.render("character/rank-profile-list", {
               save_id: char.id,
