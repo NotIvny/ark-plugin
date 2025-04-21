@@ -16,7 +16,7 @@ const getLine = function (line) {
 
 const readLogFile = function (root, versionCount = 4) {
   root = Data.getRoot(root)
-  let logPath = `${root}/CHANGELOG.md`
+  let logPath = `${root}/docs/CHANGELOG.md`
   let logs = {}
   let changelogs = []
   let currentVersion
