@@ -59,7 +59,7 @@ export class replaceFile extends plugin {
 	async readID() {
 		const id = this.e.msg
 		let data___ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
-		let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup-default.json', 'utf8'))
+		let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/defset/config/backup-default.json', 'utf8'))
 		let data_ = {...data___, ...data__}
 		if (data_[id]) {
 			this.e.reply(`ID:${id}已存在`)
@@ -77,7 +77,7 @@ export class replaceFile extends plugin {
 	async getID() {
 		const ID = this.e.msg
 		let data___ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
-		let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup-default.json', 'utf8'))
+		let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/defset/config/backup-default.json', 'utf8'))
 		let data = {...data___, ...data__}
 		if (!data[ID]) {
 			this.e.reply(`未找到ID:${ID}`)
@@ -94,7 +94,7 @@ export class replaceFile extends plugin {
 	async readSrc() {
 		const src = this.e.msg
 		let data___ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
-		let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup-default.json', 'utf8'))
+		let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/defset/config/backup-default.json', 'utf8'))
 		let data = {...data___, ...data__}
 		data.src = src
 		await redis.set(`ark-plugin:addfile${this.e.user_id}`, JSON.stringify(data), { EX: 300 })
@@ -126,7 +126,7 @@ export class replaceFile extends plugin {
 		srcfile = srcfile.map(path => path.replace(/\\/g, '/'))
 		redisdata.srcfile = srcfile
 		let data___ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
-		let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup-default.json', 'utf8'))
+		let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/defset/config/backup-default.json', 'utf8'))
 		let data = {...data___, ...data__}
 		data[redisdata.ID] = redisdata
 		let ID = redisdata.ID
@@ -137,7 +137,7 @@ export class replaceFile extends plugin {
 	}
 	async replaceFile(ID) {
 		let data___ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
-		let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup-default.json', 'utf8'))
+		let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/defset/config/backup-default.json', 'utf8'))
 		let data_ = { ...data___, ...data__ }
 		if (ID === 'miao-rank' && Version.isQsyhh) {
 			ID += '-qsyhh'
@@ -160,7 +160,7 @@ export class replaceFile extends plugin {
 	}
 	async backupFile(ID, recover) {
 		let data___ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
-		let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup-default.json', 'utf8'))
+		let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/defset/config/backup-default.json', 'utf8'))
 		let data_ = {...data___, ...data__}
 		let data = data_[ID]
 		if (!data) {
