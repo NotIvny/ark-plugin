@@ -2,7 +2,6 @@
 
 {{block 'css'}}
 <link rel="stylesheet" type="text/css" href="{{_res_path}}/character/profile-detail.css"/>
-{{if background}}{{@background}}{{/if}}
 {{/block}}
 
 {{set weapon = data.weapon}}
@@ -16,7 +15,7 @@
 {{block 'main'}}
 <div class="profile-cont game-{{game}}">
   <div class="basic">
-    <div class="main-pic" style="background-image:url('{{_res_path}}{{costumeSplash||imgs?.splash}}')"></div>
+    <div class="main-pic" style="background-image:url({{_res_path}}{{costumeSplash||imgs?.splash}})"></div>
     <div class="detail">
       <div class="char-name">{{data.name}}</div>
       <div class="char-lv">UID {{uid}} - Lv.{{data.level}}
@@ -32,7 +31,7 @@
                {{talent.level > talent.original ? `talent-plus`:``}}
                 {{talent.original >= 10 ? `talent-crown`:``}}">
               <div class="talent-icon-img"
-                   style="background-image:url('{{_res_path}}{{imgs[key]}}')"></div>
+                   style="background-image:url({{_res_path}}{{imgs[key]}})"></div>
               <strong>{{talent.level}}</strong>
             </div>
           </div>
@@ -70,7 +69,7 @@
         </ul>
         {{else}}
         <div class="char-weapon">
-          <div class="img" style="background-image:url('{{_res_path}}{{weapon.img}}')"></div>
+          <div class="img" style="background-image:url({{_res_path}}{{weapon.img}})"></div>
           <div class="head">
             <strong>{{weapon.sName || weapon.name}}</strong>
             <div class="star star-{{weapon.star}}"></div>
@@ -85,7 +84,7 @@
       {{each cons idx}}
       <div class="cons-item">
         <div class="talent-icon {{idx * 1 > data.cons * 1 ? 'off' : '' }}">
-          <div class="talent-icon-img" style="background-image:url('{{_res_path}}{{imgs[`cons${idx}`]}}')"></div>
+          <div class="talent-icon-img" style="background-image:url({{_res_path}}{{imgs[`cons${idx}`]}})"></div>
         </div>
       </div>
       {{/each}}
@@ -121,7 +120,7 @@
           <div class="talent-icon
                {{talent.level > talent.original ? `talent-plus`:``}}
                 {{talent.original >= 10 ? `talent-crown`:``}}">
-            <div class="talent-icon-img" style="background-image:url('{{_res_path}}{{imgs[key]}}')"></div>
+            <div class="talent-icon-img" style="background-image:url({{_res_path}}{{imgs[key]}})"></div>
             <strong>{{talent.level}}</strong>
             <span>{{tName}}</span>
           </div>
@@ -134,14 +133,14 @@
         {{if tCfg?.type === 'talent' }}
         <div class="talent-item">
           <div class="talent-icon {{tCfg.value ? '':'off'}}">
-            <div class="talent-icon-img" style="background-image:url('{{_res_path}}{{tCfg.img}}')"></div>
+            <div class="talent-icon-img" style="background-image:url({{_res_path}}{{tCfg.img}})"></div>
           </div>
         </div>
         {{else}}
         <div class="tree-item">
           {{each tCfg tIdx}}
           <div class="talent-icon  {{tIdx.value ? '':'off'}}">
-            <div class="talent-icon-img" style="background-image:url('{{_res_path}}{{tIdx.img}}')"></div>
+            <div class="talent-icon-img" style="background-image:url({{_res_path}}{{tIdx.img}})"></div>
           </div>
           {{/each}}
         </div>
@@ -154,7 +153,7 @@
     {{if weapon && weapon.name}}
     <!-- 【 星铁 武器 】 -->
     <div class="sr-weapon">
-      <div class="weapon-img" style="background-image:url('{{_res_path}}{{weapon.splash}}')"></div>
+      <div class="weapon-img" style="background-image:url({{_res_path}}{{weapon.splash}})"></div>
       <div class="weapon-info">
         <div class="weapon-title">
           <strong>{{weapon.name}}</strong>
@@ -214,7 +213,7 @@
       {{ if game === 'gs' }}
       <div class="artis-weapon">
         <div class="item weapon">
-          <div class="img" style="background-image:url('{{_res_path}}{{weapon.img}}')"></div>
+          <div class="img" style="background-image:url({{_res_path}}{{weapon.img}})"></div>
           <div class="head">
             <strong>{{weapon.sName || weapon.name}}</strong>
             <span class="info"><span
@@ -240,7 +239,7 @@
       <div class="item arti arti-class-{{ds.markClass}}">
         {{if ds && ds.name && ds.main && ds.main.key && ds.main.key!="undefined"}}
         <div class="arti-icon">
-          <div class="img" style="background-image:url('{{_res_path}}{{ds.img}}')"></div>
+          <div class="img" style="background-image:url({{_res_path}}{{ds.img}})"></div>
           <span>+{{ds.level}}</span>
         </div>
         <div class="head">
@@ -267,10 +266,10 @@
     {{/if}}
   </div>
 
-  
+
   <!-- 【 伤害表格 】 -->
   {{ set {dmgRet, dmgCfg, enemyLv, enemyName, dmgMsg, dmgData, createdBy} = dmgCalc }}
-    {{if dmgData?.length > 0}}
+  {{if dmgData?.length > 0}}
     <div class="dmg-cont dmg-list cont">
       <div class="cont-title">
         伤害计算
@@ -512,6 +511,45 @@
     }
     </script>
     {{/if}}
+  <div>
+    {{if dmgData?.length > 0}}
+    <div class="dmg-cont dmg-list cont">
+      <div class="cont-title">
+        伤害计算
+        <span class="not-dmg-mode dmg-desc">使用<strong>{{gameHash}}{{data.abbr}}伤害</strong>命令可以查看伤害详情</span>
+      </div>
+      <div class="cont-table">
+        <div class="tr thead">
+          <div class="title dmg-idx">#</div>
+          <div class="title dmg-title">伤害类型</div>
+          <div>暴击伤害</div>
+          <div>期望伤害</div>
+        </div>
+        {{each dmgData dmg idx}}
+        <div class="dmg tr">
+          <div class="title dmg-idx">{{idx+1}}</div>
+          <div class="title dmg-title">{{dmg.title}}</div>
+          {{if !dmg.dmg || dmg.dmg === "NaN"}}
+          <div class="value value-full">{{dmg.avg}}{{dmg.unit}}</div>
+          <div class="value value-none"></div>
+          {{else}}
+          <div class="value">{{dmg.dmg}}{{dmg.unit}}</div>
+          <div class="value">{{dmg.avg}}{{dmg.unit}}</div>
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+      <div class="cont-footer dmg-desc">
+        <span>目标为{{enemyLv}}级{{enemyName||'小宝'}}{{if game==='gs'}}，使用<strong>#敌人等级{{enemyLv}}</strong>命令可指定等级{{/if}}</span>
+        {{if createdBy}}
+        <!-- 优先展示calc.js中 返回的createdBy字段，用于展示伤害计算作者-->
+        <span class="dmg-created-by">伤害计算来源：<strong>{{createdBy}}</strong></span>
+        {{/if}}
+      </div>
+    </div>
+    {{/if}}
+  </div>
+
   <!-- 【 伤害变化详情 】 -->
   <div>
     {{if mode === "dmg"}}

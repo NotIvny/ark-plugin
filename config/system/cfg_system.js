@@ -19,8 +19,8 @@ export const cfgSchema = {
         key: '排名类型',
         type: 'num',
         def: 2,
-        input: (n) => /[0-2]{1}/.test(n) ? (n * 1) : 2,
-        desc: '角色面板伤害计算中显示的排名类型：0-伤害排名，1-圣遗物排名, 2-均显示'
+        input: (n) => /[0-3]{1}/.test(n) ? (n * 1) : 2,
+        desc: '角色面板伤害计算中显示的排名类型：0-伤害排名，1-圣遗物排名, 2-均显示，3-显示图表排名'
       },
       RankType: {
         title: '排名展示规则',
@@ -68,7 +68,7 @@ export const cfgSchema = {
         title: '首次更新自动获取面板',
         key: '自动获取面板',
         def: false,
-        desc: '测试配置，首次更新面板时，自动从API获取面板数据（需验证uid）'
+        desc: '首次更新面板时，自动从API获取面板数据（需验证uid）'
       },
       exportPanelRequire: {
         title: '导出面板数据(新)',

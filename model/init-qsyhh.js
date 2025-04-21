@@ -119,10 +119,9 @@ const ArkInit = {
             data.treeData = treeData
           }
           data.weapon = profile.getWeaponDetail()
-          /*
           let selfRank = []
           let scoreAndRank = []
-          */
+          let ret1,ret2
           //是否计算总排名
           if (ArkCfg.get('panelRank', true) && dmgCalc.dmgData !== undefined) {
             let characterID = Gscfg.roleNameToID(char.name, true) || Gscfg.roleNameToID(char.name, false)
@@ -131,7 +130,8 @@ const ArkInit = {
             const query = {
               0: 'dmg',
               1: 'mark',
-              2: 'all'
+              2: 'all',
+              3: 'all',
             }[queryType]
             //是否使用本地数据计算排名
             if (ArkCfg.get('localPanelRank', true)) {
@@ -151,10 +151,6 @@ const ArkInit = {
                 update: 0
               })
             }
-            /*
-            scoreAndRank = [`${ret[0].rank} (${ret[0].percent}%)`, `${ret[1].rank} (${ret[1].percent}%)`]
-            selfRank = [ret[0].percent, ret[0].score, ret[1].percent, ret[1].score]
-            */
             const getRank = (index, baseTitle) => {
               const retItem = ret[index]
               if (retItem?.retcode !== 100) return
@@ -162,49 +158,57 @@ const ArkInit = {
               const characterRank = {
                 0: retItem.rank,
                 1: retItem.percent,
-                2: `${retItem.rank} (${retItem.percent}%)`
+                2: `${retItem.rank} (${retItem.percent}%)`,
               }[rankType]
               const markRankType = ArkCfg.get('markRankType', false)
               const isSpecialPanel = e.msg.includes('喵喵面板变换') && markRankType
               const title = isSpecialPanel 
                 ? `${baseTitle}(面板变换)` 
                 : `${baseTitle}${markRankType ? '(本地)' : ''}`
-              dmgCalc.dmgData.push({ title, unit: characterRank }) //需要切换echarts的话建议把这里注释了
+              if (queryType === 3) {
+                scoreAndRank[index] = characterRank
+                selfRank.push(...[
+                  ret[index].percent,
+                  ret[index].score
+                ])
+              } else {
+                dmgCalc.dmgData.push({ title, unit: characterRank })
+              }
             }
             ret = Array.isArray(ret) ? ret : [ret]
             switch (queryType) {
               case 0:
                 getRank(0, '总伤害排名')
-                break;
+                break
               case 1:
                 getRank(0, '圣遗物排名')
-                break;
+                break
               case 2:
                 getRank(0, '总伤害排名')
                 getRank(1, '圣遗物排名')
-                break;
+                break
+              case 3:
+                getRank(0, '总伤害排名')
+                getRank(1, '圣遗物排名')
+                ret1 = await api.sendApi('getSpecificRank', {
+                  id: characterID,
+                  percent: 0
+                })
+                ret2 = await api.sendApi('getSpecificRank', {
+                  id: characterID,
+                  artis: true,
+                  percent: 0
+                })
+                break
             }
           }
-          /*
-          let ret1 = await api.sendApi('getSpecificRank', {
-            id: Gscfg.roleNameToID(char.name, true) || Gscfg.roleNameToID(char.name, false),
-            percent: 0
-          })
-          let ret2 = await api.sendApi('getSpecificRank', {
-            id: Gscfg.roleNameToID(char.name, true) || Gscfg.roleNameToID(char.name, false),
-            artis: true,
-            percent: 0
-          })
-          */
           let background = await Common.getBackground("profile")
           let renderData = {
-            /*
-            dmgRankData: ret1.data.scores.map(score => (score / ret1.data.top1) * 100),
-            artisRankData: ret2.data.scores,
-            top1: ret2.data.top1,
+            dmgRankData: ret1?.data?.scores ? ret1.data.scores.map(score => (score / ret1.data.top1) * 100) : null,
+            artisRankData: ret2?.data?.scores,
+            top1: ret2?.data?.top1,
             scoreAndRank,
             selfRank,
-            */
             save_id: uid,
             uid,
             game,
