@@ -204,7 +204,7 @@ const ArkInit = {
           }
           let background = await Common.getBackground("profile")
           let renderData = {
-            dmgRankData: ret1?.data?.scores ? ret1.data.scores.map(score => (score / ret1.data.top1) * 100) : null,
+            dmgRankData: ret1?.data?.scores?.map(score => (score / (ret1?.data?.top1 ?? 1)) * 100),
             artisRankData: ret2?.data?.scores,
             top1: ret2?.data?.top1,
             scoreAndRank,

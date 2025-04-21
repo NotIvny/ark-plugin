@@ -210,9 +210,9 @@ const ArkInit = {
             }
             profile = false
             let renderData = {
-            dmgRankData: ret1.data.scores.map(score => (score / ret1.data.top1) * 100),
-            artisRankData: ret2.data.scores,
-            top1: ret2.data.top1,
+            dmgRankData: ret1?.data?.scores?.map(score => (score / (ret1?.data?.top1 ?? 1)) * 100),
+            artisRankData: ret2?.data?.scores,
+            top1: ret2?.data?.top1,
             scoreAndRank,
             selfRank,
             save_id: uid,
