@@ -13,16 +13,17 @@ const ArkInit = {
     init() {
         ProfileDetail.render = async (e, char, mode = 'profile', params = {}) => {
           let selfUser = await MysApi.initUser(e)
-      
+
           if (!selfUser) return e.reply([ `尚未绑定UID，请先发送【${e.isSr ? "*" : "#"}绑定+你的UID】来绑定查询目标\n示例：${e.isSr ? "*" : "#"}绑定100000000`, new Button(e).bindUid() ])
-      
+
           let { uid } = e
-      
+
           if (char.isCustom) return e.reply(`暂不支持自定义角色${char.name}的面板信息查看`)
-      
+
           let profile = e._profile || await getProfileRefresh(e, char.id)
           if (!profile) return true
-      
+
+          profile.uid = e.uid
           char = profile.char || char
           let a = profile.attr
           let base = profile.base
@@ -30,7 +31,7 @@ const ArkInit = {
           let game = char.game
           let isGs = game === "gs"
           let isSr = !isGs
-      
+
           lodash.forEach((isGs ? "hp,def,atk,mastery" : "hp,def,atk,speed").split(","), (key) => {
             let fn = (n) => Format.comma(n, key === "hp" ? 0 : 1)
             attr[key] = fn(a[key])
@@ -51,7 +52,7 @@ const ArkInit = {
             attr[`${key}Base`] = fn(base[key2])
             attr[`${key}Plus`] = fn(a[key2] - base[key2])
           })
-      
+
           let weapon = Weapon.get(profile?.weapon?.name, game)
           let w = profile.weapon
           let wCfg = {}
@@ -59,16 +60,16 @@ const ArkInit = {
             wCfg = weapon.calcAttr(w.level, w.promote)
             wCfg.weapons = await ProfileWeapon.calc(profile)
           }
-      
+
           let enemyLv = isGs ? (await selfUser.getCfg("char.enemyLv", 103)) : 80
           let dmgCalc = await ProfileDetail.getProfileDmgCalc({ profile, enemyLv, mode, params })
-      
+
           let rank = false
           if (e.group_id && !e._profile) {
             rank = await ProfileRank.create({ group: e.group_id, uid, qq: e.user_id })
             await rank.getRank(profile, true)
           }
-      
+
           let artisDetail = profile.getArtisMark()
           // 处理一下allAttr，确保都有9个内容，以获得比较好展示效果
           let allAttr = profile.artis.getAllAttr() || []
@@ -77,9 +78,10 @@ const ArkInit = {
             allAttr[idx] = {}
           }
           artisDetail.allAttr = allAttr
-      
+
           let artisKeyTitle = Artifact.getArtisKeyTitle(game)
           let data = profile.getData("name,abbr,cons,level,talent,dataSource,updateTime,imgs,costumeSplash")
+          data.charWeapon = char.weaponType
           if (isSr) {
             let treeData = []
             let treeMap = {}
@@ -249,14 +251,15 @@ const ArkInit = {
         }
         CharRank.renderCharRankList = async function({ e, uids, char, mode, groupId }){
           let list = []
+          let _dmg
           for (let ds of uids) {
             let uid = ds.uid || ds.value
             let player = Player.create(uid, e.isSr ? "sr" : "gs")
             let avatar = player.getAvatar(ds.charId || char.id)
             if (!avatar) continue
-      
+
             let profile = avatar.getProfile()
-      
+
             if (profile) {
               let profileRank = await ProfileRank.create({ groupId, uid })
               let data = await profileRank.getRank(profile, true)
@@ -267,13 +270,13 @@ const ArkInit = {
                 ...avatar.getData("id,star,name,sName,level,fetter,cons,weapon,elem,talent,artisSet,imgs"),
                 artisMark: Data.getData(mark, "mark,markClass,valid,crit")
               }
-              let dmg = data?.dmg?.data
-              if (dmg && dmg.avg) {
-                let title = dmg.title
+              _dmg = data?.dmg?.data
+              if (_dmg && _dmg.avg) {
+                let title = _dmg.title
                 // 稍微缩短下title
                 if (title.length > 10) title = title.replace(/[ ·]*/g, "")
                 title = title.length > 10 ? title.replace(/伤害$/, "") : title
-                let tmpAvg = dmg.type !== "text" ? Format.comma(dmg.avg, 1) : dmg.avg
+                let tmpAvg = _dmg.type !== "text" ? Format.comma(_dmg.avg, 1) : _dmg.avg
                 tmp.dmg = {
                   title,
                   avg: tmpAvg,
@@ -294,7 +297,7 @@ const ArkInit = {
                   // logger.error(e)
                 }
               }
-      
+
               if (mode === "crit") {
                 tmp._mark = mark?._crit * 6.6044 || 0
               } else if (mode === "valid") {
@@ -326,7 +329,7 @@ const ArkInit = {
                 valid: "加权有效词条"
               }
             }
-      
+
             // 特殊处理开拓者的情况
             let titleName = {
               穹·毁灭: "开拓者·毁灭",
@@ -348,7 +351,7 @@ const ArkInit = {
             title = `${e.isSr ? "*" : "#"}${mode === "mark" ? "最高分" : "最强"}排行`
             list = lodash.sortBy(list, [ "uid", "_star", "id" ])
           }
-          
+
           const rankCfg = await ProfileRank.getGroupCfg(groupId)
           let noRankFlag = true
           if (ArkCfg.get('groupRank', true)) {
@@ -389,7 +392,12 @@ const ArkInit = {
               }
             } 
           }
-          let cont_width = noRankFlag ? 820 : 1000
+          const isMemosprite = e.isSr && char.weaponType === "记忆"
+          const data = {
+            title: _dmg?.title,
+            isMemosprite,
+            style: `<style>body .container {width: ${isMemosprite ? 970 + noRankFlag * 180 : 820 + noRankFlag * 180}px;}</style>`
+          }
             // 渲染图像
           return e.reply([
             await Common.render("character/rank-profile-list", {
@@ -398,8 +406,7 @@ const ArkInit = {
               list,
               title,
               elem: char.elem,
-              noRankFlag,
-              cont_width: cont_width,
+              data,
               bodyClass: `char-${char.name}`,
               rankCfg,
               mode,
