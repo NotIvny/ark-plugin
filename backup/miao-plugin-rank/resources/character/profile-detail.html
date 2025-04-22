@@ -269,248 +269,6 @@
 
   <!-- 【 伤害表格 】 -->
   {{ set {dmgRet, dmgCfg, enemyLv, enemyName, dmgMsg, dmgData, createdBy} = dmgCalc }}
-  {{if dmgData?.length > 0}}
-    <div class="dmg-cont dmg-list cont">
-      <div class="cont-title">
-        伤害计算
-        <span class="not-dmg-mode dmg-desc">使用<strong>{{gameHash}}{{data.abbr}}伤害</strong>命令可以查看伤害详情</span>
-      </div>
-      <div class="cont-table">
-        <div class="tr thead">
-          <div class="title dmg-idx">#</div>
-          <div class="title dmg-title">伤害类型</div>
-          <div>暴击伤害</div>
-          <div>期望伤害</div>
-        </div>
-        {{each dmgData dmg idx}}
-        <div class="dmg tr">
-          <div class="title dmg-idx">{{idx+1}}</div>
-          <div class="title dmg-title">{{dmg.title}}</div>
-          {{if !dmg.dmg || dmg.dmg === "NaN"}}
-          <div class="value value-full">{{dmg.avg}}{{dmg.unit}}</div>
-          <div class="value value-none"></div>
-          {{else}}
-          <div class="value">{{dmg.dmg}}{{dmg.unit}}</div>
-          <div class="value">{{dmg.avg}}{{dmg.unit}}</div>
-          {{/if}}
-        </div>
-        {{/each}}
-      </div>
-      <div class="cont-footer dmg-desc">
-        <span>目标为{{enemyLv}}级{{enemyName||'小宝'}}{{if game==='gs'}}，使用<strong>#敌人等级{{enemyLv}}</strong>命令可指定等级{{/if}}</span>
-        {{if createdBy}}
-        <!-- 优先展示calc.js中 返回的createdBy字段，用于展示伤害计算作者-->
-        <span class="dmg-created-by">伤害计算来源：<strong>{{createdBy}}</strong></span>
-        {{/if}}
-      </div>
-    </div>
-    {{/if}}
-    {{if dmgRankData && artisRankData}}
-    <div class="echarts-artis dmg-cont dmg-list cont">
-      <div class="damage-rank" style="width: 50%; float: left; position: relative;">
-        <div class="chart-wrapper" style="transform: scale(0.35); transform-origin: 0% top;">
-          <div id="damageChart" style="width: 800px; height: 400px;"></div>
-        </div>
-        <div class="damage-type-label" style="top: 80%">伤害排名</div>
-        <div class="damage-type-label" style="top: 90%">{{scoreAndRank[0]}}</div>
-      </div>
-      <div class="damage-rank" style="width: 50%; float: left; position: relative;">
-        <div class="chart-wrapper" style="transform: scale(0.35); transform-origin: 0% top;">
-          <div id="artisChart" style="width: 800px; height: 400px;"></div>
-        </div>
-        <div class="damage-type-label" style="top: 80%">圣遗物排名</div>
-        <div class="damage-type-label" style="top: 90%">{{scoreAndRank[1]}}</div>
-      </div>
-    </div>
-    
-    <style>
-      .damage-type-label {
-        position: absolute;
-        top: 80%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-        font-size: 15px;
-        border-radius: 3px;
-        text-align: center;
-        white-space: nowrap;
-      }
-      
-      .echarts-artis {
-        display: block;
-        height: 185px;
-        overflow: hidden; 
-      }
-      
-      .chart-wrapper {
-        width: 800px;
-        height: 400px;
-        margin-top: 10px;
-      }
-      
-      .echarts-artis::after {
-        content: "";
-        display: table;
-        clear: both;
-      }
-      
-      .damage-rank {
-        position: relative;
-        height: 100%;
-      }
-    </style>
-        
-    <script src="../../../../../plugins/ark-plugin/resources/graph/echarts.min.js"></script>
-    <script>
-    var myChart,rankData_,rankData,target,targetScore
-    for(var i = 0; i < 2; i++){
-      if(i == 0){
-        myChart = echarts.init(document.getElementById('damageChart'), null, { renderer: 'svg' })
-        rankData_ = ['100', {{@dmgRankData}}, '0']
-        const ranks = [100, 99, 95, 90, 80, 70, 50, 30, 10, 5, 1, 0]
-        rankData = Array.from({ length: 101 }, (_, i) => 
-          ranks.includes(i) ? rankData_[ranks.indexOf(i)] : null
-        )
-        target = {{selfRank[0]}}
-        targetScore = {{selfRank[1]}}.toFixed(2)
-      }else{
-        myChart = echarts.init(document.getElementById('artisChart'), null, { renderer: 'svg' })
-        rankData_ = [{{top1}}, {{@artisRankData}}, '0']
-        const ranks = [100, 99, 95, 90, 80, 70, 50, 30, 10, 5, 1, 0]
-        rankData = Array.from({ length: 101 }, (_, i) => 
-          ranks.includes(i) ? rankData_[ranks.indexOf(i)] : null
-        )
-        target = {{selfRank[2]}}
-        targetScore = ({{selfRank[3]}} * {{top1}} / 100).toFixed(2)
-      }
-      // 配置项
-      var option = {
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'cross'
-          }
-        },
-        textStyle: {
-          fontFamily: 'Number, "汉仪文黑-65W", YS, PingFangSC-Medium, "PingFang SC", sans-serif',
-        },
-        xAxis: {
-          type: 'value',
-          name: '百分比',
-          nameLocation: 'end',
-          nameGap: 25,
-          nameTextStyle: {
-            fontSize: 18,
-            color: '#ffffff'
-          },
-          splitLine: {
-            show: false
-          },
-          axisLine: {
-            show: false
-          },
-          axisLabel: {
-            show: true,
-            color: '#ffffff',
-            fontSize: 22,
-            fontWeight: 'bold',
-            formatter: function(value) {
-              if ([0, 20, 40, 60, 80, 100].includes(value)) {
-                return 100 - value;
-              }
-              return '';
-            }
-          }
-        },
-        yAxis: {
-          type: 'value',
-          name: i == 0 ? '伤害评分' : '圣遗物评分',
-          nameTextStyle: {
-            fontSize: 18,
-            color: '#ffffff'
-          },
-          min: 0,
-          max: i == 0 ? 100 : parseInt({{top1}}) / 50 * 50,
-          interval: i == 0 ? 20 : 50,
-          splitLine: {
-            show: false
-          },
-          axisLabel: {
-            fontSize: 22,
-            color: '#ffffff',
-            fontWeight: 'bold'
-          }
-        },
-  
-        animation: false,
-        series: [{
-          data: rankData.map((val, index) => [index, val === null ? null : val]),
-          type: 'line',
-          smooth: true,
-          connectNulls: true,
-          label: {
-            show: false,
-            position: 'top',
-            fontSize: 18,
-            fontWeight: 'bold'
-          },
-          lineStyle: {
-            color: '#33CCCC'
-          },
-          areaStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-              {
-                offset: 0,
-                color: 'rgba(51, 204, 204, 0.5)'
-              },
-              {
-                offset: (100 - target) / 100,
-                color: 'rgba(51, 204, 204, 0.5)'
-              },
-              {
-                offset: (100 - target - 2.5) / 100,
-                color: 'rgba(255, 0, 0)'
-              },
-              {
-                offset: (100 - target + 2.5) / 100,
-                color: 'rgba(255, 0, 0)'
-              },
-              {
-                offset: (100 - target + 2.5) / 100,
-                color: 'rgba(51, 204, 204, 0.5)'
-              },
-              {
-                offset: 1,
-                color: 'rgba(51, 204, 204, 0.5)'
-              }
-            ])
-          },
-          markPoint: {
-            symbol: 'circle',
-            symbolSize: 0,
-            label: {
-              show: true,
-              position: 'top',
-              offset: [15, 0],
-              formatter: `${targetScore}`,
-              fontSize: 35,
-              fontWeight: 'bold',
-              color: '#ffffff',
-              borderRadius: 4
-            },
-            data: [{
-              coord: [100 - target, targetScore],
-              itemStyle: {
-                color: 'transparent'
-              }
-            }]
-          }
-        }],
-      }
-      myChart.setOption(option)
-    }
-    </script>
-    {{/if}}
   <div>
     {{if dmgData?.length > 0}}
     <div class="dmg-cont dmg-list cont">
@@ -549,7 +307,250 @@
     </div>
     {{/if}}
   </div>
+  {{if dmgRankData && artisRankData}}
+    <div class="dmg-cont dmg-list cont">
+      <div class="cont-title">
+        排名统计
+        <span class="not-dmg-mode dmg-desc">使用<strong>{{gameHash}}{{data.abbr}}排名统计</strong>命令可以查看排名统计详情</span>
+      </div>
+      <div class="echarts-artis " style="display: table; width: 100%; border-collapse: separate;">
+        <div style="display: table-row;">
+          <div style="display: table-cell; width: 50%; position: relative;  box-shadow: 0 0 1px 0 #fff;">
+            <div class="damage-rank">
+              <div class="chart-wrapper" style="transform: scale(0.38); transform-origin: -1% -13%;">
+                <div id="damageChart" style="height: 400px;"></div>
+              </div>
+            </div>
+          </div>
+          <div style="display: table-cell; width: 50%; position: relative;  box-shadow: 0 0 1px 0 #fff;">
+            <div class="damage-rank">
+              <div class="chart-wrapper" style="transform: scale(0.38); transform-origin: -1% -13%;">
+                <div id="artisChart" style="height: 400px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display: table-row;">
+          <div style="display: table-cell;">
+            <div class="damage-type-label">伤害排名</div>
+          </div>
+          <div style="display: table-cell;">
+            <div class="damage-type-label">圣遗物排名</div>
+          </div>
+        </div>
+        <div style="display: table-row;">
+          <div style="display: table-cell;">
+            <div class="damage-type-label">{{scoreAndRank[0]}}</div>
+          </div>
+          <div style="display: table-cell;">
+            <div class="damage-type-label">{{scoreAndRank[1]}}</div>
+          </div>
+        </div>
+      </div>
 
+
+    </div>
+    
+    
+    <style>
+      .damage-type-label {
+        position: static;
+        transform: none;
+        color: white;
+        font-size: 15px;
+        text-align: center;
+        white-space: nowrap;
+        padding: 7px 0;
+        box-shadow: 0 0 1px 0 #fff;
+        background: rgba(0, 0, 0, 0.4);
+      }
+      
+      .echarts-artis {
+        display: table;
+        width: 100%;
+        height: 100px;
+        table-layout: fixed;
+        border-collapse: collapse;
+      }
+      
+      .chart-row {
+        display: table-row;
+      }
+      
+      .chart-cell {
+        display: table-cell;
+        vertical-align: top;
+        position: relative;
+        height: 100%;
+      }
+      
+      .chart-wrapper {
+        width: 800px;
+        height: 135px;
+        margin-top: 10px;
+        transform: scale(0.35);
+        transform-origin: 0% top;
+      }
+      
+      .label-row {
+        display: table-row;
+      }
+      
+      .label-cell {
+        display: table-cell;
+        vertical-align: middle;
+        text-align: center;
+      }
+    </style>
+        
+    <script src="../../../../../plugins/ark-plugin/resources/graph/echarts.min.js"></script>
+    <script>
+      var myChart,rankData_,rankData,target,targetScore
+      for(var i = 0; i < 2; i++){
+        if(i == 0){
+          myChart = echarts.init(document.getElementById('damageChart'), null, { renderer: 'svg' })
+          rankData_ = ['100', {{@dmgRankData}}, '0']
+          const ranks = [100, 99, 95, 90, 80, 70, 50, 30, 10, 5, 1, 0]
+          rankData = Array.from({ length: 101 }, (_, i) => 
+            ranks.includes(i) ? rankData_[ranks.indexOf(i)] : null
+          )
+          target = {{selfRank[0]}}
+          targetScore = {{selfRank[1]}}.toFixed(2)
+        }else{
+          myChart = echarts.init(document.getElementById('artisChart'), null, { renderer: 'svg' })
+          rankData_ = [{{top1}}, {{@artisRankData}}, '0']
+          const ranks = [100, 99, 95, 90, 80, 70, 50, 30, 10, 5, 1, 0]
+          rankData = Array.from({ length: 101 }, (_, i) => 
+            ranks.includes(i) ? rankData_[ranks.indexOf(i)] : null
+          )
+          target = {{selfRank[2]}}
+          targetScore = ({{selfRank[3]}} * {{top1}} / 100).toFixed(2)
+        }
+        var option = {
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'cross'
+            }
+          },
+          textStyle: {
+            fontFamily: 'Number, "汉仪文黑-65W", YS, PingFangSC-Medium, "PingFang SC", sans-serif',
+          },
+          xAxis: {
+            name:'%',
+            nameTextStyle: {
+              fontSize: 18,
+              color: '#ffffff'
+            },
+            type: 'value',
+            splitLine: {
+              show: false
+            },
+            axisLine: {
+              show: false
+            },
+            axisLabel: {
+              show: true,
+              color: '#ffffff',
+              fontSize: 22,
+              fontWeight: 'bold',
+              formatter: function(value) {
+                if ([0, 20, 40, 60, 80, 100].includes(value)) {
+                  return 100 - value;
+                }
+                return '';
+              }
+            }
+          },
+          yAxis: {
+            type: 'value',
+            name: i == 0 ? '伤害评分' : '圣遗物评分',
+            nameTextStyle: {
+              fontSize: 18,
+              color: '#ffffff'
+            },
+            min: 0,
+            max: i == 0 ? 100 : parseInt({{top1}}) / 50 * 50,
+            interval: i == 0 ? 20 : 50,
+            splitLine: {
+              show: false
+            },
+            axisLabel: {
+              fontSize: 22,
+              color: '#ffffff',
+              fontWeight: 'bold'
+            }
+          },
+    
+          animation: false,
+          series: [{
+            data: rankData.map((val, index) => [index, val === null ? null : val]),
+            type: 'line',
+            smooth: true,
+            connectNulls: true,
+            label: {
+              show: false,
+              position: 'top',
+              fontSize: 18,
+              fontWeight: 'bold'
+            },
+            lineStyle: {
+              color: '#33CCCC'
+            },
+            areaStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                {
+                  offset: 0,
+                  color: 'rgba(51, 204, 204, 0.5)'
+                },
+                {
+                  offset: (100 - target) / 100,
+                  color: 'rgba(51, 204, 204, 0.5)'
+                },
+                {
+                  offset: (100 - target - 2.5) / 100,
+                  color: 'rgba(255, 0, 0)'
+                },
+                {
+                  offset: (100 - target + 2.5) / 100,
+                  color: 'rgba(255, 0, 0)'
+                },
+                {
+                  offset: (100 - target + 2.5) / 100,
+                  color: 'rgba(51, 204, 204, 0.5)'
+                },
+                {
+                  offset: 1,
+                  color: 'rgba(51, 204, 204, 0.5)'
+                }
+              ])
+            },
+            markPoint: {
+              symbol: 'circle',
+              symbolSize: 0,
+              label: {
+                show: true,
+                position: 'top',
+                offset: [15, 0],
+                formatter: `${targetScore}`,
+                fontSize: 35,
+                fontWeight: 'bold',
+                color: '#ffffff',
+                borderRadius: 4
+              },
+              data: [{
+                coord: [100 - target, targetScore],
+                itemStyle: {
+                  color: 'transparent'
+                }
+              }]
+            }
+          }],
+        }
+        myChart.setOption(option)
+      }
+    </script>
+    {{/if}}
   <!-- 【 伤害变化详情 】 -->
   <div>
     {{if mode === "dmg"}}
