@@ -422,7 +422,7 @@
             ranks.includes(i) ? rankData_[ranks.indexOf(i)] : null
           )
           target = {{selfRank[0]}}
-          targetScore = {{selfRank[1]}}.toFixed(2)
+          targetScore = ({{selfRank[1]}}).toFixed(2)
         }else{
           myChart = echarts.init(document.getElementById('artisChart'), null, { renderer: 'svg' })
           rankData_ = [{{top1}}, {{@artisRankData}}, '0']
@@ -493,6 +493,7 @@
           series: [{
             data: rankData.map((val, index) => [index, val === null ? null : val]),
             type: 'line',
+            showSymbol: false,
             smooth: true,
             connectNulls: true,
             label: {
