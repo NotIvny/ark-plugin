@@ -237,7 +237,7 @@ export class characterRank extends plugin {
 		return true
 	}
 	async getSpecificRank(e) {
-		let name = this.e.msg.replace('排名统计', '').replace('#', '').trim()
+		let name = this.e.msg.replace('排名统计', '').replace('#', '').replace('星铁','').trim()
 		let id = Gscfg.roleNameToID(name, true) || Gscfg.roleNameToID(name, false)
 		if (!name || !id) {
 			return true
