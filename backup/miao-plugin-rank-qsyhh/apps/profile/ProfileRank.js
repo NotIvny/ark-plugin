@@ -10,6 +10,7 @@ import ArkCfg from '../../../ark-plugin/components/Cfg.js'
 const CharRank = {
   async renderCharRankList({ e, uids, char, mode, groupId }) {
     let list = []
+    let _dmg
     for (let ds of uids) {
       let uid = ds.uid || ds.value
       let player = Player.create(uid, e.isSr ? "sr" : "gs")
@@ -28,13 +29,13 @@ const CharRank = {
           ...avatar.getData("id,star,name,sName,level,fetter,cons,weapon,elem,talent,artisSet,imgs"),
           artisMark: Data.getData(mark, "mark,markClass,valid,crit")
         }
-        let dmg = data?.dmg?.data
-        if (dmg && dmg.avg) {
-          let title = dmg.title
+        _dmg = data?.dmg?.data
+        if (_dmg && _dmg.avg) {
+          let title = _dmg.title
           // 稍微缩短下title
           if (title.length > 10) title = title.replace(/[ ·]*/g, "")
           title = title.length > 10 ? title.replace(/伤害$/, "") : title
-          let tmpAvg = dmg.type !== "text" ? Format.comma(dmg.avg, 1) : dmg.avg
+          let tmpAvg = _dmg.type !== "text" ? Format.comma(_dmg.avg, 1) : _dmg.avg
           tmp.dmg = {
             title,
             avg: tmpAvg,
@@ -150,7 +151,13 @@ const CharRank = {
         }
       } 
     }
-    let cont_width = noRankFlag ? 820 : 1000
+    const isMemosprite = e.isSr && char.weaponType === "记忆"
+    const data = {
+      title: _dmg?.title,
+      isMemosprite,
+      style: `<style>body .container {width: ${(isMemosprite ? 970 : e.isSr ? 900 : 820) + !noRankFlag * 180}px;}</style>`
+    }
+    cont_width = (isMemosprite ? 970 : e.isSr ? 900 : 820) + !noRankFlag * 180
     // 渲染图像
     return e.reply([
       await Common.render("character/rank-profile-list", {
@@ -159,6 +166,7 @@ const CharRank = {
         list,
         title,
         elem: char.elem,
+        data,
         noRankFlag,
         cont_width: cont_width,
         bodyClass: `char-${char.name}`,

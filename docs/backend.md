@@ -17,7 +17,9 @@ API提供了以下接口
 - getPanelData
 
 目前暂不提供API文档，如需调用请自行通过插件代码了解API参数。
-
+### 2025/5/7
+- chore: 同步miao-plugin
+- fix: API内部错误不返回结果
 ### 2025/4/20
 - getSpecificRank接口支持artis字段
 

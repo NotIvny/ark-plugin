@@ -11,6 +11,7 @@ git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 ```
 安装后输入 #ark替换文件miao-rank、#ark替换文件miao-help ,重启后即可使用全部功能
+
 如需备份文件，可在替换前输入#ark备份文件miao-rank / #ark备份文件miao-help
 ---
 
@@ -37,9 +38,7 @@ git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 
 ### 其他
 
-总排名数据源于用户更新面板，目前数据量在200k左右
-
-原神伤害计算基于敌人等级104
+总排名数据源于用户更新面板，目前数据量在220k左右
 
 插件只会上传用户uid和面板数据，不会上传其他信息
 
