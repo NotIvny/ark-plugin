@@ -23,6 +23,7 @@
       <div>
         {{if mode !== 'weapon'}}
         {{if game === 'gs'}}
+        {{set talentMap = {a: '普攻', e: '战技', q: '爆发'} }}
         <div class="char-talents">
           {{each talentMap tName key}}
           {{set talent = data.talent[key] || {} }}
