@@ -407,6 +407,7 @@ const ArkInit = {
               title,
               elem: char.elem,
               data,
+              noRankFlag,
               bodyClass: `char-${char.name}`,
               rankCfg,
               mode,
