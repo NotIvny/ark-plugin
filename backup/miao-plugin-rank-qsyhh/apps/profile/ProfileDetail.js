@@ -162,7 +162,7 @@ let ProfileDetail = {
 
     let rank = false
     if (e.group_id && !e._profile) {
-      rank = await ProfileRank.create({ group: e.group_id, uid, qq: e.user_id })
+      rank = await ProfileRank.create({ group: e.group_id, uid, qq: e.user_id }, game)
       await rank.getRank(profile, true)
     }
 

@@ -8,7 +8,7 @@ import api from '../../../ark-plugin/model/api.js'
 import ArkCfg from '../../../ark-plugin/components/Cfg.js'
 // const { stubFalse } = lodash
 const CharRank = {
-  async renderCharRankList({ e, uids, char, mode, groupId }) {
+  async renderCharRankList({ e, uids, char, mode, groupId }, game = "gs") {
     let list = []
     let _dmg
     for (let ds of uids) {
@@ -20,7 +20,7 @@ const CharRank = {
       let profile = avatar.getProfile()
 
       if (profile) {
-        let profileRank = await ProfileRank.create({ groupId, uid })
+        let profileRank = await ProfileRank.create({ groupId, uid }, game)
         let data = await profileRank.getRank(profile, true)
         let mark = data?.mark?.data
         let tmp = {
@@ -111,7 +111,7 @@ const CharRank = {
       list = lodash.sortBy(list, [ "uid", "_star", "id" ])
     }
 
-    const rankCfg = await ProfileRank.getGroupCfg(groupId)
+    const rankCfg = await ProfileRank.getGroupCfg(groupId, game)
     let noRankFlag = true
     if (ArkCfg.get('groupRank', true)) {
       let data = [], uids_ = list.map(item => item.uid), ret
@@ -216,7 +216,7 @@ export async function groupRank(e) {
     }
   }
   // 正常群排名
-  let groupCfg = await ProfileRank.getGroupCfg(groupId)
+  let groupCfg = await ProfileRank.getGroupCfg(groupId, game)
   if (!groupRank) return e.reply("群面板排名功能已禁用，Bot主人可通过【#喵喵设置】启用...")
   if (groupCfg.status === 1) return e.reply("本群已关闭群排名，群管理员或Bot主人可通过【#启用排名】启用...")
 
@@ -243,7 +243,7 @@ export async function groupRank(e) {
         uids = await ProfileRank.getGroupMaxUidList(groupId, mode, game)
       }
       if (uids.length > 0) {
-        return CharRank.renderCharRankList({ e, uids, char, mode, groupId })
+        return CharRank.renderCharRankList({ e, uids, char, mode, groupId }, game)
       } else {
         e.reply([ `暂无排名：请通过【${e.isSr ? "*" : "#"}面板】查看角色面板以更新排名信息...`, new Button(e).profile(char) ])
       }
@@ -295,8 +295,9 @@ export async function refreshRank(e) {
     let profiles = player.getProfiles()
     // 刷新rankLimit
     await ProfileRank.setUidInfo({ uid, profiles, qq, uidType: type })
-    let rank = await ProfileRank.create({ groupId, uid, qq })
+    let rank = await ProfileRank.create({ groupId, uid, qq }, game)
     for (let id in profiles) {
+      if (id == "game") continue
       let profile = profiles[id]
       if (!profile.hasData) continue
       await rank.getRank(profile, true)

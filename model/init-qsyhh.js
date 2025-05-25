@@ -66,7 +66,7 @@ const ArkInit = {
 
           let rank = false
           if (e.group_id && !e._profile) {
-            rank = await ProfileRank.create({ group: e.group_id, uid, qq: e.user_id })
+            rank = await ProfileRank.create({ group: e.group_id, uid, qq: e.user_id }, game)
             await rank.getRank(profile, true)
           }
 
@@ -249,7 +249,7 @@ const ArkInit = {
           }
           return true
         }
-        CharRank.renderCharRankList = async function({ e, uids, char, mode, groupId }){
+        CharRank.renderCharRankList = async function({ e, uids, char, mode, groupId }, game = "gs"){
           let list = []
           let _dmg
           for (let ds of uids) {
@@ -261,7 +261,7 @@ const ArkInit = {
             let profile = avatar.getProfile()
 
             if (profile) {
-              let profileRank = await ProfileRank.create({ groupId, uid })
+              let profileRank = await ProfileRank.create({ groupId, uid }, game)
               let data = await profileRank.getRank(profile, true)
               let mark = data?.mark?.data
               let tmp = {
