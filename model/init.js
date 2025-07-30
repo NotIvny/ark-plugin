@@ -231,7 +231,8 @@ const ArkInit = {
             changeProfile: e._profileMsg
             }
             // 渲染图像
-            const msgRes = await e.reply([await Common.render('character/profile-detail', renderData, { e, scale: 1.6, retType: 'base64' }), new Button(e).profile(char, uid)])
+            let exPath = ArkCfg.get('lnFiles', false) ? '-ark' : ''
+            const msgRes = await e.reply([await Common.render(`character/profile-detail${exPath}`, renderData, { e, scale: 1.6, retType: 'base64' }), new Button(e).profile(char, uid)])
             if (msgRes) {
             // 如果消息发送成功，就将message_id和图片路径存起来，3小时过期
             const message_id = [e.message_id]
@@ -399,7 +400,8 @@ const ArkInit = {
             const bodyContainerStyle = `<style>body .container {width: ${(isMemosprite ? 970 : e.isSr ? 900 : 820) + !noRankFlag * 180}px;}</style>`
             let cont_width = (isMemosprite ? 970 : e.isSr ? 900 : 820) + !noRankFlag * 180  
             // 渲染图像
-            return e.reply([await Common.render('character/rank-profile-list', {
+            let exPath = ArkCfg.get('lnFiles', false) ? '-ark' : ''
+            return e.reply([await Common.render(`character/rank-profile-list${exPath}`, {
               save_id: char.id,
               game: e.isSr ? 'sr' : 'gs',
               isMemosprite,

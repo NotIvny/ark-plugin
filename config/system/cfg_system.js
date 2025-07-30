@@ -30,6 +30,12 @@ export const cfgSchema = {
         input: (n) => /[0-2]{1}/.test(n) ? (n * 1) : 2,
         desc: '排名展示规则：0-位次排名，1-百分比排名, 2-混合排名'
       },
+      lnFiles: {
+        title: '软链接文件',
+        key: '软链接',
+        def: false,
+        desc: '首次替换后使用软链接更新文件，插件更新后无需重复替换'
+      },
       localPanelRank: {
         title: '本地数据面板排名',
         key: '本地面板排名',
