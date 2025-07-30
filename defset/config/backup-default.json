@@ -5,7 +5,6 @@
       "srcfile": [
         "apps/profile/ProfileDetail.js",
         "apps/profile/ProfileRank.js",
-        "resources/character/rank-profile-list.css",
         "resources/character/rank-profile-list.html",
         "resources/character/profile-detail.html"
       ]
@@ -16,7 +15,6 @@
       "srcfile": [
         "apps/profile/ProfileDetail.js",
         "apps/profile/ProfileRank.js",
-        "resources/character/rank-profile-list.css",
         "resources/character/rank-profile-list.html",
         "resources/character/profile-detail.html"
       ]

@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import { Version } from './components/index.js'
-
+import path from 'path'
 if (!global.segment) {
   global.segment = (await import("oicq")).segment
 }
@@ -29,10 +29,60 @@ let ArkInit
 try {
   if (Version.isQsyhh) {
     ArkInit = (await import('./model/init-qsyhh.js')).default
+    let ArkCfg = (await import('./components/Cfg.js')).default
+    if (ArkCfg.get('lnFiles', false)) {
+      let oriList = [
+        "./plugins/miao-plugin/resources/character/profile-detail-ark.html",
+        "./plugins/miao-plugin/resources/character/rank-profile-list-ark.css",
+        "./plugins/miao-plugin/resources/character/rank-profile-list-ark.html",
+      ]
+      let destList = [
+        '../../../ark-plugin/backup/miao-plugin-rank-qsyhh/resources/character/profile-detail.html',
+        '../../../ark-plugin/backup/miao-plugin-rank-qsyhh/resources/character/rank-profile-list.css',
+        '../../../ark-plugin/backup/miao-plugin-rank-qsyhh/resources/character/rank-profile-list.html'
+      ]
+      oriList.forEach((originPath, index) => {
+        const destPath = destList[index]
+        try {
+          fs.lstatSync(originPath)
+        } catch (err) {
+          try {
+            fs.symlinkSync(destPath, originPath, 'file')
+            logger.info(`成功创建软链接: ${originPath} -> ${destPath}`)
+          } catch (err) {
+            logger.error(`软链接文件时出现问题` + err)
+          }
+        }
+      })
+    }
   } else {
     ArkInit = (await import('./model/init.js')).default
+    let ArkCfg = (await import('./components/Cfg.js')).default
+    if (ArkCfg.get('lnFiles', false)) {
+      let oriList = [
+        "./plugins/miao-plugin/resources/character/profile-detail-ark.html",
+        "./plugins/miao-plugin/resources/character/rank-profile-list-ark.html",
+      ]
+      let destList = [
+        '../../../ark-plugin/backup/miao-plugin-rank/resources/character/profile-detail.html',
+        '../../../ark-plugin/backup/miao-plugin-rank/resources/character/rank-profile-list.html'
+      ]
+      oriList.forEach((originPath, index) => {
+        const destPath = destList[index]
+        try {
+          fs.lstatSync(originPath)
+        } catch (err) {
+          try {
+            fs.symlinkSync(destPath, originPath, 'file')
+            logger.info(`成功创建软链接: ${originPath} -> ${destPath}`)
+          } catch (err) {
+            logger.error(`软链接文件时出现问题` + err)
+          }
+        }
+      })
+    }
   }
-}catch(err){
+} catch (err) {
   logger.error('ProfileRank.js未被替换，请输入 #ark替换文件miao-rank 后重启，以使用完整功能！')
 }
 if(ArkInit != undefined){
