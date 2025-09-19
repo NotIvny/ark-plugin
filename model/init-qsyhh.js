@@ -2,11 +2,14 @@ import lodash from 'lodash'
 import fs from 'fs'
 import {getProfileRefresh } from '../../miao-plugin/apps/profile/ProfileCommon.js'
 import ProfileDetail from '../../miao-plugin/apps/profile/ProfileDetail.js'
+import ProfileList from '../../miao-plugin/apps/profile/ProfileList.js'
 import CharRank from '../../miao-plugin/apps/profile/ProfileRank.js'
+import { getTargetUid } from '../../miao-plugin/apps/profile/ProfileCommon.js'
 import { Data, Common, Format, Cfg } from '../../miao-plugin/components/index.js'
 import { Button, MysApi, ProfileRank, Weapon, Artifact, Player } from '../../miao-plugin/models/index.js'
 import Gscfg from '../../genshin/model/gsCfg.js'
 import api from '../../ark-plugin/model/api.js'
+import { getStygianVersion } from '../../ark-plugin/model/calcVersion.js'
 import ArkCfg from '../components/Cfg.js'
 import { ProfileWeapon } from '../../miao-plugin/apps/profile/ProfileWeapon.js'
 const ArkInit = {
@@ -399,7 +402,7 @@ const ArkInit = {
             isMemosprite,
             style: `<style>body .container {width: ${(isMemosprite ? 970 : e.isSr ? 900 : 820) + !noRankFlag * 180}px;}</style>`
           }
-            // 渲染图像
+          // 渲染图像
           let exPath = ArkCfg.get('lnFiles', false) ? '-ark' : ''
           return e.reply([
             await Common.render(`character/rank-profile-list${exPath}`, {
@@ -417,7 +420,8 @@ const ArkInit = {
             }, { e, scale: 1.4, retType: "base64" }), new Button(e).profile(char)
           ])
         }
+        
     }   
 }
-export default ArkInit
+export default ArkInit 
     

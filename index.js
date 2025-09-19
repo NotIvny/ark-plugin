@@ -88,6 +88,19 @@ try {
 if(ArkInit != undefined){
   ArkInit.init()
 }
-
+let stygianInit
+try {
+  if (Version.isQsyhh) {
+    stygianInit = (await import('./model/stygian-init-qsyhh.js')).default
+  }else{
+    stygianInit = (await import('./model/stygian-init.js')).default
+  }
+} catch (err) {
+  logger.error('幽境危战排名初始化失败')
+  logger.error(err)
+}
+if(stygianInit != undefined){
+  stygianInit.init()
+}
 logger.info(logger.green("ark-plugin加载完毕"))
 export { apps }

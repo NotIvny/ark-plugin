@@ -86,6 +86,25 @@ export const cfgSchema = {
       }
     }
   },
+  stygianRankCfg: {
+    title: '幽境危战排名扩展',
+    cfg: {
+      stygianRank: {
+        title: '幽境危战排名',
+        key: '幽境危战排名',
+        def: true,
+        desc: '是否开启幽境危战排名，会修改ProfileReq.requestProfile 与 ProfileList.doRefresh，重启后生效'
+      },
+      stygianDataFrom: {
+        title: '幽境危战数据源',
+        key: '幽境危战数据源',
+        type: 'num',
+        def: 2,
+        input: (n) => /[0-2]{1}/.test(n) ? (n * 1) : 2,
+        desc: '选择幽境危战数据源，0-ark，1-akasha.cv，2-二者混合，暂未实现'
+      }
+    }
+  },
   miaoGroupCfg: {
     title: '喵喵设置扩展',
     cfg: {
