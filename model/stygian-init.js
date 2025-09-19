@@ -15,8 +15,8 @@ const stygianInit = {
         ProfileList.doRefresh = async (e, fromMys = false) => {
             let uid = await getTargetUid(e)
             if (!uid) {
-            e._replyNeedUid || e.reply(['请先发送【#绑定+你的UID】来绑定查询目标\n星铁请使用【#星铁绑定+UID】', new Button(e).bindUid()])
-            return true
+                e._replyNeedUid || e.reply(['请先发送【#绑定+你的UID】来绑定查询目标\n星铁请使用【#星铁绑定+UID】', new Button(e).bindUid()])
+                return true
             }
 
             // 数据更新
@@ -24,41 +24,40 @@ const stygianInit = {
             await player.refreshProfile(2, fromMys)    
 
             if (!player?._update?.length) {
-            e._isReplyed || e.reply(['获取角色面板数据失败，请确认角色已在游戏内橱窗展示，并开放了查看详情。设置完毕后请5分钟后再进行请求~', new Button(e).profileList(uid)])
-            e._isReplyed = true
-            } else {
-            let ret = {}
-            lodash.forEach(player._update, (id) => {
-                let char = Character.get(id)
-                if (char) {
-                ret[char.name] = true
-                }
-            })
-            let bindThisUid = false
-            if (e.runtime && e.runtime?.user && e.game == 'gs') {
-                let user = e.runtime.user
-                bindThisUid = user.hasUid(uid, e.game)
-            }
-            if (uid && e.group_id && bindThisUid) {
-                let stygianVersion = getStygianVersion()
-                let stygianTime = await redis.get(`ark-plugin:stygianInfo:${stygianVersion}:${uid}`)
-                if (stygianTime && stygianTime != -1) {
-                logger.error("push")
-                await redis.zAdd(`ark-plugin:stygianRank:${stygianVersion}:${e.group_id}`, { 
-                    score: stygianTime, 
-                    value: String(uid) 
-                })
-                }
-            }
-            if (lodash.isEmpty(ret)) {
-                e._isReplyed || e.reply([ `获取${e.isSr ? "星铁" : "原神"}UID：${uid} 角色面板数据失败，未能请求到角色数据。请确认角色已在游戏内橱窗展示，并开放了查看详情。设置完毕后请5分钟后再进行请求~`, new Button(e).profileList(uid) ])
+                e._isReplyed || e.reply(['获取角色面板数据失败，请确认角色已在游戏内橱窗展示，并开放了查看详情。设置完毕后请5分钟后再进行请求~', new Button(e).profileList(uid)])
                 e._isReplyed = true
             } else {
-                e.newChar = ret
-                e.updateChar = update
-                e.isNewCharFromMys = fromMys
-                return await ProfileList.render(e)
-            }
+                let ret = {}
+                lodash.forEach(player._update, (id) => {
+                    let char = Character.get(id)
+                    if (char) {
+                    ret[char.name] = true
+                    }
+                })
+                let bindThisUid = false
+                if (e.runtime && e.runtime?.user && e.game == 'gs') {
+                    let user = e.runtime.user
+                    bindThisUid = user.hasUid(uid, e.game)
+                }
+                if (uid && e.group_id && bindThisUid) {
+                    let stygianVersion = getStygianVersion()
+                    let stygianTime = await redis.get(`ark-plugin:stygianInfo:${stygianVersion}:${uid}`)
+                    if (stygianTime && stygianTime != -1) {
+                    logger.error("push")
+                    await redis.zAdd(`ark-plugin:stygianRank:${stygianVersion}:${e.group_id}`, { 
+                        score: stygianTime, 
+                        value: String(uid) 
+                    })
+                    }
+                }
+                if (lodash.isEmpty(ret)) {
+                    e._isReplyed || e.reply(['获取角色面板数据失败，未能请求到角色数据。请确认角色已在游戏内橱窗展示，并开放了查看详情。设置完毕后请5分钟后再进行请求~', new Button(e).profileList(uid)])
+                    e._isReplyed = true
+                } else {
+                    e.newChar = ret
+                    e.isNewCharFromMys = fromMys
+                    return await ProfileList.render(e)
+                }
             }
             return true
         }
