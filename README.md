@@ -10,6 +10,16 @@ git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 ```
 git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 ```
+
+|                           功能名                            | 是否需要替换文件     | 替换文件命令     |
+|:-------------------------------------------------------------:|------------------|------------------|
+| 角色排名拓展 | 需要 | #ark替换文件miao-rank |
+| 喵喵帮助拓展 | 需要 | #ark替换文件miao-help |
+| 幽境危战排名 | 不需要 | / |
+| 喵喵设置扩展 | 不需要 | / |
+| 插件优先级设置 | 不需要 | / |
+| 文件备份 | 不需要 | / |
+
 安装后输入 #ark替换文件miao-rank、#ark替换文件miao-help ,重启后即可使用全部功能
 
 如需备份文件，可在替换前输入#ark备份文件miao-rank / #ark备份文件miao-help
