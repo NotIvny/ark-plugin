@@ -16,7 +16,7 @@
 
   <div class="cont group-rank-tip {{groupRank?'has-rank':'no-rank'}}">
     <div class="cont-title">
-      群排名说明
+      群排名说明 {{if mode == 'dmg' && data.title}}<span class="rank-title">当前排行伤害: {{data.title}}</span>{{/if}}
     </div>
     <div class="cont-body">
       <ul class="cont-msg">
@@ -150,7 +150,7 @@
       {{/if}}
     </div>
     {{if !noRankFlag}}
-    <div class="char-dmg line">
+    <div class="char-dmg line" style="width: 150px;">
         {{if ds.dmg}}
         <div class="dmg-title">{{ds.dmg?.rankName}}</div>
         <div class="dmg-value">{{ds.dmg?.totalrank}}</div>
