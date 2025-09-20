@@ -123,6 +123,7 @@ export class characterRank extends plugin {
 				case 100:
 					e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret.rank}，伤害评分: ${ret.score.toFixed(2)}`)
 					break
+				case 101:
 				case 102:
 					break
 				default:
