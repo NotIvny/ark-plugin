@@ -101,7 +101,7 @@ export const cfgSchema = {
         type: 'num',
         def: 2,
         input: (n) => /[0-2]{1}/.test(n) ? (n * 1) : 2,
-        desc: '选择幽境危战数据源，0-ark，1-akasha.cv，2-二者混合，暂未实现'
+        desc: '选择幽境危战数据源，0-ark，1-akasha.cv，2-二者混合'
       }
     }
   },

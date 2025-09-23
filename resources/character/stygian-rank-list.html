@@ -83,6 +83,7 @@
         {{else}}
         {{/if}}
     </div>
+    {{if list.hasArk}}
     <div class="char-dmg line">
       {{if ds.rank_ark}}
       <div class="dmg-title">{{ds.rank_ark.title}}</div>
@@ -90,6 +91,8 @@
       {{else}}
       {{/if}}   
     </div>
+    {{/if}}
+    {{if list.hasAkasha}}
     <div class="char-dmg line">
       {{if ds.rank_akasha}}
       <div class="dmg-title">{{ds.rank_akasha.title}}</div>
@@ -97,6 +100,7 @@
       {{else}}
       {{/if}}   
     </div>
+    {{/if}}
   </div>
   {{/each}}
 </div>

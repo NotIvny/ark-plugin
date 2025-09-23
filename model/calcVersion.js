@@ -29,11 +29,11 @@ export function getStygianVersion() {
   return finalVersion
 }
 
-export function getStygianPeriod() {
-  const version = getStygianVersion()
+export function getStygianPeriod(ver = null) {
+  const version = ver ? ver : getStygianVersion()
   const offsetDays = (version - 54) * 42
   const offsetMs = offsetDays * 24 * 60 * 60 * 1000
-  const baseStart = new Date('2025-09-10T10:00:00+08:00')
+  const baseStart = new Date('2025-09-17T10:00:00+08:00')
   const baseEnd = new Date('2025-10-21T03:59:59+08:00')
   const start = new Date(baseStart.getTime() + offsetMs)
   const end = new Date(baseEnd.getTime() + offsetMs)

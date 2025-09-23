@@ -33,7 +33,7 @@ export class characterRank extends plugin {
 					fnc: 'getAllRank',
 				},
 				{
-					reg: '^#幽境危战排名$',
+					reg: '^#(top)?幽境危战排名(\\d+\.\\d+)?$',
 					fnc: 'stygian',
 				},
 				{
@@ -370,123 +370,157 @@ export class characterRank extends plugin {
 		}
 	}
 	async stygian(e){
-		if (!e.isGroup) {
-			return true
-        } else {
-			let stygianVersion = getStygianVersion()
-			let stygianUids = await redis.zRangeWithScores(`ark-plugin:stygianRank:${stygianVersion}:${e.group_id}`, 0, -1);
-			let uids = stygianUids.map(item => item.value)
-			let ranks = stygianUids.map(item => item.score)
-			let ret_ark = await api.sendApi('stygianRank', {
-				uid: uids,
-			})
-			let uidsInfo = uids.map(uid => `[uid]${uid}`).join('')
-            let ret_akasha = await api.sendAkashaApi(`leaderboards/stygian?sort=stygianScore&order=-1&size=20&page=1&uids=${uidsInfo}&p=&fromId=&li=&uid=251890729&version=6_0`)
-			if(ret_ark.retcode != 100){
-				ret_ark = null
+		if (!e.isGroup) return true
+		const regex = /^#(top)?幽境危战排名(?:(\d+\.\d+))?$/
+		const match = e.msg.match(regex)
+		let hasTop = !!match[1]
+		let version = match[2] || null
+		if (version) {
+			const [bVersion, sVersion] = version.split('.').map(Number)
+			version = (bVersion * 9 + sVersion >= 52) ? bVersion * 9 + sVersion : null
+		}
+		let stygianVersion = getStygianVersion()
+    	const queryOld = version && version !== stygianVersion
+		let uidsOld = [], ranksOld = []
+		let stygianUids = await redis.zRangeWithScores(`ark-plugin:stygianRank:${stygianVersion}:${e.group_id}`, 0, -1);
+		let uids = stygianUids.map(item => item.value)
+		let ranks = stygianUids.map(item => item.score)
+		if (queryOld) {
+			const stygianUidsOld = await redis.zRangeWithScores(`ark-plugin:stygianRank:${version}:${e.group_id}`, 0, -1)
+			uidsOld = stygianUidsOld.map(item => item.value)
+			ranksOld = stygianUidsOld.map(item => item.score)
+			stygianVersion = version
+			const mergedMap = new Map(uids.map(uid => [uid, null]))
+			uidsOld.forEach((uid, index) => !mergedMap.has(uid) && mergedMap.set(uid, ranks[index]))
+			uids = Array.from(mergedMap.keys())
+			ranks = Array.from(mergedMap.values())
+		}
+		let stygianData = Cfg.get('stygianDataFrom', 2) 
+		let [enableArk, enableAkasha] = [[0, 2].includes(stygianData), [1, 2].includes(stygianData)]
+		//仅支持6.0+版本，下个版本再支持查询旧版本的
+		let ret_ark = (enableArk && !queryOld) ? await api.sendApi('stygianRank', { uid: uids }) : null
+		if (ret_ark?.retcode != 100) {
+			ret_ark = null
+		}
+		let uidsInfo = uids.map(uid => `[uid]${uid}`).join('')
+		//5.7+
+		let ret_akasha = enableAkasha ? await api.sendAkashaApi(`leaderboards/stygian?sort=stygianScore&order=-1&size=20&page=1&uids=${uidsInfo}&p=&fromId=&li=&uid=251890729&version=${Math.floor(stygianVersion / 9)}_${Number(stygianVersion) % 9}`) : null
+		if(ret_akasha){
+			ret_akasha = ret_akasha.data
+			.filter(item => item?.playerInfo?.nickname && 
+							item?.stygianIndex !== undefined && 
+							item?.stygianSeconds !== undefined && 
+							item?.profilePictureLink &&
+							item?.uid &&
+							item?.index)
+			.map(item => ({
+				nickname: item.playerInfo.nickname,
+				stygianIndex: item.stygianIndex,
+				stygianSeconds: item.stygianSeconds,
+				profilePictureLink: item.profilePictureLink,
+				uid: item.uid,
+				index: item.index
+			}))
+		}
+		let list = []
+		for (const [index, uid] of uids.entries()) {
+			const item_akasha = ret_akasha ? ret_akasha?.find(element => element.uid === uid) : {}
+			const item_ark = ret_ark?.data[index]
+			let final_stygianSeconds = Math.min(item_akasha?.stygianSeconds || 99999, item_ark?.time || 99999, Number(ranks[index]) % 2048 || 99999)
+			if (final_stygianSeconds === 99999) continue
+			let final_stygianIndex = Math.min(item_akasha?.stygianIndex || 99999, item_ark?.hard || 99999, (6 - Math.floor(ranks[index] / 2048) || 99999))
+			if (final_stygianIndex === 99999) continue
+			let rank_ark = item_ark?.rank || '?' 
+			let rank_akasha = item_akasha?.index || '?' 
+			let sum = item_ark?.sum || '?'
+			let img = ''
+			if (final_stygianIndex == 6 && final_stygianSeconds <= 180) {
+				img = `/character/img/medal_6_plus.png`
+			} else{
+				img = `/character/img/medal_${final_stygianIndex}.png`
 			}
-			if(ret_akasha){
-				ret_akasha = ret_akasha.data
-				.filter(item => item?.playerInfo?.nickname && 
-								item?.stygianIndex !== undefined && 
-								item?.stygianSeconds !== undefined && 
-								item?.profilePictureLink &&
-								item?.uid &&
-								item?.index)
-				.map(item => ({
-					nickname: item.playerInfo.nickname,
-					stygianIndex: item.stygianIndex,
-					stygianSeconds: item.stygianSeconds,
-					profilePictureLink: item.profilePictureLink,
-					uid: item.uid,
-					index: item.index
-				}))
+			let elem = {
+				uid,
+				stygianIndex: {
+					title: '难度',
+					info: final_stygianIndex,
+					img: img
+				},
+				stygianTime: {
+					title: '时间',
+					info: `${final_stygianSeconds}秒`
+				},
+				rank_ark: {
+					title: '全服排名(ark)',
+					info: `${rank_ark} / ${sum}`
+				},
+				rank_akasha: {
+					title: '全服排名(akasha)',
+					info: `${rank_akasha}`
+				},
+				qqFace: item_akasha?.profilePictureLink
 			}
-			let list = []
-			for (const [index, uid] of uids.entries()) {
-				const item_akasha = ret_akasha ? ret_akasha?.find(element => element.uid === uid) : {}
-				const item_ark = ret_ark?.data[index]
-				let final_stygianSeconds = Math.min(item_akasha?.stygianSeconds || 99999, item_ark?.time || 99999, Number(ranks[index]) % 2048)
-				if (final_stygianSeconds === 99999) final_stygianSeconds = '?'
-				let final_stygianIndex = Math.min(item_akasha?.stygianIndex || 99999, item_ark?.hard || 99999, 6 - Math.floor(ranks[index] / 2048 || 99999))
-				if (final_stygianIndex === 99999) final_stygianIndex = '?'
-				let rank_ark = item_ark?.rank || '?' 
-				let rank_akasha = item_akasha?.index || '?' 
-				let sum = item_ark?.sum || '?'
-				let img = ''
-				if (final_stygianIndex == 6 && final_stygianSeconds <= 180) {
-					img = `/character/img/medal_6_plus.png`
-				} else{
-					img = `/character/img/medal_${final_stygianIndex}.png`
-				}
-				let elem = {
-					uid: uids[index],
-					stygianIndex: {
-						title: '难度',
-						info: final_stygianIndex,
-						img: img
-					},
-					stygianTime: {
-						title: '时间',
-						info: `${final_stygianSeconds}秒`
-					},
-					rank_ark: {
-						title: '全服排名(ark)',
-						info: `${rank_ark} / ${sum}`
-					},
-					rank_akasha: {
-						title: '全服排名(akasha)',
-						info: `${rank_akasha}`
-					},
-					qqFace: item_akasha?.profilePictureLink
-				}
-				if (uids[index]) {
-					let userInfo = await ProfileRank.getUidInfo(uids[index])
-					try {
-						if (userInfo?.qq && e?.group?.pickMember) {
-							let member = e.group.pickMember(userInfo.qq)
-							if (member?.getAvatarUrl) {
-								let img = await member.getAvatarUrl()
-								if (img){
-									elem.qqFace = img
-								} 
-								try{
-									let username = await member.getInfo()
-									elem.sName = username.card || username.nickname
-								}catch(e){
+			if (uid) {
+				let userInfo = await ProfileRank.getUidInfo(uid)
+				try {
+					if (userInfo?.qq && e?.group?.pickMember) {
+						let member = e.group.pickMember(userInfo.qq)
+						if (member?.getAvatarUrl) {
+							let img = await member.getAvatarUrl()
+							if (img){
+								elem.qqFace = img
+							} 
+							try{
+								let username = await member.getInfo()
+								elem.sName = username.card || username.nickname
+							}catch(e){
 								// do nothing
-								}
 							}
 						}
-					} catch (e) {
-						// logger.error(e)
 					}
-					try{
-					   let playerData = fs.readFileSync(`./data/PlayerData/gs/${uids[index]}.json`,'utf8')
-					   let jsonData = JSON.parse(playerData)
-					   if(jsonData.name && !elem.sName) elem.sName = jsonData.name
-					   if(!jsonData.name && !elem.sName) elem.sName = ret_akasha.username || ''
-					} catch (e) {
-						logger.error(e)
-					}
+				} catch (e) {
+					// logger.error(e)
 				}
-				list.push(elem)
+				try{
+					let playerData = fs.readFileSync(`./data/PlayerData/gs/${uid}.json`,'utf8')
+					let jsonData = JSON.parse(playerData)
+					if (!elem.sName) elem.sName = jsonData.name || ret_akasha.username || ''
+				} catch (e) {
+					//logger.error(e)
+				}
 			}
-			let period = getStygianPeriod()
-			stygianVersion = `${stygianVersion / 9}.${stygianVersion % 9}`
-			//e.reply(message)
-			const data = {
-				style: `<style>body .container {width: 820px;}</style>`
-			}
-			return e.reply([
-				await Common.render("character/stygian-rank-list", {
-					list,
-					data,
-					period,
-					stygianVersion,
-					pageGotoParams: { waitUntil: "networkidle2" }
-				}, { e, scale: 1.4, retType: "base64" })
-			  ])
+			list.push(elem)
 		}
+		list.hasArk = !!ret_ark
+		list.hasAkasha = !!ret_akasha
+		const validList = list.filter(elem => 
+			elem && (elem.stygianTime?.info?.includes('秒') || elem.stygianIndex?.info != null)
+		).sort((a, b) => {
+			const getValue = elem => {
+				const seconds = parseInt(elem.stygianTime?.info?.match(/(\d+)秒/)?.[1] || 0)
+				const index = parseFloat(elem.stygianIndex?.info) || 0
+				return seconds + index * 2048
+			}
+			return getValue(a) - getValue(b)
+		})
+		if (validList.length === 0) {
+			e.reply("当前版本无排名....")
+			return true
+		}
+		const period = getStygianPeriod(stygianVersion)
+		stygianVersion = `${Math.floor(stygianVersion / 9)}.${Number(stygianVersion) % 9}`
+		const data = {
+			style: `<style>body .container {width: ${820 - (!list.hasArk + !list.hasAkasha) * 120}px;}</style>`
+		}
+		return e.reply([
+			await Common.render("character/stygian-rank-list", {
+				list,
+				data,
+				period,
+				stygianVersion,
+				pageGotoParams: { waitUntil: "networkidle2" }
+			}, { e, scale: 1.4, retType: "base64" })
+		])
+		
 	}
 }
