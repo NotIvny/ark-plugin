@@ -404,7 +404,8 @@ export class characterRank extends plugin {
 		}
 		let uidsInfo = uids.map(uid => `[uid]${uid}`).join('')
 		//5.7+
-		let ret_akasha = enableAkasha ? await api.sendAkashaApi(`leaderboards/stygian?sort=stygianScore&order=-1&size=20&page=1&uids=${uidsInfo}&p=&fromId=&li=&uid=251890729&version=${Math.floor(stygianVersion / 9)}_${Number(stygianVersion) % 9}`) : null
+		let ret_akasha = enableAkasha ? await api.sendAkashaApi(`leaderboards/stygian?sort=stygianScore&order=-1&size=50&page=1&uids=${uidsInfo}&p=&fromId=&li=&uid=251890729&version=${Math.floor(stygianVersion / 9)}_${Number(stygianVersion) % 9}`) : null
+		let ret_akasha_to_get_total = enableAkasha ? await api.sendAkashaApi(`leaderboards/stygian?sort=stygianScore&order=1&size=1&page=1&uids=&p=&fromId=&li=&uid=&version=${Math.floor(stygianVersion / 9)}_${Number(stygianVersion) % 9}`) : null
 		if(ret_akasha){
 			ret_akasha = ret_akasha.data
 			.filter(item => item?.playerInfo?.nickname && 
@@ -421,6 +422,10 @@ export class characterRank extends plugin {
 				uid: item.uid,
 				index: item.index
 			}))
+		}
+		let akasha_total_players = null
+		if(ret_akasha_to_get_total){
+			akasha_total_players = ret_akasha_to_get_total?.data[0]?.index
 		}
 		let list = []
 		for (const [index, uid] of uids.entries()) {
@@ -456,7 +461,7 @@ export class characterRank extends plugin {
 				},
 				rank_akasha: {
 					title: '全服排名(akasha)',
-					info: `${rank_akasha}`
+					info: akasha_total_players ? `${rank_akasha} / ${akasha_total_players}` : `${rank_akasha}`
 				},
 				qqFace: item_akasha?.profilePictureLink
 			}
