@@ -1,6 +1,7 @@
 import lodash from 'lodash'
 import { setLastMsg } from '../model/miaoConfig.js'
 import Cfg from '../components/Cfg.js'
+import Version from '../components/Version.js'
 let keys = lodash.map(Cfg.getCfgSchemaMap(), (i) => i.key)
 export class miaoGroupConfig extends plugin {
     constructor() {
@@ -19,6 +20,9 @@ export class miaoGroupConfig extends plugin {
         })
     }
     async groupConfig(e) {
+        if(!Version.isQsyhhBeta){
+          return false
+        }
         if (!Cfg.get('miaoGroupCfg', false)) {
             return false
         }

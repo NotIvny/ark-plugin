@@ -1,15 +1,20 @@
 import fs from 'fs'
 import lodash from 'lodash'
-import cfgData from '../../miao-plugin/components/cfg/CfgData.js';
 import Cfg from '../components/Cfg.js'
+import Version from '../components/Version.js'
 import Config from '../../../lib/config/config.js'
-import { group } from 'console';
+
+let cfgData
+if (!Version.isQsyhhBeta) {
+    cfgData = (await import('../../miao-plugin/components/cfg/CfgData.js')).default
+}
 let lastMsg = {
     group_id: '',
     user_id: '',
     sender_role: '',
     isMaster: false,
 }
+let pmRule = ''
 let globalCfg = {}
 export const setLastMsg = (group_id, user_id, sender_role, isMaster) => {
     lastMsg.group_id = group_id
@@ -160,11 +165,12 @@ let getPMRule = function (user_id, group_id) {
     }
 
 }
-let miaoCfg = await importModule('miao-plugin')
-changeConfig(miaoCfg, 'miao-plugin')
-globalCfg = await cfgData.getCfg()
-let pmRule = ''
-try {
-    pmRule = await importModule('ark-plugin', 'model/custom/custom.js')
-} catch (err) {}
-export default { importModule, changeConfig }
+if (!Version.isQsyhhBeta) {
+    let miaoCfg = await importModule('miao-plugin')
+    changeConfig(miaoCfg, 'miao-plugin')
+    globalCfg = await cfgData.getCfg()
+    try {
+        pmRule = await importModule('ark-plugin', 'model/custom/custom.js')
+    } catch (err) {}
+}
+
