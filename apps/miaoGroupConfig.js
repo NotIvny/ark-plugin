@@ -20,7 +20,7 @@ export class miaoGroupConfig extends plugin {
         })
     }
     async groupConfig(e) {
-        if(!Version.isQsyhhBeta){
+        if(!Version.isQsyhh2_0){
           return false
         }
         if (!Cfg.get('miaoGroupCfg', false)) {

@@ -179,7 +179,7 @@ const CharRank = {
 }
 
 export async function groupRank(e) {
-  const groupRank = Common.cfg("groupRank")
+  const groupRank = Cfg.get("groupRank")
   let msg = e.original_msg || e.msg
   let type = ""
   if (/(排名|排行|列表)/.test(msg)) {
@@ -209,7 +209,7 @@ export async function groupRank(e) {
     let player = Player.create(100000000, game)
     if (player.getProfile(char.id)) {
       e.uid = 100000000
-      if (!char.isRelease && Cfg.get("notReleasedData") === false) return e.reply("未实装角色面板已禁用...")
+      if (!char.isRelease && !Cfg.get("notReleasedData")) return e.reply("未实装角色面板已禁用...")
       return await ProfileDetail.render(e, char)
     } else {
       return true
