@@ -78,15 +78,15 @@ const yunzaiVersion = packageJson.version
 const isV3 = yunzaiVersion[0] === '3'
 let isMiao = false
 let isQsyhh = false
-let isQsyhhBeta = false
+let isQsyhh2_0 = false
 let name = 'Yunzai-Bot'
 let isAlemonjs = false
 let info = fs.readFileSync('./plugins/miao-plugin/CHANGELOG.md').toString()
 if (info.includes('fork 1.0')) {
   isQsyhh = true
 }
-if(info.includes('2.0.0-beta')){
-  isQsyhhBeta = true
+if (info.includes('2.0.0')) {
+  isQsyhh2_0 = true
 }
 if (packageJson.name === 'miao-yunzai') {
   isMiao = true
@@ -103,7 +103,7 @@ else if (packageJson.name === 'a-yunzai') {
 
 
 let Version = {
-  isQsyhhBeta,
+  isQsyhh2_0,
   isQsyhh,
   isV3,
   isMiao,

@@ -5,7 +5,7 @@ import Version from '../components/Version.js'
 import Config from '../../../lib/config/config.js'
 
 let cfgData
-if (!Version.isQsyhhBeta) {
+if (!Version.isQsyhh2_0) {
     cfgData = (await import('../../miao-plugin/components/cfg/CfgData.js')).default
 }
 let lastMsg = {
@@ -165,7 +165,7 @@ let getPMRule = function (user_id, group_id) {
     }
 
 }
-if (!Version.isQsyhhBeta) {
+if (!Version.isQsyhh2_0) {
     let miaoCfg = await importModule('miao-plugin')
     changeConfig(miaoCfg, 'miao-plugin')
     globalCfg = await cfgData.getCfg()
