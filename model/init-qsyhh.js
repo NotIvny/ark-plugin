@@ -97,7 +97,7 @@ const ArkInit = {
             })
             // 属性建成后图标替换
             lodash.forEach(Object.keys(char.detail.tree), (id) => {
-              let ret = /([12][01][0-9])$/.exec(id + "")
+              let ret = /([125][01][0-9])$/.exec(id + "")
               if (ret && ret[1]) {
                 let treeId = ret[1]
                 if (treeId[0] === "2") {
@@ -111,9 +111,10 @@ const ArkInit = {
               treeData[pos] = tmp
               treeMap[idx + 101 + ""] = tmp
             })
+            treeMap["501"] = { type: "talent", img: data.imgs.tree4 }
             // 点亮图标
             lodash.forEach(profile.trees, (id) => {
-              let ret = /([12][01][0-9])$/.exec(id + "")
+              let ret = /([125][01][0-9])$/.exec(id + "")
               if (ret && ret[1]) {
                 let treeId = ret[1]
                 if (treeMap?.[treeId]) {
