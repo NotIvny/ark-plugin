@@ -1,7 +1,7 @@
 import lodash from 'lodash'
 import ProfileList from '../../miao-plugin/apps/profile/ProfileList.js'
 import { getTargetUid } from '../../miao-plugin/apps/profile/ProfileCommon.js'
-import { Common } from '../../miao-plugin/components/index.js'
+import { Cfg, Common, Data } from '../../miao-plugin/components/index.js'
 import { Button, MysApi, Player } from '../../miao-plugin/models/index.js'
 import { getStygianVersion } from '../../ark-plugin/model/calcVersion.js'
 import ProfileReq from '../../miao-plugin/models/serv/ProfileReq.js'
@@ -19,7 +19,7 @@ const stygianInit = {
             // 数据更新
             let player = Player.create(e)
             player.e.isfromMys = /米游社|mys/.test(e.msg)
-            let fromMys = player.e.isfromMys || Common.cfg("mysRefresh")
+            let fromMys = player.e.isfromMys || Cfg.get("mysRefresh")
             if (fromMys) {
             player.e.noTips = fromMys
             let mys = await MysApi.init(player.e, "cookie")
