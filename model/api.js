@@ -38,7 +38,7 @@ export const sendAkashaApi = async function(url){
 		const response = await fetch('https://akasha.cv/api/' + url, {
 			method: 'GET',
 			headers: {
-				'Content-Type': 'application/json'
+				"User-Agent": "ark-plugin"
 			},
 			signal: controller.signal
 		})

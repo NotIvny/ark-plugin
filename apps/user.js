@@ -369,7 +369,7 @@ export class characterRank extends plugin {
 				return '未知错误'
 		}
 	}
-	async stygian(e){
+	async stygian(e) {
 		if (!e.isGroup) return true
 		const regex = /^#(top)?幽境危战排名(?:(\d+\.\d+))?$/
 		const match = e.msg.match(regex)
@@ -406,7 +406,7 @@ export class characterRank extends plugin {
 		//5.7+
 		let ret_akasha = enableAkasha ? await api.sendAkashaApi(`leaderboards/stygian?sort=stygianScore&order=-1&size=50&page=1&uids=${uidsInfo}&p=&fromId=&li=&uid=251890729&version=${Math.floor(stygianVersion / 9)}_${Number(stygianVersion) % 9}`) : null
 		let ret_akasha_to_get_total = enableAkasha ? await api.sendAkashaApi(`leaderboards/stygian?sort=stygianScore&order=1&size=1&page=1&uids=&p=&fromId=&li=&uid=&version=${Math.floor(stygianVersion / 9)}_${Number(stygianVersion) % 9}`) : null
-		if(ret_akasha){
+		if (ret_akasha) {
 			ret_akasha = ret_akasha.data
 			.filter(item => item?.playerInfo?.nickname && 
 							item?.stygianIndex !== undefined && 
@@ -496,9 +496,7 @@ export class characterRank extends plugin {
 			}
 			list.push(elem)
 		}
-		list.hasArk = !!ret_ark
-		list.hasAkasha = !!ret_akasha
-		const validList = list.filter(elem => 
+		let validList = list.filter(elem => 
 			elem && (elem.stygianTime?.info?.includes('秒') || elem.stygianIndex?.info != null)
 		).sort((a, b) => {
 			const getValue = elem => {
@@ -512,14 +510,16 @@ export class characterRank extends plugin {
 			e.reply("当前版本无排名....")
 			return true
 		}
+		validList.hasArk = !!ret_ark
+		validList.hasAkasha = !!ret_akasha
 		const period = getStygianPeriod(stygianVersion)
 		stygianVersion = `${Math.floor(stygianVersion / 9)}.${Number(stygianVersion) % 9}`
 		const data = {
-			style: `<style>body .container {width: ${820 - (!list.hasArk + !list.hasAkasha) * 120}px;}</style>`
+			style: `<style>body .container {width: ${860 - (!validList.hasArk + !validList.hasAkasha) * 140}px;}</style>`
 		}
 		return e.reply([
 			await Common.render("character/stygian-rank-list", {
-				list,
+				list: validList,
 				data,
 				period,
 				stygianVersion,
