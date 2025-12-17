@@ -72,7 +72,7 @@ let ProfileDetail = {
       mode = "artis"
       name = name.replace(/圣遗物|遗器/, "").trim()
     }
-    if (!Common.cfg("avatarProfile")) return false // 面板开关关闭
+    if (!Cfg.get("avatarProfile")) return false // 面板开关关闭
 
     let char = Character.get(name.trim(), e.game)
     if (!char) return false
