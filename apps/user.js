@@ -502,7 +502,7 @@ export class characterRank extends plugin {
 			const getValue = elem => {
 				const seconds = parseInt(elem.stygianTime?.info?.match(/(\d+)秒/)?.[1] || 0)
 				const index = parseFloat(elem.stygianIndex?.info) || 0
-				return seconds + index * 2048
+				return seconds + (6 - index) * 2048
 			}
 			return getValue(a) - getValue(b)
 		})
