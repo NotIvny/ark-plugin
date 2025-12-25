@@ -4,7 +4,7 @@ import ProfileList from './ProfileList.js'
 import { Cfg, Common, Data, Format } from '#miao'
 import { Button, MysApi, ProfileRank, Character, Weapon, Artifact } from '#miao.models'
 import fs from 'fs'
-import Gscfg from '../../../genshin/model/gsCfg.js'
+import safeGsCfg from '../../../ark-plugin/model/safeGsCfg.js'
 import api from '../../../ark-plugin/model/api.js'
 import ArkCfg from '../../../ark-plugin/components/Cfg.js'
 import ProfileChange from './ProfileChange.js'
@@ -240,7 +240,7 @@ let ProfileDetail = {
     data.weapon = profile.getWeaponDetail()
     //是否计算总排名
     if (ArkCfg.get('panelRank', true) && dmgCalc.dmgData !== undefined) {
-      let characterID = Gscfg.roleNameToID(char.name, true) || Gscfg.roleNameToID(char.name, false)
+      let characterID = safeGsCfg.roleNameToID(char.name, true) || safeGsCfg.roleNameToID(char.name, false)
       let ret, jsonData
       let queryType = ArkCfg.get('queryType', 2)
       const query = {

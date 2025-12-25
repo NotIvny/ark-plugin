@@ -1,5 +1,5 @@
 import { getTargetUid } from '../../miao-plugin/apps/profile/ProfileCommon.js'
-import Gscfg from '../../genshin/model/gsCfg.js'
+import safeGsCfg from '../model/safeGsCfg.js'
 import fs from 'fs'
 import api from '../model/api.js'
 import { getStygianVersion, getStygianPeriod } from '../model/calcVersion.js'
@@ -88,9 +88,9 @@ export class characterRank extends plugin {
 			return true
 		}
 		let name = characterName
-		let id = Gscfg.roleNameToID(name, true) || Gscfg.roleNameToID(name, false)
+		let id = safeGsCfg.roleNameToID(name, true) || safeGsCfg.roleNameToID(name, false)
 		if (id) {
-			name = Gscfg.roleIdToName(id)
+			name = safeGsCfg.roleIdToName(id)
 		}
 		let ret = await api.sendApi('getRankData', {
 			uid: uid,
@@ -108,9 +108,9 @@ export class characterRank extends plugin {
 	}
 	async playerRank(e) {
 		let name = e.msg.replace(/(#|星铁|最强|最高分|第一|词条|双爆|双暴|极限|最高|最多|最牛|圣遗物|遗器|评分|群内|群|排名|排行|面板|面版|详情|榜)/g, '')
-		let id = Gscfg.roleNameToID(name, true) || Gscfg.roleNameToID(name, false)
+		let id = safeGsCfg.roleNameToID(name, true) || safeGsCfg.roleNameToID(name, false)
 		if (id) {
-			name = Gscfg.roleIdToName(id)
+			name = safeGsCfg.roleIdToName(id)
 		}
 		let uid = id < 10000 ? e.user?._games?.sr?.uid : e.user?._games?.gs?.uid
 		setTimeout(async () => {
@@ -166,7 +166,7 @@ export class characterRank extends plugin {
 				msg += `uid:${uid}的${type}全服排名数据:\n`
 				ret.rank.forEach(ret => {
 					if (ret.retcode === 100) {
-						msg += (`${Gscfg.roleIdToName(profile[count])}全服伤害排名为${ret.rank}，伤害评分: ${ret.score.toFixed(2)}\n`)
+						msg += (`${safeGsCfg.roleIdToName(profile[count])}全服伤害排名为${ret.rank}，伤害评分: ${ret.score.toFixed(2)}\n`)
 					}
 					count++
 				})
@@ -244,11 +244,12 @@ export class characterRank extends plugin {
 	}
 	async getSpecificRank(e) {
 		let name = this.e.msg.replace('排名统计', '').replace('#', '').replace('星铁','').trim()
-		let id = Gscfg.roleNameToID(name, true) || Gscfg.roleNameToID(name, false)
+		let id = safeGsCfg.roleNameToID(name, true) || safeGsCfg.roleNameToID(name, false)
+		logger.error(id)
 		if (!name || !id) {
 			return true
 		}
-		let characterName = Gscfg.roleIdToName(id)
+		let characterName = safeGsCfg.roleIdToName(id)
 		let ret = await api.sendApi('getSpecificRank', {
 			id: id,
 			percent: 0

@@ -7,7 +7,7 @@ import CharRank from '../../miao-plugin/apps/profile/ProfileRank.js'
 import { getTargetUid } from '../../miao-plugin/apps/profile/ProfileCommon.js'
 import { Data, Common, Format, Cfg } from '../../miao-plugin/components/index.js'
 import { Button, MysApi, ProfileRank, Weapon, Artifact, Player } from '../../miao-plugin/models/index.js'
-import Gscfg from '../../genshin/model/gsCfg.js'
+import safeGsCfg from './safeGsCfg.js'
 import api from '../../ark-plugin/model/api.js'
 import { getStygianVersion } from '../../ark-plugin/model/calcVersion.js'
 import ArkCfg from '../components/Cfg.js'
@@ -130,7 +130,7 @@ const ArkInit = {
           let ret1,ret2
           //是否计算总排名
           if (ArkCfg.get('panelRank', true) && dmgCalc.dmgData !== undefined) {
-            let characterID = Gscfg.roleNameToID(char.name, true) || Gscfg.roleNameToID(char.name, false)
+            let characterID = safeGsCfg.roleNameToID(char.name, true) || safeGsCfg.roleNameToID(char.name, false)
             let ret, jsonData
             let queryType = ArkCfg.get('queryType', 2)
             const query = {
