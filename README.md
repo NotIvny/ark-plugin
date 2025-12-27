@@ -3,17 +3,19 @@
 适用于Yunzai-Bot的全服排行插件，提供角色全服排行，多文件备份等功能
 
 ### 插件安装
+
+优先克隆主分支插件，如果miao-plugin为qsyhh-fork-v1版本或主分支插件报错，再选择qsyhh-fork-v1分支
 ```
-// 测试版本/适配原版miao-plugin/qsyhh-fork-2.0.0-beta
+// 【优先选择】适配原版miao-plugin/qsyhh-fork-2.0.0-beta
 git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
-// 稳定版本/适配原版miao-plugin/qsyhh-fork-v1
+// 适配原版miao-plugin/qsyhh-fork-v1
 git clone --depth 1 -b qsyhh-fork-v1 https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 ```
 如果网络不好，也可从gitee克隆
 ```
-// 测试版本/适配原版miao-plugin/qsyhh-fork-2.0.0-beta
+// 【优先选择】适配原版miao-plugin/qsyhh-fork-2.0.0-beta
 git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
-// 稳定版本/适配原版miao-plugin/qsyhh-fork-v1
+// 适配原版miao-plugin/qsyhh-fork-v1
 git clone --depth 1 -b qsyhh-fork-v1 https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 ```
 
