@@ -4,16 +4,16 @@
 
 ### 插件安装
 ```
-#测试版本/适配原版miao-plugin/qsyhh-fork-2.0.0-beta
+// 测试版本/适配原版miao-plugin/qsyhh-fork-2.0.0-beta
 git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
-#稳定版本/适配原版miao-plugin/qsyhh-fork-v1
+// 稳定版本/适配原版miao-plugin/qsyhh-fork-v1
 git clone --depth 1 -b qsyhh-fork-v1 https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 ```
 如果网络不好，也可从gitee克隆
 ```
-#测试版本/适配原版miao-plugin/qsyhh-fork-2.0.0-beta
+// 测试版本/适配原版miao-plugin/qsyhh-fork-2.0.0-beta
 git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
-#稳定版本/适配原版miao-plugin/qsyhh-fork-v1
+// 稳定版本/适配原版miao-plugin/qsyhh-fork-v1
 git clone --depth 1 -b qsyhh-fork-v1 https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 ```
 
