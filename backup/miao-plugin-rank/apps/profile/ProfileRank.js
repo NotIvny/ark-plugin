@@ -154,13 +154,15 @@ const CharRank = {
       } 
     }
     const isMemosprite = e.isSr && char.weaponType === '记忆'
-    const bodyContainerStyle = `<style>body .container {width: ${(isMemosprite ? 970 : e.isSr ? 900 : 820) + !noRankFlag * 180}px;}</style>`
-    let cont_width = (isMemosprite ? 970 : e.isSr ? 900 : 820) + !noRankFlag * 180
+    const isJoy = e.isSr && char.weaponType === "欢愉"
+    const bodyContainerStyle = `<style>body .container {width: ${((isMemosprite || isJoy) ? 970 : e.isSr ? 900 : 820) + !noRankFlag * 180}px;}</style>`
+    let cont_width = ((isMemosprite || isJoy) ? 970 : e.isSr ? 900 : 820) + !noRankFlag * 180
     // 渲染图像
     return e.reply([await Common.render('character/rank-profile-list', {
       save_id: char.id,
       game: e.isSr ? 'sr' : 'gs',
       isMemosprite,
+      isJoy,
       bodyContainerStyle,
       list,
       title,

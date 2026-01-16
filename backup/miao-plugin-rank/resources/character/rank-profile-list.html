@@ -5,7 +5,7 @@
 {{@bodyContainerStyle}}
 {{/block}}
 
-{{set talentMap = game === 'sr' ? (isMemosprite ? {a: '普攻', e: '战技', t:'天赋', q: '爆发', me: '忆灵技', mt: '忆灵天赋'} : {a: '普攻', e: '战技', t:'天赋', q: '爆发'}) : {a: '普攻', e: '战技', q: '爆发'} }}
+{{set talentMap = game === 'sr' ? (isMemosprite ? {a: '普攻', e: '战技', t:'天赋', q: '爆发', me: '忆灵技', mt: '忆灵天赋'} : (isJoy ? {a: '普攻', e: '战技', t:'天赋', q: '爆发', xe: '欢愉技'} : {a: '普攻', e: '战技', t:'天赋', q: '爆发'})) : {a: '普攻', e: '战技', q: '爆发'} }}
 {{set gameHash = game === 'gs' ? '#':'*' }}
 
 {{block 'main'}}
@@ -150,12 +150,12 @@
       {{/if}}
     </div>
     {{if !noRankFlag}}
-    <div class="char-dmg line">
-        {{if ds.dmg}}
-        <div class="dmg-title">{{ds.dmg?.rankName}}</div>
-        <div class="dmg-value">{{ds.dmg?.totalrank}}</div>
-        {{else}}
-        {{/if}}
+    <div class="char-dmg line" style="width: 150px;">
+      {{if ds.dmg}}
+      <div class="dmg-title">{{ds.dmg?.rankName}}</div>
+      <div class="dmg-value">{{ds.dmg?.totalrank}}</div>
+      {{else}}
+      {{/if}}
     </div>
     {{/if}}
   </div>
