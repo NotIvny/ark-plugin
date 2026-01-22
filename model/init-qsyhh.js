@@ -16,6 +16,7 @@ const ArkInit = {
     init() {
         ProfileDetail.render = async (e, char, mode = 'profile', params = {}) => {
           let selfUser = await MysApi.initUser(e)
+          
           if (!selfUser) return e.reply([ `尚未绑定UID，请先发送【${e.isSr ? "*" : "#"}绑定+你的UID】来绑定查询目标\n示例：${e.isSr ? "*" : "#"}绑定100000000`, new Button(e).bindUid() ])
 
           let { uid } = e
