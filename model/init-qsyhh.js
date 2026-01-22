@@ -16,7 +16,6 @@ const ArkInit = {
     init() {
         ProfileDetail.render = async (e, char, mode = 'profile', params = {}) => {
           let selfUser = await MysApi.initUser(e)
-
           if (!selfUser) return e.reply([ `尚未绑定UID，请先发送【${e.isSr ? "*" : "#"}绑定+你的UID】来绑定查询目标\n示例：${e.isSr ? "*" : "#"}绑定100000000`, new Button(e).bindUid() ])
 
           let { uid } = e
@@ -159,12 +158,12 @@ const ArkInit = {
             }
             const getRank = (index, baseTitle) => {
               const retItem = ret[index]
-              if (retItem?.retcode !== 100) return
               const rankType = ArkCfg.get('RankType', 0)
+              if (retItem?.retcode !== 100 && rankType != 2) return
               const characterRank = {
-                0: retItem.rank,
-                1: retItem.percent,
-                2: `${retItem.rank} (${retItem.percent}%)`,
+                0: retItem?.rank || '暂无数据',
+                1: retItem?.percent || '暂无数据',
+                2: retItem?.rank ? `${retItem?.rank} (${retItem?.percent}%)` : '暂无数据',
               }[rankType]
               const markRankType = ArkCfg.get('markRankType', false)
               const isSpecialPanel = e.msg.includes('喵喵面板变换') && markRankType
@@ -174,8 +173,8 @@ const ArkInit = {
               if (queryType === 3) {
                 scoreAndRank[index] = characterRank
                 selfRank.push(...[
-                  ret[index].percent,
-                  ret[index].score
+                  ret[index]?.percent || -100,
+                  ret[index]?.score || -100
                 ])
               } else {
                 dmgCalc.dmgData.push({ title, unit: characterRank })

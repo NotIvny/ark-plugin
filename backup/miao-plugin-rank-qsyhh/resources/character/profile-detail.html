@@ -314,7 +314,7 @@
     </div>
     {{/if}}
   </div>
-  {{if dmgRankData && artisRankData}}
+  {{if dmgRankData || artisRankData}}
     <div class="dmg-cont dmg-list cont">
       <div class="cont-title">
         排名统计
@@ -324,16 +324,28 @@
         <div style="display: table-row;">
           <div style="display: table-cell; width: 50%; position: relative;  box-shadow: 0 0 1px 0 #fff;">
             <div class="damage-rank">
+              {{if dmgRankData}}
               <div class="chart-wrapper" style="transform: scale(0.38); transform-origin: -1% -13%;">
                 <div id="damageChart" style="height: 400px;"></div>
               </div>
+              {{else}}
+              <div style="height: 145px; position: relative;">
+                <div class="no-data">暂无数据</div>
+              </div>
+              {{/if}}
             </div>
           </div>
           <div style="display: table-cell; width: 50%; position: relative;  box-shadow: 0 0 1px 0 #fff;">
             <div class="damage-rank">
+              {{if artisRankData}}
               <div class="chart-wrapper" style="transform: scale(0.38); transform-origin: -1% -13%;">
                 <div id="artisChart" style="height: 400px;"></div>
               </div>
+              {{else}}
+              <div style="height: 145px; position: relative;">
+                <div class="no-data">暂无数据</div>
+              </div>
+              {{/if}}
             </div>
           </div>
         </div>
@@ -360,6 +372,18 @@
     
     
     <style>
+      .no-data {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-15deg);
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 28px;
+        font-weight: bold;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+
       .damage-type-label {
         position: static;
         transform: none;
@@ -415,23 +439,27 @@
       var myChart,rankData_,rankData,target,targetScore
       for(var i = 0; i < 2; i++){
         if(i == 0){
-          myChart = echarts.init(document.getElementById('damageChart'), null, { renderer: 'svg' })
-          rankData_ = ['100', {{@dmgRankData}}, '0']
-          const ranks = [100, 99, 95, 90, 80, 70, 50, 30, 10, 5, 1, 0]
-          rankData = Array.from({ length: 101 }, (_, i) => 
-            ranks.includes(i) ? rankData_[ranks.indexOf(i)] : null
-          )
-          target = {{selfRank[0]}}
-          targetScore = ({{selfRank[1]}}).toFixed(2)
+          {{if dmgRankData}}
+            myChart = echarts.init(document.getElementById('damageChart'), null, { renderer: 'svg' })
+            rankData_ = ['100', {{@dmgRankData}}, '0']
+            const ranks = [100, 99, 95, 90, 80, 70, 50, 30, 10, 5, 1, 0]
+            rankData = Array.from({ length: 101 }, (_, i) => 
+              ranks.includes(i) ? rankData_[ranks.indexOf(i)] : null
+            )
+            target = {{selfRank[0]}}
+            targetScore = ({{selfRank[1]}}).toFixed(2) 
+            {{/if}}
         }else{
-          myChart = echarts.init(document.getElementById('artisChart'), null, { renderer: 'svg' })
-          rankData_ = [{{top1}}, {{@artisRankData}}, '0']
-          const ranks = [100, 99, 95, 90, 80, 70, 50, 30, 10, 5, 1, 0]
-          rankData = Array.from({ length: 101 }, (_, i) => 
-            ranks.includes(i) ? rankData_[ranks.indexOf(i)] : null
-          )
-          target = {{selfRank[2]}}
-          targetScore = ({{selfRank[3]}} * {{top1}} / 100).toFixed(2)
+          {{if artisRankData}}
+            myChart = echarts.init(document.getElementById('artisChart'), null, { renderer: 'svg' })
+            rankData_ = [{{top1}}, {{@artisRankData}}, '0']
+            const ranks = [100, 99, 95, 90, 80, 70, 50, 30, 10, 5, 1, 0]
+            rankData = Array.from({ length: 101 }, (_, i) => 
+              ranks.includes(i) ? rankData_[ranks.indexOf(i)] : null
+            )
+            target = {{selfRank[2]}}
+            targetScore = ({{selfRank[3]}} * {{top1}} / 100).toFixed(2)
+          {{/if}}
         }
         var option = {
           tooltip: {
