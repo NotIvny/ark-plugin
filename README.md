@@ -3,20 +3,12 @@
 适用于Yunzai-Bot的全服排行插件，提供角色全服排行，多文件备份等功能
 
 ### 插件安装
-
-优先克隆主分支插件，如果miao-plugin为qsyhh-fork-v1版本或主分支插件报错，再选择qsyhh-fork-v1分支
 ```
-// 【优先选择】适配原版miao-plugin/qsyhh-fork-2.0.0-beta
 git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
-// 适配原版miao-plugin/qsyhh-fork-v1
-git clone --depth 1 -b qsyhh-fork-v1 https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 ```
 如果网络不好，也可从gitee克隆
 ```
-// 【优先选择】适配原版miao-plugin/qsyhh-fork-2.0.0-beta
 git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
-// 适配原版miao-plugin/qsyhh-fork-v1
-git clone --depth 1 -b qsyhh-fork-v1 https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 ```
 
 |                           功能名                            | 是否需要替换文件     | 替换文件命令     |
@@ -56,7 +48,7 @@ git clone --depth 1 -b qsyhh-fork-v1 https://gitee.com/Ivny/ark-plugin.git ./plu
 
 ### 其他
 
-总排名数据源于用户更新面板，目前数据量在220k左右
+总排名数据源于用户更新面板，目前数据量在300k左右
 
 插件只会上传用户uid和面板数据，不会上传其他信息
 
@@ -73,4 +65,4 @@ git clone --depth 1 -b qsyhh-fork-v1 https://gitee.com/Ivny/ark-plugin.git ./plu
 |      [Miao-Yunzai](https://gitee.com/yoimiya-kokomi/Miao-Yunzai)      | 喵喵的 Miao-Yunzai          |
 |     [TRSS-Yunzai](https://gitee.com/TimeRainStarSky/Yunzai)     | 时雨🌌星空的 TRSS-Yunzai        |
 | [miao-plugin 测试角色面板](https://gitee.com/euiko/Panel) | 提供部分伤害计算数据             |
-|      [qsyhh/miao-plugin](https://gitee.com/qsyhh/miao-plugin)      | 提供部分伤害计算数据 |
+|      [qsyhh/miao-plugin](https://gitee.com/qsyhh/miao-plugin)      | 提供伤害计算数据 |
