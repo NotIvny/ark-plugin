@@ -2,9 +2,6 @@ import ProfileDetail from './ProfileDetail.js'
 import { Data, Common, Format, Cfg } from '#miao'
 import { Button, Character, ProfileRank, ProfileDmg, Player } from '#miao.models'
 import lodash from 'lodash'
-import fs from 'fs'
-import api from '../../../ark-plugin/model/api.js'
-import ArkCfg from '../../../ark-plugin/components/Cfg.js'
 const CharRank = {
   async renderCharRankList ({ e, uids, char, mode, groupId }) {
     let list = []
@@ -113,62 +110,20 @@ const CharRank = {
       list = lodash.sortBy(list, ['uid', '_star', 'id'])
     }
 
-    const rankCfg = await ProfileRank.getGroupCfg(groupId)
-    let noRankFlag = true
-    if (ArkCfg.get('groupRank', true)) {
-      let data = [], uids_ = list.map(item => item.uid), ret
-      let game = e.isSr ? 'sr' : 'gs'
-    
-      //读取排名列表中用户的数据
-      if (ArkCfg.get('localGroupRank', false)) {
-        uids_.forEach(uid => {
-          try {
-            data.push(JSON.parse(fs.readFileSync(`./data/PlayerData/${game}/${uid}.json`, 'utf8')).avatars[list[0].id])
-          } catch (error) {
-            data.push(null)
-          }
-        })
-      }
-      if (mode === 'dmg' || mode === 'mark') {
-        let query = mode === 'mark' ? 'mark' : 'dmg'
-        let rankTitle = mode === 'mark' ? '圣遗物' : '伤害'
-        ret = await api.sendApi('groupAllRank', {
-          id: list[0]?.id,
-          uids: uids_,
-          update: 2,
-          query: query,
-          data: data.length ? data : null
-        })
-        switch (ret.retcode) {
-          case 100:
-            ret.rank.forEach((item, index) => {
-              if (list[index] && list[index].dmg) {
-                list[index].dmg.rankName = (ArkCfg.get('markRankType', false) && ArkCfg.get('localGroupRank', false)) ? `${rankTitle}排名(本地)` : `${rankTitle}排名`
-                list[index].dmg.totalrank = item.rank || '暂无数据'
-                if (item.rank) {
-                  noRankFlag = false
-                }
-              }
-            })
-        }
-      } 
-    }
     const isMemosprite = e.isSr && char.weaponType === '记忆'
     const isJoy = e.isSr && char.weaponType === "欢愉"
-    const bodyContainerStyle = `<style>body .container {width: ${((isMemosprite || isJoy) ? 970 : e.isSr ? 900 : 820) + !noRankFlag * 180}px;}</style>`
-    let cont_width = ((isMemosprite || isJoy) ? 970 : e.isSr ? 900 : 820) + !noRankFlag * 180
+    const bodyContainerStyle = `<style>body .container {width: ${isMemosprite || isJoy ? 970 : e.isSr ? 900 : 820}px;}</style>`
+    const rankCfg = await ProfileRank.getGroupCfg(groupId)
     // 渲染图像
     return e.reply([await Common.render('character/rank-profile-list', {
       save_id: char.id,
       game: e.isSr ? 'sr' : 'gs',
-      isMemosprite,
+      isMemosprite ,
       isJoy,
       bodyContainerStyle,
       list,
       title,
       elem: char.elem,
-      noRankFlag,
-      cont_width,
       bodyClass: `char-${char.name}`,
       rankCfg,
       mode,

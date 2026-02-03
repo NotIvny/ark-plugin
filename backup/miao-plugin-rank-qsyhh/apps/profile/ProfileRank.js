@@ -4,8 +4,6 @@ import lodash from "lodash"
 import ProfileDetail from "./ProfileDetail.js"
 import { Data, Common, Format, Cfg } from "#miao"
 import { Button, Character, ProfileRank, ProfileDmg, Player } from "#miao.models"
-import api from '../../../ark-plugin/model/api.js'
-import ArkCfg from '../../../ark-plugin/components/Cfg.js'
 // const { stubFalse } = lodash
 const CharRank = {
   async renderCharRankList({ e, uids, char, mode, groupId }, game = "gs") {
@@ -43,7 +41,7 @@ const CharRank = {
           }
         }
         if (uid) {
-          let userInfo = await ProfileRank.getUidInfo(uid)
+          let userInfo = await ProfileRank.getUidInfo(uid, game)
           try {
             if (userInfo?.qq && e?.group?.pickMember) {
               let member = e.group.pickMember(userInfo.qq)
@@ -111,64 +109,22 @@ const CharRank = {
       list = lodash.sortBy(list, [ "uid", "_star", "id" ])
     }
 
-    const rankCfg = await ProfileRank.getGroupCfg(groupId, game)
-    let noRankFlag = true
-    if (ArkCfg.get('groupRank', true)) {
-      let data = [], uids_ = list.map(item => item.uid), ret
-      let game = e.isSr ? 'sr' : 'gs'
-    
-      //读取排名列表中用户的数据
-      if (ArkCfg.get('localGroupRank', false)) {
-        uids_.forEach(uid => {
-          try {
-            data.push(JSON.parse(fs.readFileSync(`./data/PlayerData/${game}/${uid}.json`, 'utf8')).avatars[list[0].id])
-          } catch (error) {
-            data.push(null)
-          }
-        })
-      }
-      if (mode === 'dmg' || mode === 'mark') {
-        let query = mode === 'mark' ? 'mark' : 'dmg'
-        let rankTitle = mode === 'mark' ? '圣遗物' : '伤害'
-        ret = await api.sendApi('groupAllRank', {
-          id: list[0]?.id,
-          uids: uids_,
-          update: 2,
-          query: query,
-          data: data.length ? data : null
-        })
-        switch (ret.retcode) {
-          case 100:
-            ret.rank.forEach((item, index) => {
-              if (list[index] && list[index].dmg) {
-                list[index].dmg.rankName = (ArkCfg.get('markRankType', false) && ArkCfg.get('localGroupRank', false)) ? `${rankTitle}排名(本地)` : `${rankTitle}排名`
-                list[index].dmg.totalrank = item.rank || '暂无数据'
-                if (item.rank) {
-                  noRankFlag = false
-                }
-              }
-            })
-        }
-      } 
-    }
     const isMemosprite = e.isSr && char.weaponType === "记忆"
     const data = {
       title: _dmg?.title,
       isMemosprite,
-      style: `<style>body .container {width: ${(isMemosprite ? 970 : e.isSr ? 900 : 820) + !noRankFlag * 180}px;}</style>`
+      style: `<style>body .container {width: ${isMemosprite ? 970 : e.isSr ? 900 : 820}px;}</style>`
     }
-    cont_width = (isMemosprite ? 970 : e.isSr ? 900 : 820) + !noRankFlag * 180
+    const rankCfg = await ProfileRank.getGroupCfg(groupId, game)
     // 渲染图像
     return e.reply([
       await Common.render("character/rank-profile-list", {
         save_id: char.id,
         game: e.isSr ? "sr" : "gs",
+        data,
         list,
         title,
         elem: char.elem,
-        data,
-        noRankFlag,
-        cont_width: cont_width,
         bodyClass: `char-${char.name}`,
         rankCfg,
         mode,
@@ -282,11 +238,11 @@ export async function refreshRank(e) {
   let groupId = e.group_id || ""
   if (!groupId) return true
 
-  if (!e.isMaster && !this.e.member?.is_admin) return await e.reply("只有主人及群管理员可刷新排名...")
+  if (!e.isMaster && !e.member?.is_admin) return await e.reply("只有主人及群管理员可刷新排名...")
 
   e.reply("面板数据刷新中，等待时间可能较长，请耐心等待...")
   let game = e.isSr ? "sr" : "gs"
-  await ProfileRank.resetRank({ groupId, game })
+  await ProfileRank.resetRank(groupId, "", game)
   let uidMap = await ProfileRank.getUserUidMap(e, game)
   let count = 0
   for (let uid in uidMap) {
@@ -294,10 +250,9 @@ export async function refreshRank(e) {
     let player = new Player(uid, game)
     let profiles = player.getProfiles()
     // 刷新rankLimit
-    await ProfileRank.setUidInfo({ uid, profiles, qq, uidType: type })
+    await ProfileRank.setUidInfo({ uid, profiles, qq, uidType: type }, game)
     let rank = await ProfileRank.create({ groupId, uid, qq }, game)
     for (let id in profiles) {
-      if (id == "game") continue
       let profile = profiles[id]
       if (!profile.hasData) continue
       await rank.getRank(profile, true)
