@@ -129,35 +129,37 @@ const ArkInit = {
           if (isProfileChange && ArkCfg.get('profileChangeDiff', true)) {
             let player = Player.create(uid, game)
             let origin = player.getProfile(char.id)
-            let dmgCalc_ = await ProfileDetail.getProfileDmgCalc({ profile: origin, enemyLv, mode, params })
-            if (dmgCalc_ && dmgCalc_.dmgData) {
-              const num = (str) => {
-                if (!str || str === 'NaN') return NaN
-                return parseFloat(String(str).replace(/,/g, ''))
-              }
-              const getDiff = (currStr, oldStr) => {
-                let curr = num(currStr)
-                let old = num(oldStr)
-                if (isNaN(curr) || isNaN(old) || old === 0) return '--'  
-                let diff = ((curr - old) / old * 100).toFixed(1)
-                if (diff > 0) return ` ↑${diff}%`
-                if (diff < 0) return ` ↓${Math.abs(diff)}%`
-                if (diff == 0) return `${diff}%`
-                return '--'
-              }
-              dmgCalc.dmgData = dmgCalc.dmgData.map(item => {
-                let matchedItem = dmgCalc_.dmgData.find(d => d.title === item.title)   
-                if (matchedItem) {
-                  return {
-                    ...item,
-                    dmg: item.dmg,
-                    dmg_diff: getDiff(item.dmg, matchedItem.dmg),
-                    avg: item.avg,
-                    avg_diff: getDiff(item.avg, matchedItem.avg)
-                  }
+            if (origin) {
+              let dmgCalc_ = await ProfileDetail.getProfileDmgCalc({ profile: origin, enemyLv, mode, params })
+              if (dmgCalc_ && dmgCalc_.dmgData) {
+                const num = (str) => {
+                  if (!str || str === 'NaN') return NaN
+                  return parseFloat(String(str).replace(/,/g, ''))
                 }
-                return item
-              })
+                const getDiff = (currStr, oldStr) => {
+                  let curr = num(currStr)
+                  let old = num(oldStr)
+                  if (isNaN(curr) || isNaN(old) || old === 0) return '--'  
+                  let diff = ((curr - old) / old * 100).toFixed(1)
+                  if (diff > 0) return ` ↑${diff}%`
+                  if (diff < 0) return ` ↓${Math.abs(diff)}%`
+                  if (diff == 0) return `${diff}%`
+                  return '--'
+                }
+                dmgCalc.dmgData = dmgCalc.dmgData.map(item => {
+                  let matchedItem = dmgCalc_.dmgData.find(d => d.title === item.title)   
+                  if (matchedItem) {
+                    return {
+                      ...item,
+                      dmg: item.dmg,
+                      dmg_diff: getDiff(item.dmg, matchedItem.dmg),
+                      avg: item.avg,
+                      avg_diff: getDiff(item.avg, matchedItem.avg)
+                    }
+                  }
+                  return item
+                })
+              }
             }
           }
           let selfRank = []
