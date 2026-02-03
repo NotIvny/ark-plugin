@@ -297,7 +297,7 @@
           {{if !dmg.dmg || dmg.dmg === "NaN"}}
           <div class="value value-full" style="position: relative;">
             {{if dmg.avg_diff}}
-            <span style="position: absolute; right: 32px; font-size: 11px; color: {{dmg.avg_diff.includes('↑') ? '#ff4e4e' : (dmg.avg_diff.includes('↓') ? '#43ff43' : '#999')}};">
+            <span style="position: absolute; right: 32px; font-size: 12px; color: {{dmg.avg_diff.includes('↑') ? '#ff4e4e' : (dmg.avg_diff.includes('↓') ? '#43ff43' : '#999')}};">
               {{dmg.avg_diff}}
             </span>
             {{/if}}
@@ -307,13 +307,13 @@
           {{else}}
             {{if dmg.dmg_diff}}
             <div class="value" style="text-align: left; padding: 0 8px;">
-              <span style="float: right; font-size: 11px; opacity: 0.9; color: {{dmg.dmg_diff.includes('↑') ? '#ff4e4e' : (dmg.dmg_diff.includes('↓') ? '#43ff43' : '#999')}};">
+              <span style="float: right; font-size: 12px; opacity: 0.9; color: {{dmg.dmg_diff.includes('↑') ? '#ff4e4e' : (dmg.dmg_diff.includes('↓') ? '#43ff43' : '#999')}};">
                 {{dmg.dmg_diff}}
               </span>
               <span>{{dmg.dmg}}{{dmg.unit}}</span>
             </div>
             <div class="value" style="text-align: left; padding: 0 8px;">
-              <span style="float: right; font-size: 11px; opacity: 0.9; color: {{dmg.dmg_diff.includes('↑') ? '#ff4e4e' : (dmg.dmg_diff.includes('↓') ? '#43ff43' : '#999')}};">
+              <span style="float: right; font-size: 12px; opacity: 0.9; color: {{dmg.dmg_diff.includes('↑') ? '#ff4e4e' : (dmg.dmg_diff.includes('↓') ? '#43ff43' : '#999')}};">
                 {{dmg.avg_diff}}
               </span>
               <span>{{dmg.avg}}{{dmg.unit}}</span>
