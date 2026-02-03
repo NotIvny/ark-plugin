@@ -306,14 +306,14 @@
           <div class="value value-none"></div>
           {{else}}
             {{if dmg.dmg_diff}}
-            <div class="value" style="text-align: left; padding: 0 8px;">
-              <span style="float: right; font-size: 12px; opacity: 0.9; color: {{dmg.dmg_diff.includes('↑') ? '#ff4e4e' : (dmg.dmg_diff.includes('↓') ? '#43ff43' : '#999')}};">
+            <div class="value" style="text-align: left; padding-left: 15px;">
+              <span style="float: right; font-size: 12px; opacity: 0.9; padding-right: 8px; color: {{dmg.dmg_diff.includes('↑') ? '#43ff43' : (dmg.dmg_diff.includes('↓') ? '#ff4e4e' : '#999')}};">
                 {{dmg.dmg_diff}}
               </span>
               <span>{{dmg.dmg}}{{dmg.unit}}</span>
             </div>
-            <div class="value" style="text-align: left; padding: 0 8px;">
-              <span style="float: right; font-size: 12px; opacity: 0.9; color: {{dmg.dmg_diff.includes('↑') ? '#ff4e4e' : (dmg.dmg_diff.includes('↓') ? '#43ff43' : '#999')}};">
+            <div class="value" style="text-align: left; padding-left: 15px;">
+              <span style="float: right; font-size: 12px; opacity: 0.9; padding-right: 8px; color: {{dmg.avg_diff.includes('↑') ? '#43ff43' : (dmg.avg_diff.includes('↓') ? '#ff4e4e' : '#999')}};">
                 {{dmg.avg_diff}}
               </span>
               <span>{{dmg.avg}}{{dmg.unit}}</span>
