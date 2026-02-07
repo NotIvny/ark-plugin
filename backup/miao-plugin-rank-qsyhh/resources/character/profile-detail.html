@@ -297,7 +297,7 @@
           {{if !dmg.dmg || dmg.dmg === "NaN"}}
           <div class="value value-full" style="position: relative;">
             {{if dmg.avg_diff}}
-            <span style="position: absolute; right: 32px; font-size: 12px; color: {{dmg.avg_diff.includes('↑') ? '#ff4e4e' : (dmg.avg_diff.includes('↓') ? '#43ff43' : '#999')}};">
+            <span style="position: absolute; right: 32px; font-size: 12px; color: {{dmg.avg_diff.includes('↑') ? '#43ff43' : (dmg.avg_diff.includes('↓') ? '#ff4e4e' : '#999')}};">
               {{dmg.avg_diff}}
             </span>
             {{/if}}
