@@ -7,7 +7,7 @@ export const sendApi = async function(type, data) {
 		data: data,
 		version: version
 	}
-	const url = 'http://49.233.157.77:3000/api'
+	const url = 'http://ark.ivny.top/api'
 	const controller = new AbortController()
 	const timeout = setTimeout(() => controller.abort(), 10000)
 	try {
@@ -52,4 +52,27 @@ export const sendAkashaApi = async function(url){
 		return false
 	}
 }
-export default { sendApi, sendAkashaApi }
+export const ArkApi = {
+	async req(url, param = {}) {
+		try {
+			const controller = new AbortController()
+			const timeout = setTimeout(() => controller.abort(), 15000)
+            const response = await fetch(`https://ark.ivny.top/${url}`, {
+                method: param.method || 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+				body: param.body,
+				signal: controller.signal
+			})
+			clearTimeout(timeout)
+            if (!response.ok) {
+                return false
+            }
+            return await response.json()
+        } catch (err) {
+            return false
+        }
+    },
+}
+export default { sendApi, sendAkashaApi, ArkApi }
