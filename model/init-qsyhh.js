@@ -16,6 +16,13 @@ import ArkCfg from '../components/Cfg.js'
 import { ProfileWeapon } from '../../miao-plugin/apps/profile/ProfileWeapon.js'
 import { ArkApi } from './api.js'
 import OCR from './ocr.js'
+let defWeapon = {
+  bow: "西风猎弓",
+  catalyst: "西风秘典",
+  claymore: "西风大剑",
+  polearm: "西风长枪",
+  sword: "西风剑"
+}
 const ArkInit = {
   init() {
     this.getProfile = (uid, charid, ds, game = "gs") => {
@@ -295,7 +302,6 @@ const ArkInit = {
     }
     ProfileDetail.detail = async (e) => {
       let msg = e.original_msg || e.msg
-      logger.error(msg)
       if (!msg) return false
       if (!/详细|详情|面板|面版|圣遗物|遗器|伤害|武器|换/.test(msg)) return false
       let imgUrls = []
