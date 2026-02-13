@@ -7,8 +7,8 @@ import ProfileChange from "../../miao-plugin/apps/profile/ProfileChange.js"
 import CharRank from '../../miao-plugin/apps/profile/ProfileRank.js'
 import { profileArtis } from "../../miao-plugin/apps/profile/ProfileArtis.js"
 import { getTargetUid } from '../../miao-plugin/apps/profile/ProfileCommon.js'
-import { Data, Common, Format, Cfg, Meta } from '../../miao-plugin/components/index.js'
-import { Button, MysApi, ProfileRank, Weapon, Artifact, Player, Character, ArtifactSet} from '../../miao-plugin/models/index.js'
+import { Data, Common, Format, Cfg, Meta,  } from '../../miao-plugin/components/index.js'
+import { Button, MysApi, ProfileRank, Weapon, Artifact, Player, Character, ArtifactSet, Avatar } from '../../miao-plugin/models/index.js'
 import safeGsCfg from './safeGsCfg.js'
 import api from '../../ark-plugin/model/api.js'
 import { getStygianVersion } from '../../ark-plugin/model/calcVersion.js'
@@ -18,6 +18,99 @@ import { ArkApi } from './api.js'
 import OCR from './ocr.js'
 const ArkInit = {
   init() {
+    this.getProfile = (uid, charid, ds, game = "gs") => {
+      if (!charid) return false
+      const isGs = game === "gs"
+
+      let player = Player.create(uid, game)
+
+      let source = player.getProfile(charid)
+      let dc = ds.char || {}
+      if (!source || !source.hasData) source = {}
+
+      let char = Character.get({ id: dc?.char || source.id || charid, elem: dc?.elem })
+      if (!char) return false
+
+      let level = dc.level || source.level || 90
+      let promote = level === source.level ? source.promote : undefined
+
+      let profiles = {}
+      if (source && source.id) profiles[`${player.uid}:${source.id}`] = source
+      // 获取source
+      let getSource = function(cfg) {
+        if (!cfg || !cfg.char) return source
+        let cuid = cfg.uid || uid
+        let id = cfg.char || source.id
+        let key = cuid + ":" + id
+        if (!profiles[key]) {
+          let cPlayer = Player.create(cuid, game)
+          profiles[key] = cPlayer.getProfile(id) || {}
+        }
+        return profiles[key]?.id ? profiles[key] : source
+      }
+      // 初始化profile
+      let ret = new Avatar({
+        uid,
+        id: char.id,
+        level,
+        cons: Data.def(dc.cons, source.cons, 0),
+        fetter: source.fetter || 10,
+        elem: char.elem || source.char?.elem,
+        dataSource: "change",
+        _source: "change",
+        promote,
+        trees: lodash.extend([], Data.def(dc.trees, source.trees))
+      }, char.game)
+      // 设置武器
+      let wCfg = ds.weapon || {}
+      let wSource = getSource(wCfg).weapon || {}
+      let weapon = Weapon.get(wCfg?.weapon || wSource?.name || defWeapon[char.weaponType], char.game, char.weaponType)
+      if (char.isGs) {
+        if (!weapon || weapon.type !== char.weaponType) weapon = Weapon.get(defWeapon[char.weaponType], char.game)
+      }
+
+      let wDs = {
+        name: weapon.name,
+        star: weapon.star,
+        level: Math.min(weapon.maxLv || 90, wCfg.level || wSource.level || 90)
+      }
+      if (wSource.level === wDs.level) wDs.promote = wSource.promote
+      wDs.affix = Math.min(weapon.maxAffix || 5, wCfg.affix || ((wDs.star === 5 && wSource.star !== 5) ? 1 : (wSource.affix || 5)))
+      ret.setWeapon(wDs)
+
+      // 设置天赋
+      if (ds?.char?.talent) {
+        ret.setTalent(ds?.char?.talent, "level")
+      } else {
+        ret.setTalent(source?.originalTalent || (isGs ? { a: 9, e: 9, q: 9 } : { a: 6, e: 8, t: 8, q: 8 }), "original")
+      }
+
+      // 设置圣遗物
+      let artis = getSource(ds.artis)?.artis?.toJSON() || {}
+      for (let idx = 1; idx <= (isGs ? 5 : 6); idx++) {
+        if (ds["arti" + idx]) {
+          if (ds["arti" + idx].mode === 'ocr') {
+            delete ds["arti" + idx].mode
+            artis[idx] = ds["arti" + idx]
+          } else {
+            let source = getSource(ds["arti" + idx])
+            if (source && source.artis && source.artis[idx]) artis[idx] = lodash.cloneDeep(source.artis[idx])
+          }
+        }
+        let artisIdx = (isGs ? "00111" : "001122")[idx - 1]
+        if (artis[idx] && ds.artisSet && ds.artisSet[artisIdx]) {
+          let as = ArtifactSet.get(ds.artisSet[artisIdx], game)
+          if (as) {
+            artis[idx].id = as.getArti(idx)?.getIdByStar(artis[idx].star || 5)
+            artis[idx].name = as.getArtiName(idx)
+            artis[idx].set = as.name
+          }
+        }
+      }
+      ret.setArtis(artis)
+      ret.calcAttr()
+      return ret
+    }
     ProfileChange.matchMsg = async (msg, imgUrls = []) => {
       if (!/(变|改|换)/.test(msg)) return false
       let game = /星铁/.test(msg) ? "sr" : "gs"
@@ -202,6 +295,7 @@ const ArkInit = {
     }
     ProfileDetail.detail = async (e) => {
       let msg = e.original_msg || e.msg
+      logger.error(msg)
       if (!msg) return false
       if (!/详细|详情|面板|面版|圣遗物|遗器|伤害|武器|换/.test(msg)) return false
       let imgUrls = []
@@ -243,7 +337,7 @@ const ArkInit = {
         e.uid = ""
         e.msg = "#喵喵面板变换"
         e.uid = pc.uid || await getTargetUid(e)
-        profileChange = ProfileChange.getProfile(e.uid, pc.char, pc.change, pc.game)
+        profileChange = this.getProfile(e.uid, pc.char, pc.change, pc.game)
         if (profileChange && profileChange.char) {
           msg = `#${profileChange.char?.name}${pc.mode || "面板"}`
           e._profile = profileChange
@@ -284,7 +378,6 @@ const ArkInit = {
         name = name.replace(/圣遗物|遗器/, "").trim()
       }
       if (!Cfg.get("avatarProfile")) return false // 面板开关关闭
-
       let char = Character.get(name.trim(), e.game)
       if (!char) return false
 
@@ -298,7 +391,6 @@ const ArkInit = {
 
       e.uid = uid
       e.avatar = char.id
-
       if (char.isCustom) return e.reply("自定义角色暂不支持此功能")
 
       if (!char.isRelease) {
