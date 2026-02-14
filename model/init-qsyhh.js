@@ -11,7 +11,6 @@ import { Data, Common, Format, Cfg, Meta,  } from '../../miao-plugin/components/
 import { Button, MysApi, ProfileRank, Weapon, Artifact, Player, Character, ArtifactSet, Avatar } from '../../miao-plugin/models/index.js'
 import safeGsCfg from './safeGsCfg.js'
 import api from '../../ark-plugin/model/api.js'
-import { getStygianVersion } from '../../ark-plugin/model/calcVersion.js'
 import ArkCfg from '../components/Cfg.js'
 import { ProfileWeapon } from '../../miao-plugin/apps/profile/ProfileWeapon.js'
 import { ArkApi } from './api.js'
@@ -39,6 +38,8 @@ const ArkInit = {
       if (!char) return false
 
       let level = dc.level || source.level || 90
+      logger.error(source)
+      logger.error(dc)
       let promote = level === source.level ? source.promote : undefined
 
       let profiles = {}
