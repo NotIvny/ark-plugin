@@ -277,7 +277,7 @@ const ArkInit = {
           : /(?:天赋|技能|行迹)((?:[1][0-5]|[1-9])[ ,]?)((?:[1][0-5]|[1-9])[ ,]?)((?:[1][0-5]|[1-9])[ ,]?)((?:[1][0-5]|[1-9])[ ,]?)((?:[1][0-5]|[1-9])[ ,]?)?([1][0-5]|[1-9])?/).exec(txt)
         if (talentRet) {
           char.talent = {}
-          lodash.forEach((isGs ? "a,e,q" : "a,e,t,q,me,mt").split(","), (key, idx) => {
+          lodash.forEach((isGs ? "cpct,cdmg,recharge,dmg" : "cpct,cdmg,recharge,dmg,effPct,effDef,heal,stance,elation").split(","), (key) => {
             char.talent[key] = talentRet[idx + 1] * 1 || 1
           })
           txt = txt.replace(talentRet[0], "")
