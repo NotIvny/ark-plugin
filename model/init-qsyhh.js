@@ -271,6 +271,7 @@ const ArkInit = {
         }
 
         // 天赋匹配
+        // TODO 之后要适配 标记一下
         let talentRet = (isGs
           ? /(?:天赋|技能|行迹)((?:[1][0-5]|[1-9])[ ,]?)((?:[1][0-5]|[1-9])[ ,]?)([1][0-5]|[1-9])/
           : /(?:天赋|技能|行迹)((?:[1][0-5]|[1-9])[ ,]?)((?:[1][0-5]|[1-9])[ ,]?)((?:[1][0-5]|[1-9])[ ,]?)((?:[1][0-5]|[1-9])[ ,]?)((?:[1][0-5]|[1-9])[ ,]?)?([1][0-5]|[1-9])?/).exec(txt)
@@ -836,9 +837,11 @@ const ArkInit = {
         } 
       }
       const isMemosprite = e.isSr && char.weaponType === "记忆"
+      const isJoy = e.isSr && char.weaponType === "欢愉"
       const data = {
         title: _dmg?.title,
         isMemosprite,
+        isJoy,
         style: `<style>body .container {width: ${(isMemosprite ? 1000 : e.isSr ? 930 : 850) + !noRankFlag * 180}px;}</style>`
       }
       // 渲染图像
