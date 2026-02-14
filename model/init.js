@@ -24,7 +24,7 @@ let defWeapon = {
 }
 const ArkInit = {
   init() {
-    this.getProfile = (uid, charid, ds, game = "gs") => {
+    ProfileChange.getProfile = (uid, charid, ds, game = "gs") => {
       if (!charid) {
         return false
       }
@@ -132,7 +132,7 @@ const ArkInit = {
       ret.calcAttr()
       return ret
     }
-    ProfileChange.matchMsg = async (msg, imgUrls = []) => {
+    this.matchMsg = async (msg, imgUrls = []) => {
       if (!/(变|改|换)/.test(msg)) {
         return false
       }
@@ -364,7 +364,7 @@ const ArkInit = {
       let mode = 'profile'
       let profileChange = false
       let changeMsg = msg
-      let pc = ProfileChange.matchMsg(msg, imgUrls)
+      let pc = await this.matchMsg(msg, imgUrls)
 
       if (pc && pc.char && pc.change) {
         if (!Cfg.get('profileChange')) {
@@ -376,7 +376,7 @@ const ArkInit = {
         e.uid = ''
         e.msg = '#喵喵面板变换'
         e.uid = pc.uid || await getTargetUid(e)
-        profileChange = this.getProfile(e.uid, pc.char, pc.change, pc.game)
+        profileChange = ProfileChange.getProfile(e.uid, pc.char, pc.change, pc.game)
         if (profileChange && profileChange.char) {
           msg = `#${profileChange.char?.name}${pc.mode || '面板'}`
           e._profile = profileChange
