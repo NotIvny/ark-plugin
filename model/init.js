@@ -376,7 +376,7 @@ const ArkInit = {
         e.uid = ''
         e.msg = '#喵喵面板变换'
         e.uid = pc.uid || await getTargetUid(e)
-        profileChange = ProfileChange.getProfile(e.uid, pc.char, pc.change, pc.game)
+        profileChange = this.getProfile(e.uid, pc.char, pc.change, pc.game)
         if (profileChange && profileChange.char) {
           msg = `#${profileChange.char?.name}${pc.mode || '面板'}`
           e._profile = profileChange
