@@ -50,7 +50,7 @@ git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 
 总排名数据源于用户更新面板，目前数据量在300k左右
 
-插件只会上传用户uid和面板数据，不会上传其他信息
+插件只会上传用户uid和面板数据，OCR上传的图片将用于测试集，不会上传其他信息
 
 功能仅限内部交流与小范围使用，请勿将本插件用于以盈利为目的的场景
 

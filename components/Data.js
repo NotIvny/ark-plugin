@@ -1,10 +1,11 @@
+/* eslint-disable prefer-template */
 import lodash from 'lodash'
 import fs from 'node:fs'
 import util from 'node:util'
 
 const _path = process.cwd()
 const getRoot = (root = '') => {
-  if (root === "root" || root === "yunzai") {
+  if (root === 'root' || root === 'yunzai') {
     root = `${_path}/`
   } else {
     root = `${_path}/plugins/ark-plugin/`

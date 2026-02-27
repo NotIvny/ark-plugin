@@ -1,7 +1,8 @@
+/* eslint-disable prefer-template */
 import fs from 'node:fs'
 import lodash from 'lodash'
 import cfgData from './cfg/CfgData.js'
-import { Version } from "../components/index.js"
+import { Version } from '../components/index.js'
 
 const _path = process.cwd()
 const _cfgPath = `${_path}/plugins/ark-plugin/components/`
@@ -17,6 +18,7 @@ try {
       miaoCfg[cm.cfgKey] = true
     }
   })
+// eslint-disable-next-line no-unused-vars
 } catch (e) {
   // do nth
 }
@@ -27,7 +29,7 @@ let Cfg = {
       return true
     }
     let ret = lodash.get(cfg, rote)
-    return lodash.isUndefined(cfg) ? def : ret
+    return lodash.isUndefined(ret) ? def : ret
   },
   set (rote, val) {
     cfg[rote] = val

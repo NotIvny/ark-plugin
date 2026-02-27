@@ -1,9 +1,142 @@
-        #container {
-            position: fixed;
-            width: 1200px;
-            background: url('../../../../plugins/ark-plugin/resources/graph/background.png') no-repeat center;
-            background-size: 100% auto;
-        }
-        #LineChart{
-            backdrop-filter: blur(12px);
-        }
+#container {
+  position: relative;
+  width: 1200px;
+  padding: 0;
+  background: url('../../../../plugins/ark-plugin/resources/graph/background.png') no-repeat center center;
+  background-size: cover;
+  background-color: #0f0c29;
+  overflow: hidden;
+}
+
+.stats-wrapper {
+  position: relative;
+  padding: 30px 25px 5px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+/* 覆盖公共copyright间距 */
+#container .copyright {
+  margin: 4px 0 8px;
+}
+
+/* 标题区域 */
+.stats-header {
+  text-align: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.stats-header .char-name {
+  font-family: Number, "印品南征北战NZBZ体", NZBZ, "汉仪文黑-65W", YS, PingFangSC-Medium, "PingFang SC", sans-serif;
+  font-size: 36px;
+  color: #fff;
+  letter-spacing: 4px;
+  text-shadow: 0 0 20px rgba(72, 149, 239, 0.5), 0 2px 4px rgba(0, 0, 0, 0.5);
+  margin-bottom: 6px;
+}
+
+.stats-header .dmg-title {
+  font-size: 16px;
+  color: rgba(211, 188, 142, 0.9);
+  letter-spacing: 0.5px;
+}
+
+.stats-header .total-badge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 4px 18px;
+  background: linear-gradient(135deg, rgba(72, 149, 239, 0.2), rgba(147, 51, 234, 0.2));
+  border: 1px solid rgba(72, 149, 239, 0.3);
+  border-radius: 20px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.stats-header .total-badge .num {
+  color: #67e8f9;
+  font-family: Number, sans-serif;
+  font-weight: bold;
+  padding: 0 3px;
+}
+
+.stats-header .total-badge .sep {
+  color: rgba(255, 255, 255, 0.25);
+  padding: 0 6px;
+}
+
+.stats-header .total-badge #genTime {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* 图表容器 */
+.chart-container {
+  position: relative;
+  margin: 0 10px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+}
+
+.chart-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(72, 149, 239, 0.4), transparent);
+}
+
+#LineChart {
+  width: 1120px;
+  height: 520px;
+}
+
+/* 底部数据卡片 */
+.stats-footer {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 0 10px;
+  flex-wrap: nowrap;
+}
+
+.stat-card {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 10px 6px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.stat-card .percent-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+
+.stat-card .score-value {
+  font-family: Number, sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(72, 149, 239, 0.3);
+}
+
+/* 高亮前三 */
+.stat-card.top-tier .score-value {
+  color: #67e8f9;
+}
+
+.stat-card.top-tier {
+  border-color: rgba(103, 232, 249, 0.2);
+  background: linear-gradient(180deg, rgba(103, 232, 249, 0.08) 0%, rgba(103, 232, 249, 0.02) 100%);
+}

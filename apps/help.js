@@ -1,6 +1,6 @@
 import lodash from 'lodash'
-import fs from 'fs'
-import { Cfg, Version, Common, Data } from '../components/index.js'
+import fs from 'node:fs'
+import { Version, Common, Data } from '../components/index.js'
 import HelpTheme from './HelpTheme.js'
 
 const _path = process.cwd()
@@ -15,11 +15,11 @@ export class Help extends plugin {
       priority: 1146,
       rule: [
         {
-          reg: "^#ark帮助$",
+          reg: '^#ark帮助$',
           fnc: 'help'
         },
         {
-          reg: "^#ark版本$",
+          reg: '^#ark版本$',
           fnc: 'version'
         }
       ]
@@ -73,6 +73,7 @@ export class Help extends plugin {
       helpGroup.push(group)
     })
     let themeData = await HelpTheme.getThemeData(diyCfg.helpCfg || {}, sysCfg.helpCfg || {})
+    // eslint-disable-next-line no-return-await
     return await Common.render('help/index', {
       helpCfg: helpConfig,
       helpGroup,
@@ -81,6 +82,7 @@ export class Help extends plugin {
     }, { e, scale: 1.2 })
   }
   async version (e) {
+    // eslint-disable-next-line no-return-await
     return await Common.render('help/version-info', {
       currentVersion: Version.version,
       changelogs: Version.changelogs,

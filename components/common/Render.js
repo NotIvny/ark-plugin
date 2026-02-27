@@ -1,4 +1,16 @@
 import { Version, Cfg } from "../../components/index.js"
+import { execSync } from 'node:child_process'
+
+// 获取 ark-plugin 的 git commit 信息
+let gitInfo = ''
+try {
+  const pluginDir = process.cwd() + '/plugins/ark-plugin'
+  const hash = execSync('git rev-parse --short HEAD', { cwd: pluginDir, encoding: 'utf8' }).trim()
+  const date = execSync('git log -1 --format=%cd --date=format:%Y%m%d', { cwd: pluginDir, encoding: 'utf8' }).trim()
+  gitInfo = `（${hash}-${date}）`
+} catch (e) {
+  // git 不可用时忽略
+}
 
 const Render = {
   async render (path, params, cfg) {
@@ -29,7 +41,7 @@ const Render = {
           sys: {
             scale: Cfg.scale(cfg.scale || 1)
           },
-          copyright: `Created By ${Version.name}<span class="version">${Version.yunzai}</span>${pluginName}</span>`,
+          copyright: `Created By ${Version.name}<span class="version">${Version.yunzai}</span>${pluginName}${gitInfo}</span>`,
           pageGotoParams: {
             waitUntil: 'networkidle2'
           }

@@ -18,7 +18,7 @@ export const cfgSchema = {
         title: '角色面板排名类型',
         key: '排名类型',
         type: 'num',
-        def: 2,
+        def: 3,
         input: (n) => /[0-3]{1}/.test(n) ? (n * 1) : 2,
         desc: '角色面板伤害计算中显示的排名类型：0-伤害排名，1-圣遗物排名, 2-均显示，3-显示图表排名'
       },

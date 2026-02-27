@@ -1,4 +1,3 @@
-import Cfg from './Cfg.js'
 import Render from './common/Render.js'
 
 const Common = {

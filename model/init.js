@@ -1,30 +1,28 @@
 import lodash from 'lodash'
-import fs from 'fs'
-import {getProfileRefresh } from '../../miao-plugin/apps/profile/ProfileCommon.js'
+import fs from 'node:fs'
+import { getProfileRefresh, getTargetUid } from '../../miao-plugin/apps/profile/ProfileCommon.js'
 import ProfileDetail from '../../miao-plugin/apps/profile/ProfileDetail.js'
 import ProfileList from '../../miao-plugin/apps/profile/ProfileList.js'
-import ProfileChange from "../../miao-plugin/apps/profile/ProfileChange.js"
+import ProfileChange from '../../miao-plugin/apps/profile/ProfileChange.js'
 import CharRank from '../../miao-plugin/apps/profile/ProfileRank.js'
-import { profileArtis } from "../../miao-plugin/apps/profile/ProfileArtis.js"
-import { getTargetUid } from '../../miao-plugin/apps/profile/ProfileCommon.js'
-import { Data, Common, Format, Cfg, Meta} from '../../miao-plugin/components/index.js'
+import { profileArtis } from '../../miao-plugin/apps/profile/ProfileArtis.js'
+import { Data, Common, Format, Cfg, Meta } from '../../miao-plugin/components/index.js'
 import { Button, MysApi, ProfileRank, Weapon, Artifact, Player, Character, ArtifactSet, Avatar } from '../../miao-plugin/models/index.js'
 import safeGsCfg from './safeGsCfg.js'
 import api from '../../ark-plugin/model/api.js'
 import ArkCfg from '../components/Cfg.js'
 import { ProfileWeapon } from '../../miao-plugin/apps/profile/ProfileWeapon.js'
 import { ArkApi } from './api.js'
-import OCR from './ocr.js'
 let defWeapon = {
-  bow: "西风猎弓",
-  catalyst: "西风秘典",
-  claymore: "西风大剑",
-  polearm: "西风长枪",
-  sword: "西风剑"
+  bow: '西风猎弓',
+  catalyst: '西风秘典',
+  claymore: '西风大剑',
+  polearm: '西风长枪',
+  sword: '西风剑'
 }
 const ArkInit = {
   init() {
-    ProfileChange.getProfile = (uid, charid, ds, game = "gs") => {
+    ProfileChange.getProfile = (uid, charid, ds, game = 'gs') => {
       if (!charid) {
         return false
       }
@@ -57,7 +55,7 @@ const ArkInit = {
         }
         let cuid = cfg.uid || uid
         let id = cfg.char || source.id
-        let key = cuid + ':' + id
+        let key = `${cuid  }:${  id}`
         if (!profiles[key]) {
           let cPlayer = Player.create(cuid, game)
           profiles[key] = cPlayer.getProfile(id) || {}
@@ -109,12 +107,12 @@ const ArkInit = {
       // 设置圣遗物
       let artis = getSource(ds.artis)?.artis?.toJSON() || {}
       for (let idx = 1; idx <= (isGs ? 5 : 6); idx++) {
-        if (ds['arti' + idx]) {
-          if (ds['arti' + idx].mode === 'ocr') {
-            delete ds['arti' + idx].mode
-            artis[idx] = ds['arti' + idx]
+        if (ds[`arti${  idx}`]) {
+          if (ds[`arti${  idx}`].mode === 'ocr') {
+            delete ds[`arti${  idx}`].mode
+            artis[idx] = ds[`arti${  idx}`]
           } else {
-            let source = getSource(ds['arti' + idx])
+            let source = getSource(ds[`arti${  idx}`])
             if (source && source.artis && source.artis[idx]) artis[idx] = lodash.cloneDeep(source.artis[idx])
           }
         }
@@ -151,24 +149,24 @@ const ArkInit = {
       const isGs = game === 'gs'
       const keyMap = isGs
         ? {
-            artis: '圣遗物',
-            arti1: '花,生之花',
-            arti2: '毛,羽,羽毛,死之羽',
-            arti3: '沙,沙漏,表,时之沙',
-            arti4: '杯,杯子,空之杯',
-            arti5: '头,冠,理之冠,礼冠,帽子,帽',
-            weapon: '武器'
-          }
+          artis: '圣遗物',
+          arti1: '花,生之花',
+          arti2: '毛,羽,羽毛,死之羽',
+          arti3: '沙,沙漏,表,时之沙',
+          arti4: '杯,杯子,空之杯',
+          arti5: '头,冠,理之冠,礼冠,帽子,帽',
+          weapon: '武器'
+        }
         : {
-            artis: '圣遗物,遗器',
-            arti1: '头,帽子,头部',
-            arti2: '手,手套,手部',
-            arti3: '衣,衣服,甲,躯干,',
-            arti4: '鞋,靴,鞋子,靴子,脚,脚部',
-            arti5: '球,位面球',
-            arti6: '绳,线,链接绳,连接绳',
-            weapon: '武器,光锥'
-          }
+          artis: '圣遗物,遗器',
+          arti1: '头,帽子,头部',
+          arti2: '手,手套,手部',
+          arti3: '衣,衣服,甲,躯干,',
+          arti4: '鞋,靴,鞋子,靴子,脚,脚部',
+          arti5: '球,位面球',
+          arti6: '绳,线,链接绳,连接绳',
+          weapon: '武器,光锥'
+        }
       let keyTitleMap = {}
       lodash.forEach(keyMap, (val, key) => {
         lodash.forEach(val.split(','), (v) => {
@@ -187,10 +185,9 @@ const ArkInit = {
           try {
             //let bitmap = fs.readFileSync('./artis1.jpg');
             //let base64str = Buffer.from(bitmap).toString('base64');
-            let ocrResult = await ArkApi.req(`ocr/profilechange/${char.game}`, { body: JSON.stringify({ image: imageUrl }) })
-            let res = OCR.transform(ocrResult, game)
+            let res = await ArkApi.req(`ocr/profilechange/${char.game}`, { body: JSON.stringify({ image: imageUrl }) })
             if (res) {
-              change[res?.type] = res?.data
+              change[res?.data?.type] = res?.data?.data
             }
           } catch (err) {
             logger.error(err)
@@ -467,19 +464,19 @@ const ArkInit = {
       let selfUser = await MysApi.initUser(e)
 
       if (!selfUser) {
-      e.reply(['尚未绑定UID', new Button(e).bindUid()])
-      return true
+        e.reply(['尚未绑定UID', new Button(e).bindUid()])
+        return true
       }
 
       let { uid } = e
 
       if (char.isCustom) {
-      e.reply(`暂不支持自定义角色${char.name}的面板信息查看`)
-      return true
+        e.reply(`暂不支持自定义角色${char.name}的面板信息查看`)
+        return true
       }
       let profile = e._profile || await getProfileRefresh(e, char.id)
       if (!profile) {
-      return true
+        return true
       }
       char = profile.char || char
       let a = profile.attr
@@ -490,32 +487,32 @@ const ArkInit = {
       let isSr = !isGs
 
       lodash.forEach((isGs ? 'hp,def,atk,mastery' : 'hp,def,atk,speed').split(','), (key) => {
-      let fn = (n) => Format.comma(n, key === 'hp' ? 0 : 1)
-      attr[key] = fn(a[key])
-      attr[`${key}Base`] = fn(base[key])
-      attr[`${key}Plus`] = fn(a[key] - base[key])
+        let fn = (n) => Format.comma(n, key === 'hp' ? 0 : 1)
+        attr[key] = fn(a[key])
+        attr[`${key}Base`] = fn(base[key])
+        attr[`${key}Plus`] = fn(a[key] - base[key])
       })
       lodash.forEach((isGs ? 'cpct,cdmg,recharge,dmg' : 'cpct,cdmg,recharge,dmg,effPct,effDef,heal,stance').split(','), (key) => {
-      let fn = Format.pct
-      let key2 = key
-      if (key === 'dmg') {
+        let fn = Format.pct
+        let key2 = key
+        if (key === 'dmg') {
           if (isGs) {
-          if (a.phy > a.dmg) {
+            if (a.phy > a.dmg) {
               key2 = 'phy'
+            }
           }
-          }
-      }
-      attr[key] = fn(a[key2])
-      attr[`${key}Base`] = fn(base[key2])
-      attr[`${key}Plus`] = fn(a[key2] - base[key2])
+        }
+        attr[key] = fn(a[key2])
+        attr[`${key}Base`] = fn(base[key2])
+        attr[`${key}Plus`] = fn(a[key2] - base[key2])
       })
 
       let weapon = Weapon.get(profile?.weapon?.name, game)
       let w = profile.weapon
       let wCfg = {}
       if (mode === 'weapon') {
-      wCfg = weapon.calcAttr(w.level, w.promote)
-      wCfg.weapons = await ProfileWeapon.calc(profile)
+        wCfg = weapon.calcAttr(w.level, w.promote)
+        wCfg.weapons = await ProfileWeapon.calc(profile)
       }
 
       let enemyLv = isGs ? (await selfUser.getCfg('char.enemyLv', 103)) : 80
@@ -523,8 +520,8 @@ const ArkInit = {
 
       let rank = false
       if (e.group_id && !e._profile) {
-      rank = await ProfileRank.create({ group: e.group_id, uid, qq: e.user_id })
-      await rank.getRank(profile, true)
+        rank = await ProfileRank.create({ group: e.group_id, uid, qq: e.user_id })
+        await rank.getRank(profile, true)
       }
 
       let artisDetail = profile.getArtisMark()
@@ -532,49 +529,49 @@ const ArkInit = {
       let allAttr = profile.artis.getAllAttr() || []
       allAttr = lodash.slice(allAttr, 0, 9)
       for (let idx = allAttr.length; idx < 9; idx++) {
-      allAttr[idx] = {}
+        allAttr[idx] = {}
       }
       artisDetail.allAttr = allAttr
 
       let artisKeyTitle = Artifact.getArtisKeyTitle(game)
       let data = profile.getData('name,abbr,cons,level,talent,dataSource,updateTime,imgs,costumeSplash')
       if (isSr) {
-      let treeData = []
-      let treeMap = {}
-      // 属性
-      lodash.forEach('0113355778'.split(''), (pos, idx) => {
+        let treeData = []
+        let treeMap = {}
+        // 属性
+        lodash.forEach('0113355778'.split(''), (pos, idx) => {
           treeData[pos] = treeData[pos] || []
           let tmp = { type: 'tree', img: '/meta-sr/public/icons/tree-cpct.webp' }
           treeData[pos].push(tmp)
-          treeMap[idx + 201 + ''] = tmp
-      })
-      // 属性建成后图标替换
-      lodash.forEach(Object.keys(char.detail.tree), (id) => {
-          let ret = /([12][01][0-9])$/.exec(id + '')
+          treeMap[`${idx + 201  }`] = tmp
+        })
+        // 属性建成后图标替换
+        lodash.forEach(Object.keys(char.detail.tree), (id) => {
+          let ret = /([12][01][0-9])$/.exec(`${id  }`)
           if (ret && ret[1]) {
-          let treeId = ret[1]
-          if (treeId[0] === '2') {
+            let treeId = ret[1]
+            if (treeId[0] === '2') {
               treeMap[treeId].img = `/meta-sr/public/icons/tree-${char.detail?.tree?.[id]?.key}.webp`
+            }
           }
-          }
-      })
-      // 能力
-      lodash.forEach([2, 4, 6], (pos, idx) => {
+        })
+        // 能力
+        lodash.forEach([2, 4, 6], (pos, idx) => {
           let tmp = { type: 'talent', img: data.imgs[`tree${idx + 1}`] }
           treeData[pos] = tmp
-          treeMap[idx + 101 + ''] = tmp
-      })
-      // 点亮图标
-      lodash.forEach(profile.trees, (id) => {
-          let ret = /([12][01][0-9])$/.exec(id + '')
+          treeMap[`${idx + 101  }`] = tmp
+        })
+        // 点亮图标
+        lodash.forEach(profile.trees, (id) => {
+          let ret = /([12][01][0-9])$/.exec(`${id  }`)
           if (ret && ret[1]) {
-          let treeId = ret[1]
-          if (treeMap?.[treeId]) {
+            let treeId = ret[1]
+            if (treeMap?.[treeId]) {
               treeMap[treeId].value = 1
+            }
           }
-          }
-      })
-      data.treeData = treeData
+        })
+        data.treeData = treeData
       }
       data.weapon = profile.getWeaponDetail()
       const isProfileChange = e.msg.includes('喵喵面板变换')
@@ -595,7 +592,7 @@ const ArkInit = {
               let diff = ((curr - old) / old * 100).toFixed(1)
               if (diff > 0) return ` ↑${diff}%`
               if (diff < 0) return ` ↓${Math.abs(diff)}%`
-              if (diff == 0) return `${diff}%`
+              if (diff === 0) return `${diff}%`
               return '--'
             }
             dmgCalc.dmgData = dmgCalc.dmgData.map(item => {
@@ -616,7 +613,7 @@ const ArkInit = {
       }
       let selfRank = []
       let scoreAndRank = []
-      let ret1,ret2
+      let ret1, ret2
       //是否计算总排名
       if (ArkCfg.get('panelRank', true) && dmgCalc.dmgData !== undefined) {
         let characterID = safeGsCfg.roleNameToID(char.name, true) || safeGsCfg.roleNameToID(char.name, false)
@@ -699,47 +696,47 @@ const ArkInit = {
       }
       profile = false
       let renderData = {
-      dmgRankData: ret1?.data?.scores?.map(score => (score / (ret1?.data?.top1 ?? 1)) * 100),
-      artisRankData: ret2?.data?.scores,
-      top1: ret2?.data?.top1,
-      scoreAndRank,
-      selfRank,
-      save_id: uid,
-      uid,
-      game,
-      data,
-      attr,
-      elem: char.elem,
-      path: char.weapon,
-      dmgCalc,
-      artisDetail,
-      artisKeyTitle,
-      bodyClass: `char-${char.name}`,
-      mode,
-      wCfg,
-      changeProfile: e._profileMsg
+        dmgRankData: ret1?.data?.scores?.map(score => (score / (ret1?.data?.top1 ?? 1)) * 100),
+        artisRankData: ret2?.data?.scores,
+        top1: ret2?.data?.top1,
+        scoreAndRank,
+        selfRank,
+        save_id: uid,
+        uid,
+        game,
+        data,
+        attr,
+        elem: char.elem,
+        path: char.weapon,
+        dmgCalc,
+        artisDetail,
+        artisKeyTitle,
+        bodyClass: `char-${char.name}`,
+        mode,
+        wCfg,
+        changeProfile: e._profileMsg
       }
       // 渲染图像
       let exPath = ArkCfg.get('lnFiles', false) ? '-ark' : ''
       const msgRes = await e.reply([await Common.render(`character/profile-detail${exPath}`, renderData, { e, scale: 1.6, retType: 'base64' }), new Button(e).profile(char, uid)])
       if (msgRes) {
       // 如果消息发送成功，就将message_id和图片路径存起来，3小时过期
-      const message_id = [e.message_id]
-      if (Array.isArray(msgRes.message_id)) {
+        const message_id = [e.message_id]
+        if (Array.isArray(msgRes.message_id)) {
           message_id.push(...msgRes.message_id)
-      } else {
+        } else {
           message_id.push(msgRes.message_id)
-      }
-      for (const i of message_id) {
+        }
+        for (const i of message_id) {
           await redis.set(`miao:original-picture:${i}`, JSON.stringify({
-          type: 'profile',
-          img: renderData?.data?.costumeSplash
+            type: 'profile',
+            img: renderData?.data?.costumeSplash
           }), { EX: 3600 * 3 })
-      }
+        }
       }
       return true
-  }
-  CharRank.renderCharRankList = async function({ e, uids, char, mode, groupId }){
+    }
+    CharRank.renderCharRankList = async function({ e, uids, char, mode, groupId }) {
       let list = []
       for (let ds of uids) {
         let uid = ds.uid || ds.value
@@ -787,6 +784,7 @@ const ArkInit = {
                   }
                 }
               }
+            // eslint-disable-next-line no-unused-vars
             } catch (e) {
               // console.log(e)
             }
@@ -857,6 +855,7 @@ const ArkInit = {
           uids_.forEach(uid => {
             try {
               data.push(JSON.parse(fs.readFileSync(`./data/PlayerData/${game}/${uid}.json`, 'utf8')).avatars[list[0].id])
+            // eslint-disable-next-line no-unused-vars
             } catch (error) {
               data.push(null)
             }
@@ -874,7 +873,7 @@ const ArkInit = {
           })
           switch (ret.retcode) {
             case 100:
-              ret.rank.forEach((item, index) => {
+              ret?.rank?.forEach((item, index) => {
                 if (list[index] && list[index].dmg) {
                   list[index].dmg.rankName = (ArkCfg.get('markRankType', false) && ArkCfg.get('localGroupRank', false)) ? `${rankTitle}排名(本地)` : `${rankTitle}排名`
                   list[index].dmg.totalrank = item.rank || '暂无数据'

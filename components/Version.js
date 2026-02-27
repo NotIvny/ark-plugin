@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import lodash from 'lodash'
-import { Data } from "../components/index.js"
+import { Data } from '../components/index.js'
 
 let packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'))
 
@@ -65,6 +65,7 @@ const readLogFile = function (root, versionCount = 4) {
         }
       })
     }
+  // eslint-disable-next-line no-unused-vars
   } catch (e) {
     // do nth
   }

@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import lodash from 'lodash'
-import { Cfg, Common, Data, Version} from '../components/index.js'
+import { Cfg, Common, Version } from '../components/index.js'
 
 let keys = lodash.map(Cfg.getCfgSchemaMap(), (i) => i.key)
 let sysCfgReg = new RegExp(`^#ark设置\\s*(${keys.join('|')})?\\s*(.*)$`)
@@ -10,14 +10,14 @@ const plusPath = `${resPath}/miao-res-plus/`
 export class Admin extends plugin {
   constructor() {
     super({
-      name: "ark设置",
-      event: "message",
+      name: 'ark设置',
+      event: 'message',
       priority: 100,
       rule: [
 
         {
-          reg: "^#ark设置(.*)$",
-          fnc: "sysCfg"
+          reg: '^#ark设置(.*)$',
+          fnc: 'sysCfg'
         }
       ]
     })
@@ -48,7 +48,7 @@ export class Admin extends plugin {
       if (cfgSchema.input) {
         val = cfgSchema.input(val)
       } else if (cfgSchema.type === 'str') {
-        val = (val || cfgSchema.def) + ''
+        val = `${val || cfgSchema.def  }`
       } else {
         val = cfgSchema.type === 'num' ? (val * 1 || cfgSchema.def) : !/关闭/.test(val)
       }
@@ -59,6 +59,7 @@ export class Admin extends plugin {
     let imgPlus = fs.existsSync(plusPath)
   
     // 渲染图像
+    // eslint-disable-next-line no-return-await
     return await Common.render('admin/index', {
       schema,
       cfg,

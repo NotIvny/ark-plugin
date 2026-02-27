@@ -5,138 +5,214 @@
 {{/block}}
 
 {{block 'main'}}
-<div id="background-container"></div>
-        <div id="LineChart" style="width: 1200px; height: 600px;"></div>
-        <script>
-            var myChart = echarts.init(document.getElementById('LineChart'), null, { renderer : 'svg' })
-            var rankData_ = [
-                '{{rankData[0]}}',
-                '{{rankData[1]}}',
-                '{{rankData[2]}}',
-                '{{rankData[3]}}',
-                '{{rankData[4]}}',
-                '{{rankData[5]}}',
-                '{{rankData[6]}}',
-                '{{rankData[7]}}',
-                '{{rankData[8]}}',
-                '{{rankData[9]}}'
-            ];
-            var rankData = Array(100).fill(null)
-            rankData[0] = `{{rankData[0]}}`
-            rankData[4] = `{{rankData[1]}}`
-            rankData[9] = `{{rankData[2]}}`
-            rankData[19] = `{{rankData[3]}}`
-            rankData[29] = `{{rankData[4]}}`
-            rankData[49] = `{{rankData[5]}}`
-            rankData[69] = `{{rankData[6]}}`
-            rankData[89] = `{{rankData[7]}}`
-            rankData[94] = `{{rankData[8]}}`
-            rankData[98] = `{{rankData[9]}}`
-            var xAxisLabels = Array.from({ length: 100 }, (_, i) => `${i + 1}`)
-    
-            // 配置项
-            var option = {
-                title: {
-                    text: '{{characterName}}排名趋势图\n({{dmgTitle}})',
-                    left: 'center',
-                    textStyle: {
-                        fontSize: 20,
-                        color: '#ffffff'
-                    }
-                },
-                tooltip: {
-                    trigger: 'axis',
-                    axisPointer: {
-                        type: 'cross'
-                    }
-                },
-                xAxis: {
-                    type: 'value',
-                    name: '排名百分比',
-                    nameLocation: 'end',
-                    nameGap: 25,
-                    nameTextStyle: {
-                        fontSize: 14,
-                        color: '#ffffff'
-                    },
-                    splitLine: {
-                        show: true
-                    },
-                    axisLabel: {
-                        formatter: function(value) {
-                            return '';
-                        }
-                    }
-                },
-                yAxis: {
-                    type: 'value',
-                    name: '伤害',
-                    nameTextStyle: {
-                        fontSize: 14, 
-                        color: '#ffffff'
-                    },
-                    min: 0,
-                    max: Math.ceil(Math.max(...rankData_) * 1.1),
-                    interval: Math.ceil(Math.max(...rankData_) * 1.1 / 8),
-                    splitLine: {
-                        show: true
-                    },
-                    axisLabel: {
-                        fontSize: 18,
-                        color: '#ffffff',
-                        fontWeight: 'bold'
-                    }
-                },
+<div class="stats-wrapper">
+    <!-- 标题区域 -->
+    <div class="stats-header">
+        <div class="char-name">{{characterName}}</div>
+        <div class="dmg-title">排名趋势 · {{dmgTitle}}</div>
+        <div class="total-badge">统计样本 <span class="num">{{total}}</span> 个UID <span class="sep">|</span> 生成时间 <span id="genTime"></span></div>
+    </div>
 
-                animation: false,
-                series: [{
-                    data: rankData.map((val, index) => [index + 1, val]),
-                    type: 'line',
-                    smooth: true,
-                    connectNulls: true,
-                    label: {
-                        show: true,
-                        position: 'top',
-                        fontSize: 18,
-                        fontWeight: 'bold'
-                    },
-                    lineStyle: {
-                        color: '#33CCCC'
-                    },
-                    areaStyle: {
-                        opacity: 0.5
-                    },
-                    markLine: {
-                        symbol: ['none', 'none'],
-                        silent: true,
-                        label: {
-                            show: true,
-                            position: 'start',
-                            formatter: '{b}',
-                            fontSize: 18,
-                            color: '#ffffff',
-                            fontWeight: 'bold'
-                        },
-                        lineStyle: {
-                            type: 'solid',
-                            color: '#ffffff'
-                        },
-                        data: [
-                            { name: '1%', xAxis: 1 },
-                            { name: '5%', xAxis: 5 },
-                            { name: '10%', xAxis: 10 },
-                            { name: '20%', xAxis: 20 },
-                            { name: '30%', xAxis: 30 },
-                            { name: '50%', xAxis: 50 },
-                            { name: '70%', xAxis: 70 },
-                            { name: '90%', xAxis: 90 },
-                            { name: '95%', xAxis: 95 },
-                            { name: '99%', xAxis: 99 }
-                        ]
-                    }
-                }]
+    <!-- 图表 -->
+    <div class="chart-container">
+        <div id="LineChart"></div>
+    </div>
+
+    <!-- 底部数据卡片（由JS生成） -->
+    <div class="stats-footer" id="statsFooter"></div>
+</div>
+
+<script>
+    var percentLabels = ['1%', '5%', '10%', '20%', '30%', '50%', '70%', '90%', '95%', '99%'];
+
+    // 生成时间
+    var now = new Date();
+    var pad = function(n) { return n < 10 ? '0' + n : n; };
+    document.getElementById('genTime').textContent =
+        now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate())
+        + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+
+    var percentPositions = [1, 5, 10, 20, 30, 50, 70, 90, 95, 99];
+    var rawData = [
+        '{{rankData[0]}}', '{{rankData[1]}}', '{{rankData[2]}}', '{{rankData[3]}}', '{{rankData[4]}}',
+        '{{rankData[5]}}', '{{rankData[6]}}', '{{rankData[7]}}', '{{rankData[8]}}', '{{rankData[9]}}'
+    ].map(Number);
+
+    // 生成底部卡片
+    var footerEl = document.getElementById('statsFooter');
+    percentLabels.forEach(function(label, i) {
+        var card = document.createElement('div');
+        card.className = 'stat-card' + (i < 3 ? ' top-tier' : '');
+        card.innerHTML = '<div class="percent-label">TOP ' + label + '</div>'
+                       + '<div class="score-value">' + rawData[i] + '</div>';
+        footerEl.appendChild(card);
+    });
+
+    var seriesData = percentPositions.map(function(pos, i) {
+        return [pos, rawData[i]];
+    });
+
+    var maxVal = Math.max.apply(null, rawData);
+
+    var myChart = echarts.init(document.getElementById('LineChart'), null, { renderer: 'svg' });
+
+    var option = {
+        grid: {
+            left: 80,
+            right: 40,
+            top: 30,
+            bottom: 50
+        },
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(15, 12, 41, 0.9)',
+            borderColor: 'rgba(72, 149, 239, 0.3)',
+            borderWidth: 1,
+            textStyle: {
+                color: '#fff',
+                fontSize: 14
+            },
+            formatter: function(params) {
+                var p = params[0];
+                return '<span style="color:#67e8f9">TOP ' + p.data[0] + '%</span><br/>'
+                     + '<span style="font-size:18px;font-weight:bold">' + p.data[1] + '</span>';
             }
-    
-            myChart.setOption(option)
-        </script>
+        },
+        xAxis: {
+            type: 'value',
+            name: '排名百分比',
+            nameLocation: 'center',
+            nameGap: 32,
+            nameTextStyle: {
+                fontSize: 13,
+                color: 'rgba(255,255,255,0.5)'
+            },
+            min: 0,
+            max: 100,
+            splitLine: { show: false },
+            axisLine: {
+                lineStyle: { color: 'rgba(255,255,255,0.12)' }
+            },
+            axisTick: { show: false },
+            axisLabel: { show: false }
+        },
+        yAxis: {
+            type: 'value',
+            name: '伤害',
+            nameTextStyle: {
+                fontSize: 13,
+                color: 'rgba(255,255,255,0.5)',
+                padding: [0, 40, 0, 0]
+            },
+            min: 0,
+            max: Math.ceil(maxVal * 1.15),
+            splitNumber: 6,
+            splitLine: {
+                lineStyle: {
+                    color: 'rgba(255,255,255,0.05)',
+                    type: 'dashed'
+                }
+            },
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: {
+                color: 'rgba(255,255,255,0.45)',
+                fontSize: 13,
+                fontFamily: 'Number, sans-serif',
+                formatter: function(v) {
+                    return v >= 10000 ? (v / 10000).toFixed(1) + '万' : v;
+                }
+            }
+        },
+        animation: false,
+        series: [{
+            data: seriesData,
+            type: 'line',
+            smooth: 0.4,
+            symbol: 'circle',
+            symbolSize: 10,
+            itemStyle: {
+                color: '#67e8f9',
+                borderColor: '#fff',
+                borderWidth: 2,
+                shadowColor: 'rgba(103, 232, 249, 0.5)',
+                shadowBlur: 8
+            },
+            lineStyle: {
+                width: 3,
+                color: {
+                    type: 'linear',
+                    x: 0, y: 0, x2: 1, y2: 0,
+                    colorStops: [
+                        { offset: 0, color: '#67e8f9' },
+                        { offset: 0.5, color: '#4895ef' },
+                        { offset: 1, color: '#9333ea' }
+                    ]
+                },
+                shadowColor: 'rgba(72, 149, 239, 0.3)',
+                shadowBlur: 10
+            },
+            areaStyle: {
+                color: {
+                    type: 'linear',
+                    x: 0, y: 0, x2: 0, y2: 1,
+                    colorStops: [
+                        { offset: 0, color: 'rgba(72, 149, 239, 0.25)' },
+                        { offset: 0.6, color: 'rgba(72, 149, 239, 0.06)' },
+                        { offset: 1, color: 'rgba(72, 149, 239, 0)' }
+                    ]
+                }
+            },
+            label: {
+                show: true,
+                position: 'top',
+                distance: 12,
+                fontSize: 15,
+                fontWeight: 'bold',
+                fontFamily: 'Number, sans-serif',
+                color: '#fff',
+                textShadowColor: 'rgba(0,0,0,0.6)',
+                textShadowBlur: 4,
+                formatter: function(p) {
+                    var idx = percentPositions.indexOf(p.data[0]);
+                    if (idx === 0) {
+                        return '{right|' + p.data[1] + '}';
+                    }
+                    return p.data[1];
+                },
+                rich: {
+                    right: {
+                        fontSize: 15,
+                        fontWeight: 'bold',
+                        fontFamily: 'Number, sans-serif',
+                        color: '#fff',
+                        textShadowColor: 'rgba(0,0,0,0.6)',
+                        textShadowBlur: 4,
+                        padding: [0, 0, 0, 40]
+                    }
+                }
+            },
+            markLine: {
+                symbol: ['none', 'none'],
+                silent: true,
+                label: {
+                    show: true,
+                    position: 'start',
+                    formatter: '{b}',
+                    fontSize: 12,
+                    color: 'rgba(255,255,255,0.3)'
+                },
+                lineStyle: {
+                    type: [4, 4],
+                    color: 'rgba(255,255,255,0.08)'
+                },
+                data: percentPositions.map(function(pos, i) {
+                    return { name: percentLabels[i], xAxis: pos };
+                })
+            }
+        }]
+    };
+
+    myChart.setOption(option);
+</script>
 {{/block}}
