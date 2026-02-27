@@ -59,7 +59,7 @@ export const ArkApi = {
     try {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 15000)
-      const response = await fetch(`http://localhost:3003/${url}`, {
+      const response = await fetch(`https://ark.ivny.top/${url}`, {
         method: param.method || 'POST',
         headers: {
           'Content-Type': 'application/json'

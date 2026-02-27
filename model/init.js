@@ -181,19 +181,17 @@ const ArkInit = {
       ret.game = game
       msg = regRet[5]
       if (imgUrls.length > 0) {
-        for (const imageUrl of imgUrls) {
+        const results = await Promise.all(imgUrls.map(async (imageUrl) => {
           try {
-            //let bitmap = fs.readFileSync('./artis1.jpg');
-            //let base64str = Buffer.from(bitmap).toString('base64');
-            let res = await ArkApi.req(`ocr/profilechange/${char.game}`, { body: JSON.stringify({ image: imageUrl }) })
-            if (res) {
-              change[res?.data?.type] = res?.data?.data
-            }
+            return await ArkApi.req(`ocr/profilechange/${char.game}`, { body: JSON.stringify({ image: imageUrl }) })
           } catch (err) {
-            logger.error(err)
-            continue
+            return null
           }
-          
+        }))
+        for (const res of results) {
+          if (res) {
+            change[res?.data?.type] = res?.data?.data
+          }
         }
       }
       // 更换匹配
