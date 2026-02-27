@@ -438,7 +438,7 @@ const ArkInit = {
         attr[`${key}Base`] = fn(base[key])
         attr[`${key}Plus`] = fn(a[key] - base[key])
       })
-      lodash.forEach((isGs ? 'cpct,cdmg,recharge,dmg' : 'cpct,cdmg,recharge,dmg,effPct,effDef,heal,stance').split(','), (key) => {
+      lodash.forEach((isGs ? 'cpct,cdmg,recharge,dmg' : 'cpct,cdmg,recharge,dmg,effPct,effDef,heal,stance,elation').split(','), (key) => {
         let fn = Format.pct
         let key2 = key
         if (key === 'dmg') {
@@ -732,7 +732,7 @@ const ArkInit = {
                   if (img) tmp.qqFace = img
                 }
               }
-            // eslint-disable-next-line no-unused-vars
+             
             } catch (e) {
               // logger.error(e)
             }
@@ -803,7 +803,7 @@ const ArkInit = {
           uids_.forEach(uid => {
             try {
               data.push(JSON.parse(fs.readFileSync(`./data/PlayerData/${game}/${uid}.json`, 'utf8')).avatars[list[0].id])
-            // eslint-disable-next-line no-unused-vars
+             
             } catch (error) {
               data.push(null)
             }
