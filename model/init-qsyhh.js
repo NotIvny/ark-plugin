@@ -36,8 +36,6 @@ const ArkInit = {
       if (!char) return false
 
       let level = dc.level || source.level || 90
-      logger.error(source)
-      logger.error(dc)
       let promote = level === source.level ? source.promote : undefined
 
       let profiles = {}
