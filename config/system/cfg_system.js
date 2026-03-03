@@ -54,6 +54,12 @@ export const cfgSchema = {
         def: true,
         desc: '启用后将允许使用本地数据计算群排名'
       },
+      profileChangeOCR: {
+        title: '面板替换圣遗物OCR',
+        key: 'OCR',
+        def: true,
+        desc: '启用后面板替换允许使用圣遗物图片替换圣遗物，重启后生效'
+      },
       exportPanelData: {
         title: '导出面板数据',
         key: '导出面板数据',
