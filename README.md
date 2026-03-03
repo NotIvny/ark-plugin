@@ -66,3 +66,4 @@ git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 |     [TRSS-Yunzai](https://gitee.com/TimeRainStarSky/Yunzai)     | 时雨🌌星空的 TRSS-Yunzai        |
 | [miao-plugin 测试角色面板](https://gitee.com/euiko/Panel) | 提供部分伤害计算数据             |
 |      [qsyhh/miao-plugin](https://gitee.com/qsyhh/miao-plugin)      | 提供伤害计算数据 |
+
