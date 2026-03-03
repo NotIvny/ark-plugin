@@ -132,7 +132,7 @@ const ArkInit = {
         if (!/(变|改|换)/.test(msg)) return false
         let game = /星铁/.test(msg) ? 'sr' : 'gs'
         msg = msg.toLowerCase().replace(/uid ?:? ?/, '').replace('星铁', '')
-        let regRet = /^#*(\d{9,10})?(.+?)(详细|详情|面板|面版|圣遗物|伤害[1-7]?)?\s*(\d{9,10})?[变换改](.*)/.exec(msg)
+        let regRet = /^#*(\d{9,10})?(.+?)(详细|详情|面板|面版|圣遗物|伤害(?:[1-9][0-9]?)?)?\s*(\d{9,10})?[变换改](.*)/.exec(msg)
         if (!imgUrls && (!regRet || !regRet[2])) return false
         let ret = {}
         let change = {}
@@ -439,33 +439,35 @@ const ArkInit = {
         if (!profile) return true
         profile.uid = e.uid
         char = profile.char || char
-        let a = profile.attr
-        let base = profile.base
         let attr = {}
         let game = char.game
         let isGs = game === 'gs'
         let isSr = !isGs
-        lodash.forEach((isGs ? 'hp,def,atk,mastery' : 'hp,def,atk,speed').split(','), (key) => {
-          let fn = (n) => Format.comma(n, key === 'hp' ? 0 : 1)
-          attr[key] = fn(a[key])
-          attr[`${key}Base`] = fn(base[key])
-          attr[`${key}Plus`] = fn(a[key] - base[key])
-        })
-        lodash.forEach((isGs ? 'cpct,cdmg,recharge,dmg' : 'cpct,cdmg,recharge,dmg,effPct,effDef,heal,stance,elation').split(','), (key) => {
-          let fn = Format.pct
-          let key2 = key
-          if (key === 'dmg') {
-            if (isGs) {
-              if (a.phy > a.dmg) {
-                key2 = 'phy'
+        let attrFn = (a, base) => {
+          let attr = {}
+          lodash.forEach((isGs ? 'hp,def,atk,mastery' : 'hp,def,atk,speed').split(','), (key) => {
+            let fn = (n) => Format.comma(n, key === 'hp' ? 0 : 1)
+            attr[key] = fn(a[key])
+            attr[`${key}Base`] = fn(base[key])
+            attr[`${key}Plus`] = fn(a[key] - base[key])
+          })
+          lodash.forEach((isGs ? 'cpct,cdmg,recharge,dmg' : 'cpct,cdmg,recharge,dmg,effPct,effDef,heal,stance,elation').split(','), (key) => {
+            let fn = Format.pct
+            let key2 = key
+            if (key === 'dmg') {
+              if (isGs) {
+                if (a.phy > a.dmg) {
+                  key2 = 'phy'
+                }
               }
             }
-          }
-          attr[key] = fn(a[key2])
-          attr[`${key}Base`] = fn(base[key2])
-          attr[`${key}Plus`] = fn(a[key2] - base[key2])
-        })
-
+            attr[key] = fn(a[key2])
+            attr[`${key}Base`] = fn(base[key2])
+            attr[`${key}Plus`] = fn(a[key2] - base[key2])
+          })
+          return attr
+        }
+        attr = attrFn(profile.attr, profile.base)
         let weapon = Weapon.get(profile?.weapon?.name, game)
         let w = profile.weapon
         let wCfg = {}
@@ -656,6 +658,8 @@ const ArkInit = {
           }
         }
         let background = await Common.getBackground('profile')
+        if (mode === 'dmg') dmgCalc.dmgCfg.dmgAttr = attrFn(dmgCalc.dmgCfg.dmgAttr, profile.base)
+
         let renderData = {
           dmgRankData: ret1?.data?.scores?.map(score => (score / (ret1?.data?.top1 ?? 1)) * 100),
           artisRankData: ret2?.data?.scores,

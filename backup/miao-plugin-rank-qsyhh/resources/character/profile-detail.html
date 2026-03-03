@@ -57,6 +57,7 @@
               <span class="{{cw[key]>=80?'gold':'normal'}}">{{cw[key]}}</span>
               {{/if}}
             </div>
+            <!-- {{if mode === "dmg"}}{{attr = dmgCalc.dmgCfg.dmgAttr}}{{/if}} -->
             <div class="value">
               {{attr[key]}}
             </div>
@@ -101,6 +102,13 @@
     </div>
   </div>
 
+  {{if mode === "dmg" && dmgCalc?.dmgCfg?.title}}
+  <div class="cont">
+    <div class="cont-footer dmg-desc">
+      当前模式下，上方展示面板属性为当前伤害计算[{{dmgCalc.dmgCfg.title}}]下计入全部加成后的面板数据，仅供参考
+    </div>
+  </div>
+  {{/if}}
   {{if changeProfile}}
   <div class="cont">
     <div class="cont-footer dmg-desc">
