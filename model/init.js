@@ -17,13 +17,12 @@ let CharRank
 try {
   ProfileDetail = (await import('../../miao-plugin/apps/profile/ProfileDetail.js')).default
 } catch (err) {
-  // console.log(err)
+  logger.warn(`[ark-plugin] 导入ProfileDetail失败: ${err?.message || err}`)
 }
-
 try {
   CharRank = (await import('../../miao-plugin/apps/profile/ProfileRank.js')).default
 } catch (err) {
-  // console.log(err)
+  logger.warn(`[ark-plugin] 导入ProfileRank失败: ${err?.message || err}`)
 }
 
 let defWeapon = {

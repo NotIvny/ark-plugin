@@ -82,7 +82,8 @@ try {
     }
   }
 } catch (err) {
-  logger.error('ProfileRank.js未被替换，请输入 #ark替换文件miao-rank 后重启，以使用完整功能！')
+  logger.warn(`[ark-plugin] 功能注入失败: ${err?.message || err}`)
+  logger.warn('ProfileRank/ProfileDetail.js未被替换，请输入 #ark替换文件miao-rank 后重启，以使用完整功能！')
 }
 if (ArkInit !== undefined) {
   ArkInit.init()
@@ -95,8 +96,8 @@ try {
     stygianInit = (await import('./model/stygian-init.js')).default
   }
 } catch (err) {
-  logger.error('幽境危战排名初始化失败')
-  logger.error(err)
+  logger.warn('幽境危战排名初始化失败')
+  logger.warn(err)
 }
 if (stygianInit !== undefined) {
   stygianInit.init()
