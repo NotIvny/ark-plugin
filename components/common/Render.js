@@ -1,10 +1,10 @@
-import { Version, Cfg } from "../../components/index.js"
+import { Version, Cfg } from '../../components/index.js'
 import { execSync } from 'node:child_process'
 
 // 获取 ark-plugin 的 git commit 信息
 let gitInfo = ''
 try {
-  const pluginDir = process.cwd() + '/plugins/ark-plugin'
+  const pluginDir = `${process.cwd()}/plugins/ark-plugin`
   const hash = execSync('git rev-parse --short HEAD', { cwd: pluginDir, encoding: 'utf8' }).trim()
   const date = execSync('git log -1 --format=%cd --date=format:%Y%m%d', { cwd: pluginDir, encoding: 'utf8' }).trim()
   gitInfo = `（${hash}-${date}）`
@@ -29,15 +29,15 @@ const Render = {
           }
         }
         let resPath = data.pluResPath
-        const layoutPath = process.cwd() + '/plugins/ark-plugin/resources/common/layout/'
+        const layoutPath = `${process.cwd()}/plugins/ark-plugin/resources/common/layout/`
         return {
           _miao_path: resPath,
           ...data,
           _res_path: resPath,
           _layout_path: layoutPath,
-          _tpl_path: process.cwd() + '/plugins/ark-plugin/resources/common/tpl/',
-          defaultLayout: layoutPath + 'default.html',
-          elemLayout: layoutPath + 'elem.html',
+          _tpl_path: `${process.cwd()}/plugins/ark-plugin/resources/common/tpl/`,
+          defaultLayout: `${layoutPath}default.html`,
+          elemLayout: `${layoutPath}elem.html`,
           sys: {
             scale: Cfg.scale(cfg.scale || 1)
           },

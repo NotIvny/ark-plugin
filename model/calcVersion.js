@@ -55,4 +55,4 @@ export function getStygianPeriod(ver = null) {
     endTimestamp: end.getTime()
   }
 }
-export default { getStygianVersion, getStygianPeriod}
+export default { getStygianVersion, getStygianPeriod }

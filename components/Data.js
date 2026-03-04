@@ -1,4 +1,3 @@
-/* eslint-disable prefer-template */
 import lodash from 'lodash'
 import fs from 'node:fs'
 import util from 'node:util'
@@ -27,7 +26,7 @@ let Data = {
     pathList.forEach((name, idx) => {
       name = name.trim()
       if (!includeFile && idx <= pathList.length - 1) {
-        nowPath += name + '/'
+        nowPath += `${name}/`
         if (name) {
           if (!fs.existsSync(nowPath)) {
             fs.mkdirSync(nowPath)
@@ -66,7 +65,7 @@ let Data = {
       })
     }
     // 检查并创建目录
-    let name = cfg.path ? (cfg.path + '/' + cfg.name) : cfg.name
+    let name = cfg.path ? (`${cfg.path}/${cfg.name}`) : cfg.name
     Data.createDir(name, cfg.root, true)
     root = getRoot(cfg.root)
     data = cfg.data
@@ -126,7 +125,7 @@ let Data = {
   async importModule (file, root = '') {
     root = getRoot(root)
     if (!/\.js$/.test(file)) {
-      file = file + '.js'
+      file = `${file}.js`
     }
     if (fs.existsSync(`${root}/${file}`)) {
       try {

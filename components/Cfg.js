@@ -1,4 +1,3 @@
-/* eslint-disable prefer-template */
 import fs from 'node:fs'
 import lodash from 'lodash'
 import cfgData from './cfg/CfgData.js'
@@ -37,7 +36,7 @@ let Cfg = {
   },
   del (rote) {
     lodash.set(cfg, rote, undefined)
-    fs.writeFileSync(_cfgPath + 'cfg.json', JSON.stringify(cfg, null, '\t'))
+    fs.writeFileSync(`${_cfgPath}cfg.json`, JSON.stringify(cfg, null, '\t'))
   },
   getCfg () {
     return cfg

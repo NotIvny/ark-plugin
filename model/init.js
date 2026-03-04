@@ -22,7 +22,7 @@ try {
     ProfileDetailStatus = logger.green('✔ 注入成功')
   }
 } catch (err) {
-  ProfileDetailStatus = logger.red('✖ 注入失败') + `\n    ${logger.red(err?.message || err)}`
+  ProfileDetailStatus = `${logger.red('✖ 注入失败')}\n${logger.red(err?.message || err)}`
 }
 try {
   CharRank = (await import('../../miao-plugin/apps/profile/ProfileRank.js')).default
@@ -30,7 +30,7 @@ try {
     CharRankStatus = logger.green('✔ 注入成功')
   }
 } catch (err) {
-  CharRankStatus = logger.red('✖ 注入失败') + `\n    ${logger.red(err?.message || err)}`
+  CharRankStatus = `${logger.red('✖ 注入失败')}\n${logger.red(err?.message || err)}`
 }
 
 let defWeapon = {
