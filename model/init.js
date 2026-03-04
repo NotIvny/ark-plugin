@@ -14,15 +14,23 @@ import { ArkApi } from './api.js'
 
 let ProfileDetail
 let CharRank
+let ProfileDetailStatus = null
+let CharRankStatus = null
 try {
   ProfileDetail = (await import('../../miao-plugin/apps/profile/ProfileDetail.js')).default
+  if (ProfileDetail) {
+    ProfileDetailStatus = logger.green('✔ 注入成功')
+  }
 } catch (err) {
-  logger.warn(`[ark-plugin] 导入ProfileDetail失败: ${err?.message || err}`)
+  ProfileDetailStatus = logger.red('✖ 注入失败') + `\n    ${logger.red(err?.message || err)}`
 }
 try {
   CharRank = (await import('../../miao-plugin/apps/profile/ProfileRank.js')).default
+  if (CharRank) {
+    CharRankStatus = logger.green('✔ 注入成功')
+  }
 } catch (err) {
-  logger.warn(`[ark-plugin] 导入ProfileRank失败: ${err?.message || err}`)
+  CharRankStatus = logger.red('✖ 注入失败') + `\n    ${logger.red(err?.message || err)}`
 }
 
 let defWeapon = {
@@ -919,7 +927,13 @@ const ArkInit = {
         }, { e, scale: 1.4, retType: 'base64' }), new Button(e).profile(char)])
       }
     }
-  }   
+    const shouldReplace = !ProfileDetail || !CharRank
+    return {
+      ProfileDetail: ProfileDetailStatus || logger.red('✖ 注入失败（未替换文件）'),
+      CharRank: CharRankStatus || logger.red('✖ 注入失败（未替换文件）'),
+      shouldReplace
+    }
+  }
 }
 export default ArkInit
     
