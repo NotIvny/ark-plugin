@@ -113,7 +113,7 @@ if (stygianInit?.init) {
 
 const lnStatus = symlinkCount > 0 
   ? logger.green(`✔ 已链接 ${symlinkCount} 个文件`) 
-  : logger.grey('⚠ 未启用或无链接')
+  : logger.red('⚠ 未启用或无链接')
 const profileDetailStatus = arkInitStatus?.ProfileDetail || logger.red('✖ 注入失败（初始化异常）')
 const charRankStatus = arkInitStatus?.CharRank || logger.red('✖ 注入失败（初始化异常）')
 const stygianStatus = stygianInitStatus 
