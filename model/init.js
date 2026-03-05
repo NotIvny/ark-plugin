@@ -598,120 +598,68 @@ const ArkInit = {
         if (isProfileChange && ArkCfg.get('profileChangeDiff', true)) {
           let player = Player.create(uid, game)
           let origin = player.getProfile(char.id)
-          if (origin) {
-            let dmgCalc_ = await ProfileDetail.getProfileDmgCalc({ profile: origin, enemyLv, mode, params })
-            if (dmgCalc_ && dmgCalc_.dmgData) {
-              const num = (str) => {
-                if (!str || str === 'NaN') return NaN
-                return parseFloat(String(str).replace(/,/g, ''))
-              }
-              const getDiff = (currStr, oldStr) => {
-                let curr = num(currStr)
-                let old = num(oldStr)
-                if (isNaN(curr) || isNaN(old) || old === 0) return '--'  
-                let diff = ((curr - old) / old * 100).toFixed(1)
-                if (diff > 0) return ` ↑${diff}%`
-                if (diff < 0) return ` ↓${Math.abs(diff)}%`
-                if (diff === 0) return `${diff}%`
-                return '--'
-              }
-              dmgCalc.dmgData = dmgCalc.dmgData.map(item => {
-                let matchedItem = dmgCalc_.dmgData.find(d => d.title === item.title)   
-                if (matchedItem) {
-                  return {
-                    ...item,
-                    dmg: item.dmg,
-                    dmg_diff: getDiff(item.dmg, matchedItem.dmg),
-                    avg: item.avg,
-                    avg_diff: getDiff(item.avg, matchedItem.avg)
-                  }
-                }
-                return item
-              })
+          const dmgCalc_ = origin && await ProfileDetail.getProfileDmgCalc({ profile: origin, enemyLv, mode, params })
+          if (dmgCalc_?.dmgData) {
+            const num = val => {
+              if (!val || val === 'NaN') return NaN
+              return parseFloat(String(val).replace(/,/g, ''))
             }
+            const getDiff = (newVal, oldVal) => {
+              const [curr, old] = [newVal, oldVal].map(num)
+              if (isNaN(curr) || !old) return '--'
+              const diff = ((curr - old) / old * 100).toFixed(1)
+              if (diff === 0) return `${diff}%`
+              return `${(diff > 0 ? ' ↑' : ' ↓') + Math.abs(diff)}%`
+            }
+            dmgCalc.dmgData = dmgCalc.dmgData.map(item => {
+              const match = dmgCalc_.dmgData.find(d => d.title === item.title)
+              return match ? { ...item, dmg_diff: getDiff(item.dmg, match.dmg), avg_diff: getDiff(item.avg, match.avg) } : item
+            })
           }
         }
-        let selfRank = []
-        let scoreAndRank = []
-        let ret1, ret2
-        //是否计算总排名
-        if (ArkCfg.get('panelRank', true) && dmgCalc.dmgData !== undefined) {
-          let characterID = safeGsCfg.roleNameToID(char.name, true) || safeGsCfg.roleNameToID(char.name, false)
-          let ret, jsonData
-          let queryType = ArkCfg.get('queryType', 2)
-          const query = {
-            0: 'dmg',
-            1: 'mark',
-            2: 'all',
-            3: 'all',
-          }[queryType]
-          //是否使用本地数据计算排名
-          if (ArkCfg.get('localPanelRank', true)) {
-            jsonData = JSON.parse(JSON.stringify(profile))
-            ret = await api.sendApi('getRankData', {
-              id: characterID,
-              uid: '999999999',
-              update: 0,
-              query: query,
-              data: jsonData
-            })
-          } else {
-            ret = await api.sendApi('getRankData', {
-              id: characterID,
-              uid: uid,
-              query: query,
-              update: 0
-            })
-          }
-          const getRank = (index, baseTitle) => {
-            const retItem = ret[index]
-            if (retItem?.retcode !== 100) return
-            const rankType = ArkCfg.get('RankType', 0)
-            const characterRank = {
-              0: retItem.rank,
-              1: retItem.percent,
-              2: `${retItem.rank} (${retItem.percent}%)`,
-            }[rankType]
-            const markRankType = ArkCfg.get('markRankType', false)
-            const isSpecialPanel = e.msg.includes('喵喵面板变换') && markRankType
-            const title = isSpecialPanel 
-              ? `${baseTitle}(面板变换)` 
-              : `${baseTitle}${markRankType ? '(本地)' : ''}`
-            if (queryType === 3) {
-              scoreAndRank[index] = characterRank
-              selfRank.push(...[
-                ret[index].percent,
-                ret[index].score
-              ])
-            } else {
-              dmgCalc.dmgData.push({ title, unit: characterRank })
-            }
-          }
+
+        let selfRank = [], scoreAndRank = [], ret1, ret2
+        if (ArkCfg.get('panelRank', true) && dmgCalc.dmgData) {
+          const charId = safeGsCfg.roleNameToID(char.name, true) || safeGsCfg.roleNameToID(char.name, false)
+          const queryType = ArkCfg.get('queryType', 2)
+          const isLocal = ArkCfg.get('localPanelRank', true)
+          let ret = await api.sendApi('getRankData', {
+            id: charId, 
+            uid: isLocal ? '999999999' : uid, 
+            update: 0,
+            query: ['dmg', 'mark', 'all', 'all'][queryType],
+            ...(isLocal ? { data: JSON.parse(JSON.stringify(profile)) } : {})
+          })
           ret = Array.isArray(ret) ? ret : [ret]
-          switch (queryType) {
-            case 0:
-              getRank(0, '总伤害排名')
-              break
-            case 1:
-              getRank(0, '圣遗物排名')
-              break
-            case 2:
-              getRank(0, '总伤害排名')
-              getRank(1, '圣遗物排名')
-              break
-            case 3:
-              getRank(0, '总伤害排名')
-              getRank(1, '圣遗物排名')
-              ret1 = await api.sendApi('getSpecificRank', {
-                id: characterID,
-                percent: 0
-              })
-              ret2 = await api.sendApi('getSpecificRank', {
-                id: characterID,
-                artis: true,
-                percent: 0
-              })
-              break
+
+          const rankType = ArkCfg.get('RankType', 0)
+          const markRankType = ArkCfg.get('markRankType', false)
+          const titleSuffix = !markRankType ? '' : (isProfileChange ? '(面板变换)' : '(本地)')
+          
+          const rankMap = [
+            [[0, '总伤害排名']],
+            [[0, '圣遗物排名']],
+            [[0, '总伤害排名'], [1, '圣遗物排名']],
+            [[0, '总伤害排名'], [1, '圣遗物排名']]
+          ]
+          
+          rankMap[queryType].forEach(([idx, title]) => {
+            const item = ret[idx]
+            if (item?.retcode !== 100 && rankType !== 2) return
+            const rank = [item?.rank || '暂无数据', item?.percent || '暂无数据', item?.rank ? `${item?.rank} (${item?.percent}%)` : '暂无数据'][rankType]
+            if (queryType === 3) {
+              scoreAndRank[idx] = rank
+              selfRank.push(item?.percent || -100, item?.score || -100)
+            } else {
+              dmgCalc.dmgData.push({ title: title + titleSuffix, unit: rank })
+            }
+          })
+
+          if (queryType === 3) {
+            [ret1, ret2] = await Promise.all([
+              api.sendApi('getSpecificRank', { id: charId, percent: 0 }),
+              api.sendApi('getSpecificRank', { id: charId, artis: true, percent: 0 })
+            ])
           }
         }
         profile = false
