@@ -1,8 +1,8 @@
 ## API后端更新日志
 
 API基于云崽及miao-plugin实现，排名支持范围为：
-- 原神：miao-plugin支持伤害计算的角色
-- 星铁：1.0 - 2.4 完全支持，2.5之后的版本支持绝大部分
+- 原神：qsyhh/miao-plugin支持伤害计算的角色
+- 星铁：qsyhh/miao-plugin支持伤害计算的角色
 
 API提供了以下接口
 - getRankData
