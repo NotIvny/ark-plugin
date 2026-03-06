@@ -191,8 +191,16 @@ const ArkInit = {
             }
           }))
           for (const res of results) {
-            if (res) {
-              change[res?.data?.type] = res?.data?.data
+            if (res && res.data) {
+              if (Array.isArray(res.data)) {
+                res.data.forEach(item => {
+                  if (item && item.type) {
+                    change[item.type] = item.data
+                  }
+                })
+              } else {
+                change[res.data.type] = res.data.data
+              }
             }
           }
         }
