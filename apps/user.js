@@ -23,7 +23,7 @@ export class characterRank extends plugin {
         fnc: 'uploadPanelData',
       },
       {
-        reg: '^#(星铁|原神)?ark重塑识别$',
+        reg: '^#(星铁|原神)?ark(重塑|重投)识别$',
         fnc: 'arkReforgeRecog'
       },
       {
@@ -206,15 +206,8 @@ export class characterRank extends plugin {
       })
     }
     let ret = await api.ArkApi.req(`ocr/profilechange/${e.isSr ? 'sr' : 'gs'}`, { body: JSON.stringify({ image: imgUrls[0], forge: true }) })
-   
-    let original = ret.data[0]
-    let replacement = ret.data[1]
-    if (original.data) {
-      original = original.data
-    }
-    if (replacement.data) {
-      replacement = replacement.data
-    }
+    let original = ret.data[0]?.data || ret.data[0]
+    let replacement = ret.data[1]?.data || ret.data[1]
     let isSr = false
     if (original.attrIds && original.attrIds.length > 0 && typeof original.attrIds[0] === 'string') {
       isSr = true
@@ -224,14 +217,14 @@ export class characterRank extends plugin {
     let dataPath = `./data/PlayerData/${game}/${uid}.json`
     
     if (!fs.existsSync(dataPath)) {
-      e.reply(`未找到UID:${uid}的${isSr ? '星铁' : '原神'}本地数据，请先更新面板`)
+      e.reply(`未找到UID:${uid}的${isSr ? '星铁' : '原神'}本地数据，请确保面板中包含此圣遗物`)
       return true
     }
 
     let playerData = JSON.parse(fs.readFileSync(dataPath, 'utf8'))
     let targetCharId = null
     let targetSlot = null
-
+    // 在角色面板数据中寻找对应的词条
     const matchAttrs = (localAttrs, remoteAttrs) => {
       if (!localAttrs || !remoteAttrs) return false
       
@@ -245,34 +238,31 @@ export class characterRank extends plugin {
 
         const l = localAttrs.map(parse).sort((a, b) => a.id - b.id)
         const r = remoteAttrs.map(parse).sort((a, b) => a.id - b.id)
-
         const isMatch = l.every((a, i) => {
           const b = r[i]
           if (a.id !== b.id) {
             return false
           }
-          // 速度特殊处理，只匹配词条数
+          const scoreA = a.count * 8 + a.step
+          const scoreB = b.count * 8 + b.step
+          // 速度特殊处理：分值差小于4即可
           if (a.id === 7) {
-            if (a.count !== b.count) {
-              logger.mark(`[Ark] Speed count mismatch: ${a.count} vs ${b.count}`)
+            if (Math.abs(scoreA - scoreB) > 4) {
               return false
             }
             return true
           }
-          if (a.count !== b.count || a.step !== b.step) {
-            logger.mark(`[Ark] Attr mismatch ID ${a.id}: ${a.count},${a.step} vs ${b.count},${b.step}`)
+          if (scoreA !== scoreB) {
             return false
           }
           return true
         })
-        if (isMatch) logger.mark(`[Ark] Attrs matched!`)
         return isMatch
       } else {
         const getType = (id) => Math.floor(id / 10)
         const l = localAttrs.map(getType).sort((a, b) => a - b)
         const r = remoteAttrs.map(getType).sort((a, b) => a - b)
         const isMatch = lodash.isEqual(l, r)
-        if (isMatch) logger.mark(`[Ark] GS Attrs matched!`)
         return isMatch
       }
     }
@@ -294,11 +284,9 @@ export class characterRank extends plugin {
       //优先匹配mainId
       let best = candidates.find(c => c.arti.mainId === original.mainId)
       if (best) {
-        logger.mark(`[Ark] Found perfect match (Attrs + MainId) on ${best.charId} slot ${best.slot}`)
         targetCharId = best.charId
         targetSlot = best.slot
       } else {
-        logger.mark(`[Ark] Found attr match but mainId mismatch. Using first candidate on ${candidates[0].charId} slot ${candidates[0].slot}`)
         targetCharId = candidates[0].charId
         targetSlot = candidates[0].slot
       }
@@ -346,9 +334,8 @@ export class characterRank extends plugin {
     e._profile = newProfile
     e.msg = '#喵喵面板变换'
 
-    e.reply(`找到匹配圣遗物，正在生成重铸建议面板...`)
+    e.reply(`找到匹配圣遗物，正在生成${e.isSr ? '重投' : '重塑'}面板...`)
     await ProfileDetail.render(e, newProfile.char, 'profile', { dmgIdx: 1, idxIsInput: false })
-    
     return true
   }
 
