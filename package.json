@@ -1,6 +1,6 @@
 {
   "name": "ark-plugin",
-  "version": "2.0.0-ocr-beta",
+  "version": "2.0.0",
   "author": "NotIvny",
   "description": "ark-plugin",
   "type": "module",

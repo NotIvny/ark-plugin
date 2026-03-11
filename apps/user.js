@@ -398,7 +398,7 @@ export class characterRank extends plugin {
         }
         break
       case 3:
-        e.reply('当s前功能已被禁用...')
+        e.reply('当前功能已被禁用...')
         return false
       default:
         return false
