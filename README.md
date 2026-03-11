@@ -89,10 +89,10 @@ git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 
 ## ⚠️ 免责声明
 
-1. **数据来源**：总排名数据源于用户更新面板，目前数据量在 320k 左右。
-2. **隐私安全**：插件只会上传用户 UID 和面板数据，OCR 上传的图片仅用于测试集和识别，不会上传其他个人信息。
-3. **使用限制**：本插件仅限内部交流与小范围使用，**严禁**用于任何以盈利为目的的场景。
-4. **版权说明**：图片与其他素材均来自于网络，如有侵权请联系删除。
+1. 总排名数据源于用户更新面板，目前数据量在 320k 左右。
+2. 插件只会上传用户 UID 和面板数据，OCR 上传的图片仅用于测试集和识别，不会上传其他个人信息。
+3. 本插件仅限内部交流与小范围使用，**严禁**用于任何以盈利为目的的场景。
+4. 图片与其他素材均来自于网络，如有侵权请联系删除。
 
 ## 🤝 致谢
 
@@ -108,7 +108,3 @@ git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 | [**qsyhh/miao-plugin**](https://gitee.com/qsyhh/miao-plugin) | 提供伤害计算数据 |
 
 ---
-
-<div align="center">
-  <sub>Made with ❤️ by NotIvny</sub>
-</div>
