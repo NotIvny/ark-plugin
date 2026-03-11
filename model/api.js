@@ -27,7 +27,6 @@ export const sendApi = async function(type, data) {
     }
     const ret = await response.json()
     return ret
-  // eslint-disable-next-line no-unused-vars
   } catch (err) {
     return { retcode: 105 }
   }
@@ -49,7 +48,6 @@ export const sendAkashaApi = async function(url) {
     }
     const ret = await response.json()
     return ret
-  // eslint-disable-next-line no-unused-vars
   } catch (err) {
     return false
   }

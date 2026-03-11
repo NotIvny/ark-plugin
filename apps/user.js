@@ -3,8 +3,10 @@ import safeGsCfg from '../model/safeGsCfg.js'
 import fs from 'node:fs'
 import api from '../model/api.js'
 import { getStygianVersion, getStygianPeriod } from '../model/calcVersion.js'
-import { Button, ProfileRank, Player } from '../../miao-plugin/models/index.js'
+import { Button, ProfileRank, Player, Character, Avatar } from '../../miao-plugin/models/index.js'
 import { Cfg, Common } from '../components/index.js'
+import ProfileDetail from '../../miao-plugin/apps/profile/ProfileDetail.js'
+import lodash from 'lodash'
 export class characterRank extends plugin {
   constructor() {
     super({
@@ -17,8 +19,12 @@ export class characterRank extends plugin {
         fnc: 'getSpecificRank'
       },
       {
-        reg: '#(星铁|原神)?(导出面板数据)(.*)',
+        reg: '^#(星铁|原神)?(导出面板数据)(.*)',
         fnc: 'uploadPanelData',
+      },
+      {
+        reg: '^#(星铁|原神)?ark(重塑|重投)识别$',
+        fnc: 'arkReforgeRecog'
       },
       {
         reg: '#(星铁|原神)?(导入面板数据)(.*)',
@@ -167,6 +173,172 @@ export class characterRank extends plugin {
         e.reply(await this.dealError(ret.retcode))
     }
   }
+  async arkReforgeRecog(e) {
+    let uid = await getTargetUid(e)
+    if (!uid) {
+      e.reply('请先绑定UID')
+      return true
+    }
+    let imgUrls = []
+    if (e.getReply) {
+      let source = await e.getReply()
+      if (source && source.message) {
+        source.message.forEach(item => {
+          if (item.type === 'image') imgUrls.push(item.url)
+        })
+      }
+    } else if (e.source) {
+      let source
+      if (e.group?.getChatHistory) {
+        source = (await e.group.getChatHistory(e.source?.seq, 1)).pop()
+      } else if (e.friend?.getChatHistory) {
+        source = (await e.friend.getChatHistory((e.source?.time + 1), 1)).pop()
+      }
+      if (source && source.message) {
+        source.message.forEach(item => {
+          if (item.type === 'image') imgUrls.push(item.url)
+        })
+      }
+    }
+    if (e.message) {
+      e.message.forEach(item => {
+        if (item.type === 'image') imgUrls.push(item.url)
+      })
+    }
+    let ret = await api.ArkApi.req(`ocr/profilechange/${e.isSr ? 'sr' : 'gs'}`, { body: JSON.stringify({ image: imgUrls[0], forge: true }) })
+    let original = ret.data[0]?.data || ret.data[0]
+    let replacement = ret.data[1]?.data || ret.data[1]
+    let isSr = false
+    if (original.attrIds && original.attrIds.length > 0 && typeof original.attrIds[0] === 'string') {
+      isSr = true
+    }
+
+    let game = isSr ? 'sr' : 'gs'
+    let dataPath = `./data/PlayerData/${game}/${uid}.json`
+    
+    if (!fs.existsSync(dataPath)) {
+      e.reply(`未找到UID:${uid}的${isSr ? '星铁' : '原神'}本地数据，请确保面板中包含此圣遗物`)
+      return true
+    }
+
+    let playerData = JSON.parse(fs.readFileSync(dataPath, 'utf8'))
+    let targetCharId = null
+    let targetSlot = null
+    // 在角色面板数据中寻找对应的词条
+    const matchAttrs = (localAttrs, remoteAttrs) => {
+      if (!localAttrs || !remoteAttrs) return false
+      
+      if (isSr) {
+        if (localAttrs.length !== remoteAttrs.length) return false
+        
+        const parse = (str) => {
+          const [id, count, step] = str.split(',').map(Number)
+          return { id, count, step }
+        }
+
+        const l = localAttrs.map(parse).sort((a, b) => a.id - b.id)
+        const r = remoteAttrs.map(parse).sort((a, b) => a.id - b.id)
+        const isMatch = l.every((a, i) => {
+          const b = r[i]
+          if (a.id !== b.id) {
+            return false
+          }
+          const scoreA = a.count * 8 + a.step
+          const scoreB = b.count * 8 + b.step
+          // 速度特殊处理：分值差小于4即可
+          if (a.id === 7) {
+            if (Math.abs(scoreA - scoreB) > 4) {
+              return false
+            }
+            return true
+          }
+          if (scoreA !== scoreB) {
+            return false
+          }
+          return true
+        })
+        return isMatch
+      } else {
+        const getType = (id) => Math.floor(id / 10)
+        const l = localAttrs.map(getType).sort((a, b) => a - b)
+        const r = remoteAttrs.map(getType).sort((a, b) => a - b)
+        const isMatch = lodash.isEqual(l, r)
+        return isMatch
+      }
+    }
+
+    let candidates = []
+    for (let charId in playerData.avatars) {
+      let avatar = playerData.avatars[charId]
+      if (!avatar.artis) continue
+
+      for (let slot in avatar.artis) {
+        let arti = avatar.artis[slot]
+        if (matchAttrs(arti.attrIds, original.attrIds)) {
+          candidates.push({ charId, slot, arti })
+        }
+      }
+    }
+
+    if (candidates.length > 0) {
+      //优先匹配mainId
+      let best = candidates.find(c => c.arti.mainId === original.mainId)
+      if (best) {
+        targetCharId = best.charId
+        targetSlot = best.slot
+      } else {
+        targetCharId = candidates[0].charId
+        targetSlot = candidates[0].slot
+      }
+    }
+
+    if (!targetCharId) {
+      e.reply('未在本地数据中找到匹配的圣遗物/遗器')
+      return true
+    }
+
+    let char = Character.get(targetCharId)
+    if (!char) {
+      e.reply(`未找到角色ID:${targetCharId}`)
+      return true
+    }
+    let player = new Player(uid, game)
+    let profile = player.getProfile(targetCharId)
+    if (!profile) {
+      e.reply(`未找到UID:${uid} 角色:${targetCharId} 的面板数据`)
+      return true
+    }
+
+    let rawData = profile.toJSON()
+    rawData = lodash.cloneDeep(rawData)
+    
+    if (rawData.artis && rawData.artis[targetSlot]) {
+      rawData.artis[targetSlot] = {
+        ...rawData.artis[targetSlot],
+        ...replacement,
+        attrIds: replacement.attrIds,
+        mainId: replacement.mainId,
+        level: replacement.level
+      }
+    } else {
+      e.reply('修改圣遗物数据失败：找不到对应槽位')
+      return true
+    }
+
+    let newProfile = new Avatar(rawData, profile.game)
+    newProfile.calcAttr()
+
+    e.avatar = newProfile.char.id
+    e.game = game
+    e.uid = uid
+    e._profile = newProfile
+    e.msg = '#喵喵面板变换'
+
+    e.reply(`找到匹配圣遗物，正在生成${e.isSr ? '重投' : '重塑'}面板...`)
+    await ProfileDetail.render(e, newProfile.char, 'profile', { dmgIdx: 1, idxIsInput: false })
+    return true
+  }
+
   async uploadPanelData(e) {
     e.game = e.game || 'gs'
     let prefix = e.game === 'gs' ? '#' : '*'
@@ -478,13 +650,13 @@ export class characterRank extends plugin {
               try {
                 let username = await member.getInfo()
                 elem.sName = username.card || username.nickname
-              // eslint-disable-next-line no-unused-vars
+               
               } catch (e) {
                 // do nothing
               }
             }
           }
-        // eslint-disable-next-line no-unused-vars
+         
         } catch (e) {
           // logger.error(e)
         }
@@ -492,7 +664,7 @@ export class characterRank extends plugin {
           let playerData = fs.readFileSync(`./data/PlayerData/gs/${uid}.json`, 'utf8')
           let jsonData = JSON.parse(playerData)
           if (!elem.sName) elem.sName = jsonData.name || ret_akasha.username || ''
-        // eslint-disable-next-line no-unused-vars
+         
         } catch (e) {
           //logger.error(e)
         }

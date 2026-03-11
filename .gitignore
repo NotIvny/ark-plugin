@@ -1,9 +1,13 @@
-/config/backup-default.json
+
 /node_modules/
+/apps/custom.js
 /config/help.js
 /config/cfg.js
-/resources/help/theme/*
-!/resources/help/theme/default
 /config/config.yaml
 /config/backup.json
+/config/backup-default.json
+/resources/help/theme/*
+!/resources/help/theme/default
+
 TODO.md
+.vscode
