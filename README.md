@@ -2,23 +2,16 @@
 
 # Ark-Plugin
 
-<p align="center">
-  <a href="https://github.com/NotIvny/ark-plugin">
-    <img src="https://img.shields.io/badge/Yunzai-Plugin-red?style=flat-square" alt="Yunzai Plugin">
-  </a>
-  <a href="https://github.com/NotIvny/ark-plugin/tree/main">
-    <img src="https://img.shields.io/badge/branch-main-blue?style=flat-square" alt="Branch">
-  </a>
-  <a href="https://github.com/NotIvny/ark-plugin/stargazers">
-    <img src="https://img.shields.io/github/stars/NotIvny/ark-plugin?style=flat-square" alt="Stars">
-  </a>
-</p>
+[![Yunzai Plugin](https://img.shields.io/badge/Yunzai-Plugin-red?style=flat-square&logo=github)](https://github.com/NotIvny/ark-plugin)
+[![GitHub stars](https://img.shields.io/github/stars/NotIvny/ark-plugin?style=flat-square&logo=github&color=yellow)](https://github.com/NotIvny/ark-plugin/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/NotIvny/ark-plugin?style=flat-square&logo=github)](https://github.com/NotIvny/ark-plugin/network/members)
+[![GitHub license](https://img.shields.io/github/license/NotIvny/ark-plugin?style=flat-square)](LICENSE)
 
 **适用于 Yunzai-Bot 的全服排行插件**
 
 提供角色全服排行、多文件备份、面板功能拓展、圣遗物OCR等丰富功能。
 
-[安装教程](#-安装) • [功能列表](#-功能列表) • [功能预览](#-功能预览) • [致谢](#-致谢)
+[安装教程](#-安装) · [功能列表](#-功能列表) · [功能预览](#-功能预览) · [致谢](#-致谢)
 
 </div>
 
@@ -37,6 +30,16 @@ git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 ```bash
 git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 ```
+
+> [!NOTE]
+> 如需使用最新测试功能，可切换到 v2.0.1-beta 分支：
+> ```bash
+> git clone -b v2.0.1-beta https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
+> ```
+> **Gitee 源 (网络不佳推荐)**
+> ```bash
+> git clone -b v2.0.1-beta https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
+> ```
 
 ## 🛠️ 配置与替换
 
@@ -107,6 +110,10 @@ git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 | [**miao-plugin 测试角色面板**](https://gitee.com/euiko/Panel) | 提供部分伤害计算数据 |
 | [**qsyhh/miao-plugin**](https://gitee.com/qsyhh/miao-plugin) | 提供伤害计算数据 |
 
-## Star History
+## 📈 Star History
 
-[![Star History Chart](https://api.star-history.com/image?repos=NotIvny/ark-plugin&type=date&legend=top-left)](https://www.star-history.com/?repos=NotIvny%2Fark-plugin&type=date&legend=top-left)
+<div align="center">
+
+[![Star History Chart](https://api.star-history.com/svg?repos=NotIvny/ark-plugin&type=Date)](https://star-history.com/#NotIvny/ark-plugin&Date)
+
+</div>
