@@ -43,10 +43,6 @@ export class characterRank extends plugin {
         fnc: 'stygian',
       },
       {
-        reg: /^#(星铁|原神)?(群|群内)?.+(排名|排行)(榜)?$/,
-        fnc: 'playerRank',
-      },
-      {
         reg: /^#(星铁|原神)?(全部面板更新|更新全部面板|获取游戏角色详情|更新面板|面板更新)\s*(\d{9,10})?$/,
         fnc: 'refreshPanel',
       },
@@ -110,32 +106,6 @@ export class characterRank extends plugin {
       default:
         e.reply(await this.dealError(ret.retcode))
     }
-    return false
-  }
-  async playerRank(e) {
-    let name = e.msg.replace(/(#|星铁|最强|最高分|第一|词条|双爆|双暴|极限|最高|最多|最牛|圣遗物|遗器|评分|群内|群|排名|排行|面板|面版|详情|榜)/g, '')
-    let id = safeGsCfg.roleNameToID(name, true) || safeGsCfg.roleNameToID(name, false)
-    if (id) {
-      name = safeGsCfg.roleIdToName(id)
-    }
-    let uid = id < 10000 ? e.user?._games?.sr?.uid : e.user?._games?.gs?.uid
-    setTimeout(async () => {
-      let ret = await api.sendApi('getRankData', {
-        id: id,
-        uid: uid,
-        update: 1
-      });
-      switch (ret.retcode) {
-        case 100:
-          e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret?.rank}，伤害评分: ${ret?.score?.toFixed(2)}`)
-          break
-        case 101:
-        case 102:
-          break
-        default:
-          e.reply(await this.dealError(ret.retcode))
-      }
-    }, 0)
     return false
   }
   async getAllRank(e) {
