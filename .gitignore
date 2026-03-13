@@ -8,6 +8,7 @@
 /config/backup-default.json
 /resources/help/theme/*
 !/resources/help/theme/default
-
+package-lock.json
 TODO.md
 .vscode
+.kiro

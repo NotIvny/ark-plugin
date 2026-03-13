@@ -1,6 +1,11 @@
 import fs from 'node:fs'
 import path from 'path'
 import { Version } from '../components/index.js'
+
+const CONFIG_PATH = './plugins/ark-plugin/config/backup.json'
+const DEFAULT_PATH = './plugins/ark-plugin/defset/config/backup-default.json'
+const BACKUP_DIR = './plugins/ark-plugin/backup'
+
 export class replaceFile extends plugin {
   constructor() {
     super({
@@ -8,191 +13,171 @@ export class replaceFile extends plugin {
       dsc: '替换文件',
       event: 'message',
       priority: -5,
-      rule: [{
-        reg: '^#ark创建备份$',
-        fnc: 'arkCreateBackup',
-        permission: 'master',
-      },
-      {
-        reg: '^#ark删除备份$',
-        fnc: 'arkRemoveBackup',
-        permission: 'master',
-      },
-      {
-        reg: '^#ark恢复文件(.*)$',
-        fnc: 'arkRecoverFile',
-        permission: 'master',
-      },
-      {
-        reg: '^#ark替换文件(.*)$',
-        fnc: 'arkReplaceFile',
-        permission: 'master',
-      },
-      {
-        reg: '^#ark备份文件(.*)$',
-        fnc: 'arkBackupFile',
-        permission: 'master',
-      }
+      rule: [
+        { reg: '^#ark创建备份$', fnc: 'arkCreateBackup', permission: 'master' },
+        { reg: '^#ark删除备份$', fnc: 'arkRemoveBackup', permission: 'master' },
+        { reg: '^#ark恢复文件(.*)$', fnc: 'arkRecoverFile', permission: 'master' },
+        { reg: '^#ark替换文件(.*)$', fnc: 'arkReplaceFile', permission: 'master' },
+        { reg: '^#ark备份文件(.*)$', fnc: 'arkBackupFile', permission: 'master' },
       ]
     })
   }
+
+  /** 读取并合并备份配置 */
+  readBackupData() {
+    const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'))
+    const defaults = JSON.parse(fs.readFileSync(DEFAULT_PATH, 'utf8'))
+    return { ...config, ...defaults }
+  }
+
+  /** 写入备份配置 */
+  writeBackupData(data) {
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(data, null, 2))
+  }
+
+  /** redis 缓存 key */
+  redisKey() {
+    return `ark-plugin:addfile${this.e.user_id}`
+  }
+
+  /** 路径末尾补斜杠 */
+  ensureSlash(p) {
+    return p.endsWith('/') ? p : `${p}/`
+  }
+
+  /** 从消息中提取 ID */
+  extractID(e, prefix) {
+    return e.msg.replace(prefix, '').trim()
+  }
+
   async arkCreateBackup(e) {
     e.reply('请输入ID')
     this.setContext('readID')
   }
+
   async arkRemoveBackup(e) {
     e.reply('请输入ID')
     this.setContext('getID')
   }
+
   async arkReplaceFile(e) {
-    let ID = e.msg.replace('#ark替换文件', '').trim()
-    await this.replaceFile(ID)
+    await this.replaceFile(this.extractID(e, '#ark替换文件'))
   }
+
   async arkRecoverFile(e) {
-    let ID = e.msg.replace('#ark恢复文件', '').trim()
-    await this.backupFile(ID, true)
+    await this.backupFile(this.extractID(e, '#ark恢复文件'), true)
   }
+
   async arkBackupFile(e) {
-    let ID = e.msg.replace('#ark备份文件', '').trim()
-    await this.backupFile(ID, false)
+    await this.backupFile(this.extractID(e, '#ark备份文件'), false)
   }
+
   async readID() {
     const id = this.e.msg
-    let data___ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
-    let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/defset/config/backup-default.json', 'utf8'))
-    let data_ = { ...data___, ...data__ }
-    if (data_[id]) {
+    const data = this.readBackupData()
+    if (data[id]) {
       this.e.reply(`ID:${id}已存在`)
       this.finish('readID')
       return true
     }
-    let data = {
-      ID: id
-    }
     this.finish('readID')
-    await redis.set(`ark-plugin:addfile${this.e.user_id}`, JSON.stringify(data), { EX: 300 })
+    await redis.set(this.redisKey(), JSON.stringify({ ID: id }), { EX: 300 })
     this.e.reply('请输入src path')
     this.setContext('readSrc')
   }
+
   async getID() {
     const ID = this.e.msg
-    let data___ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
-    let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/defset/config/backup-default.json', 'utf8'))
-    let data = { ...data___, ...data__ }
+    const data = this.readBackupData()
     if (!data[ID]) {
       this.e.reply(`未找到ID:${ID}`)
       return true
     }
     this.finish('getID')
-    fs.rmdirSync(`./plugins/ark-plugin/backup/${ID}-backup/`, {
-      recursive: true
-    })
+    fs.rmSync(`${BACKUP_DIR}/${ID}-backup/`, { recursive: true, force: true })
     delete data[ID]
-    fs.writeFileSync('./plugins/ark-plugin/config/backup.json', JSON.stringify(data, null, 2))
+    this.writeBackupData(data)
     this.e.reply(`删除ID:${ID}成功`)
   }
+
   async readSrc() {
     const src = this.e.msg
-    let data___ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
-    let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/defset/config/backup-default.json', 'utf8'))
-    let data = { ...data___, ...data__ }
-    data.src = src
-    await redis.set(`ark-plugin:addfile${this.e.user_id}`, JSON.stringify(data), { EX: 300 })
+    const redisdata = JSON.parse(await redis.get(this.redisKey()))
+    redisdata.src = src
+    await redis.set(this.redisKey(), JSON.stringify(redisdata), { EX: 300 })
     this.e.reply('请输入dest path')
     this.finish('readSrc')
     this.setContext('readDest')
   }
+
   async readDest() {
     const dest = this.e.msg
-    let redisdata = JSON.parse(await redis.get(`ark-plugin:addfile${this.e.user_id}`))
+    const redisdata = JSON.parse(await redis.get(this.redisKey()))
     redisdata.dest = dest
-    await redis.set(`ark-plugin:addfile${this.e.user_id}`, JSON.stringify(redisdata), { EX: 300 })
     this.finish('readDest')
-    let srcfile = []
+
+    // 递归收集源文件列表
+    const srcfile = []
     const readDirectory = (directory) => {
-      const files = fs.readdirSync(directory);
-      files.forEach((file) => {
+      for (const file of fs.readdirSync(directory)) {
         const filePath = path.join(directory, file)
-        const relativePath = path.relative(redisdata.src, filePath)
         const stats = fs.statSync(filePath)
-        if (stats.isFile() && !relativePath.includes('node_modules')) {
-          srcfile.push(relativePath)
-        } else if (stats.isDirectory()) {
+        if (stats.isDirectory()) {
           readDirectory(filePath)
+        } else if (stats.isFile()) {
+          const rel = path.relative(redisdata.src, filePath)
+          if (!rel.includes('node_modules')) {
+            srcfile.push(rel.replace(/\\/g, '/'))
+          }
         }
-      })
+      }
     }
     readDirectory(redisdata.src)
-    srcfile = srcfile.map(path => path.replace(/\\/g, '/'))
     redisdata.srcfile = srcfile
-    let data___ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
-    let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/defset/config/backup-default.json', 'utf8'))
-    let data = { ...data___, ...data__ }
-    data[redisdata.ID] = redisdata
-    let ID = redisdata.ID
-    delete data[redisdata.ID].ID
-    fs.writeFileSync('./plugins/ark-plugin/config/backup.json', JSON.stringify(data, null, 2))
-    this.e.reply(`创建成功！备份了${redisdata.srcfile.length}个文件\n`)
+
+    const data = this.readBackupData()
+    const ID = redisdata.ID
+    delete redisdata.ID
+    data[ID] = redisdata
+    this.writeBackupData(data)
+
+    this.e.reply(`创建成功！备份了${srcfile.length}个文件\n`)
     await this.backupFile(ID, false)
   }
+
   async replaceFile(ID) {
-    let data___ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
-    let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/defset/config/backup-default.json', 'utf8'))
-    let data_ = { ...data___, ...data__ }
-    if (ID === 'miao-rank' && Version.isQsyhh) {
-      ID += '-qsyhh'
-    }
-    let data = data_[ID]
+    const allData = this.readBackupData()
+    const resolvedID = (ID === 'miao-rank' && Version.isQsyhh) ? 'miao-rank-qsyhh' : ID
+    const data = allData[resolvedID]
     if (!data) {
-      this.e.reply(`未查找到ID:${ID}的备份数据`)
+      this.e.reply(`未查找到ID:${resolvedID}的备份数据`)
       return true
     }
-    let src = data.src
-    let dest = data.dest
-    src = await this.addSlash(src)
-    dest = await this.addSlash(dest)
-    for (let i of data.srcfile) {
-      fs.cpSync(src + i, dest + i, {
-        recursive: true
-      })
+    const src = this.ensureSlash(data.src)
+    const dest = this.ensureSlash(data.dest)
+    for (const i of data.srcfile) {
+      fs.cpSync(src + i, dest + i, { recursive: true })
     }
     this.e.reply('替换完毕，重启后生效')
   }
+
   async backupFile(ID, recover) {
-    let data___ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/config/backup.json', 'utf8'))
-    let data__ = JSON.parse(fs.readFileSync('./plugins/ark-plugin/defset/config/backup-default.json', 'utf8'))
-    let data_ = { ...data___, ...data__ }
-    let data = data_[ID]
+    const allData = this.readBackupData()
+    const data = allData[ID]
     if (!data) {
       this.e.reply(`未查找到ID:${ID}的备份数据`)
       return true
     }
-    let dest = data.dest
-    let backup = `./plugins/ark-plugin/backup/${ID}-backup/`
-    dest = await this.addSlash(dest)
+    const dest = this.ensureSlash(data.dest)
+    const backup = `${BACKUP_DIR}/${ID}-backup/`
+    const [from, to] = recover ? [backup, dest] : [dest, backup]
     try {
-      for (let i of data.srcfile) {
-        if (recover) {
-          fs.cpSync(backup + i, dest + i, { recursive: true })
-        } else {
-          fs.cpSync(dest + i, backup + i, { recursive: true })
-        }
+      for (const i of data.srcfile) {
+        fs.cpSync(from + i, to + i, { recursive: true })
       }
     } catch (err) {
       this.e.reply(`${recover ? '恢复' : '备份'}失败\n${err.stack}`)
     }
-		
-    if (recover) {
-      this.e.reply('恢复完毕,重启后生效')
-    } else {
-      this.e.reply('备份完毕,重启后生效')
-    }
-
-  }
-  async addSlash(path_) {
-    if (!path_.endsWith('/')) {
-      path_ += '/'
-    }
-    return path_
+    this.e.reply(`${recover ? '恢复' : '备份'}完毕,重启后生效`)
   }
 }

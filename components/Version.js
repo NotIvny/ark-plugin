@@ -65,7 +65,6 @@ const readLogFile = function (root, versionCount = 4) {
         }
       })
     }
-  // eslint-disable-next-line no-unused-vars
   } catch (e) {
     // do nth
   }
@@ -82,13 +81,15 @@ let isQsyhh = false
 let isQsyhh2_0 = false
 let name = 'Yunzai-Bot'
 let isAlemonjs = false
-let info = fs.readFileSync('./plugins/miao-plugin/CHANGELOG.md').toString()
-if (info.includes('fork 1.0')) {
-  isQsyhh = true
-}
-if (info.includes('2.0.0')) {
-  isQsyhh2_0 = true
-}
+try {
+  let info = fs.readFileSync('./plugins/miao-plugin/CHANGELOG.md').toString()
+  if (info.includes('fork 1.0')) {
+    isQsyhh = true
+  }
+  if (info.includes('2.0.0')) {
+    isQsyhh2_0 = true
+  }
+} catch (e) {}
 if (packageJson.name === 'miao-yunzai') {
   isMiao = true
   name = 'Miao-Yunzai'
