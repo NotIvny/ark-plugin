@@ -31,6 +31,9 @@ git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 ```
 
+> [!TIP]
+> 受加载顺序影响/其他插件干扰，圣遗物OCR识别功能可能失效，若OCR功能无法使用，请前往[yunzai-artis-ocr-js](https://github.com/NotIvny/yunzai-artis-ocr-js) 下载单JS版圣遗物OCR插件。
+
 > [!NOTE]
 > 如需使用最新测试功能，可切换到 v2.0.1-beta 分支：
 > ```bash
@@ -42,8 +45,6 @@ git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 > ```
 
 ## 🛠️ 配置与替换
-
-主要功能需要替换 `miao-plugin` 的文件才能生效。
 
 | 功能名 | 是否需要替换文件 | 替换命令 | 说明 |
 | :--- | :---: | :--- | :--- |
