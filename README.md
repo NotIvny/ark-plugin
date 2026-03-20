@@ -26,9 +26,9 @@
 git clone https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 ```
 
-**Gitee 源 (网络不佳推荐)**
+**GitCode 源 (网络不佳推荐)**
 ```bash
-git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
+git clone https://gitcode.com/EmptyLava/ark-plugin.git ./plugins/ark-plugin
 ```
 
 > [!TIP]
@@ -37,11 +37,11 @@ git clone https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
 > [!NOTE]
 > 如需使用最新测试功能，可切换到 v2.0.1-beta 分支：
 > ```bash
-> git clone -b v2.0.1-beta https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
+> git clone -b v2.0.1 https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 > ```
-> **Gitee 源 (网络不佳推荐)**
+> **GitCode 源 (网络不佳推荐)**
 > ```bash
-> git clone -b v2.0.1-beta https://gitee.com/Ivny/ark-plugin.git ./plugins/ark-plugin
+> git clone -b v2.0.1 https://gitcode.com/EmptyLava/ark-plugin.git ./plugins/ark-plugin
 > ```
 
 ## 🛠️ 配置与替换
