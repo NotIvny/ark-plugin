@@ -7,10 +7,9 @@ import { profileArtis } from '../../miao-plugin/apps/profile/ProfileArtis.js'
 import { Data, Common, Format, Cfg, Meta  } from '../../miao-plugin/components/index.js'
 import { Button, MysApi, ProfileRank, Weapon, Artifact, Player, Character, ArtifactSet, Avatar } from '../../miao-plugin/models/index.js'
 import safeGsCfg from './safeGsCfg.js'
-import api from '../../ark-plugin/model/api.js'
 import ArkCfg from '../components/Cfg.js'
 import { ProfileWeapon } from '../../miao-plugin/apps/profile/ProfileWeapon.js'
-import { ArkApi } from './api.js'
+import { ArkApi, AkashaApi } from './api.js'
 
 let ProfileDetail
 let CharRank
@@ -582,7 +581,7 @@ const ArkInit = {
           const charId = safeGsCfg.roleNameToID(char.name, true) || safeGsCfg.roleNameToID(char.name, false)
           const queryType = ArkCfg.get('queryType', 2)
           const isLocal = ArkCfg.get('localPanelRank', true)
-          let ret = await api.sendApi('getRankData', {
+          let ret = await ArkApi.req('api/rank/data', {
             id: charId, 
             uid: isLocal ? '999999999' : uid, 
             update: 0,
@@ -615,10 +614,9 @@ const ArkInit = {
           })
 
           if (queryType === 3) {
-            [ret1, ret2] = await Promise.all([
-              api.sendApi('getSpecificRank', { id: charId, percent: 0 }),
-              api.sendApi('getSpecificRank', { id: charId, artis: true, percent: 0 })
-            ])
+            let res = await ArkApi.req('api/rank/specific', { id: charId, percent: 0 }) || []
+            ret1 = res[1]
+            ret2 = res[0]
           }
         }
         let background = await Common.getBackground('profile')
@@ -794,7 +792,7 @@ const ArkInit = {
           if (mode === 'dmg' || mode === 'mark') {
             let query = mode === 'mark' ? 'mark' : 'dmg'
             let rankTitle = mode === 'mark' ? '圣遗物' : '伤害'
-            ret = await api.sendApi('groupAllRank', {
+            ret = await ArkApi.req('api/rank/group', {
               id: list[0]?.id,
               uids: uids_,
               update: 2,

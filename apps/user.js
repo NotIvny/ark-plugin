@@ -1,7 +1,7 @@
 import { getTargetUid } from '../../miao-plugin/apps/profile/ProfileCommon.js'
 import safeGsCfg from '../model/safeGsCfg.js'
 import fs from 'node:fs'
-import api from '../model/api.js'
+import { ArkApi, AkashaApi } from '../model/api.js'
 import { getStygianVersion, getStygianPeriod } from '../model/calcVersion.js'
 import { Button, ProfileRank, Player, Character, Avatar } from '../../miao-plugin/models/index.js'
 import { Cfg, Common } from '../components/index.js'
@@ -158,7 +158,7 @@ export class characterRank extends plugin {
     let type = e.msg.includes('星铁') ? 'sr' : 'gs'
     let uid = getUid(e, type)
     if (uid && Cfg.get('newUserPanel', false) && !fs.existsSync(`./data/PlayerData/${type}/${uid}.json`)) {
-      let ret = await api.sendApi('getPanelData', { uid, type, qq: e.user_id })
+      let ret = await ArkApi.req('api/panel/data', { uid, type, qq: e.user_id })
       if (ret.retcode === 100) {
         fs.writeFileSync(`./data/PlayerData/${type}/${uid}.json`, JSON.stringify(ret.data.playerData, null, 2))
         let player = new Player(uid, type)
@@ -166,7 +166,7 @@ export class characterRank extends plugin {
         e.reply(`[ark-plugin]已自动从API获取${Object.keys(ret.data.playerData.avatars).length}个数据`)
       }
     }
-    api.sendApi('refreshPanel', { uid, type })
+    ArkApi.req('api/panel/refresh', { uid, type })
     return false
   }
 
@@ -181,7 +181,7 @@ export class characterRank extends plugin {
     let id = getCharId(characterName)
     if (!id) return false
     let name = safeGsCfg.roleIdToName(id)
-    let ret = await api.sendApi('getRankData', { uid, id, update: 1 })
+    let ret = await ArkApi.req('api/rank/data', { uid, id, update: 1 })
     if (ret.retcode === 100) {
       e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret?.rank}，伤害评分: ${ret?.score?.toFixed(2)}`)
     } else {
@@ -195,7 +195,7 @@ export class characterRank extends plugin {
     let id = getCharId(name)
     if (id) name = safeGsCfg.roleIdToName(id)
     let uid = getUid(e, id < 10000 ? 'sr' : 'gs')
-    api.sendApi('getRankData', { id, uid, update: 1 }).then(ret => {
+    ArkApi.req('api/rank/data', { id, uid, update: 1 }).then(ret => {
       switch (ret.retcode) {
         case 100:
         case 101:
@@ -219,7 +219,7 @@ export class characterRank extends plugin {
     let player = Player.create(e)
     let profiles = player.getProfiles()
     let profileIds = Object.keys(profiles)
-    let ret = await api.sendApi('selfAllRank', { ids: profileIds, uid, type: e.game })
+    let ret = await ArkApi.req('api/rank/self', { ids: profileIds, uid, type: e.game })
     if (ret.retcode === 100) {
       let type = e.game === 'sr' ? '星铁' : '原神'
       let msg = `uid:${uid}的${type}全服排名数据:\n`
@@ -241,7 +241,7 @@ export class characterRank extends plugin {
       return true
     }
     let imgUrls = await collectImageUrls(e)
-    let ret = await api.ArkApi.req(`ocr/profilechange/${e.isSr ? 'sr' : 'gs'}`, { body: JSON.stringify({ image: imgUrls[0], forge: true }) })
+    let ret = await ArkApi.req(`ocr/profilechange/${e.isSr ? 'sr' : 'gs'}`, { body: JSON.stringify({ image: imgUrls[0], forge: true }) })
     let original = ret.data[0]?.data || ret.data[0]
     let replacement = ret.data[1]?.data || ret.data[1]
 
@@ -361,7 +361,7 @@ export class characterRank extends plugin {
       return true
     }
     let playerData = fs.readFileSync(dataPath, 'utf8')
-    let ret = await api.sendApi('uploadPanelData', { uid, type: e.game, data: playerData })
+    let ret = await ArkApi.req('api/panel/upload', { uid, type: e.game, data: playerData })
     if (ret.retcode === 100) {
       e.reply(`导出成功，请在另一个安装此插件的Bot上输入 ${prefix}导入面板数据${uid} ，有效期十分钟~`)
     } else {
@@ -374,7 +374,7 @@ export class characterRank extends plugin {
     let user = e?.runtime?.user || {}
     let uid = await getTargetUid(e)
     if (!await this.checkPermission(e, user, 'importPanelData')) return true
-    let ret = await api.sendApi('downloadPanelData', { uid, type: e.game })
+    let ret = await ArkApi.req('api/panel/download', { uid, type: e.game })
     if (ret.retcode === 100) {
       fs.writeFileSync(`./data/playerData/${e.game}/${uid}.json`, JSON.stringify(ret.data, null, 2))
       e.reply('导入成功')
@@ -414,7 +414,7 @@ export class characterRank extends plugin {
     logger.debug(id)
     if (!name || !id) return true
     let characterName = safeGsCfg.roleIdToName(id)
-    let ret = await api.sendApi('getSpecificRank', { id, percent: 0 })
+    let ret = await ArkApi.req('api/rank/specific', { id, percent: 0 })
     if (ret.retcode === 100) {
       // eslint-disable-next-line no-return-await
       return await Common.render('graph/stats', {
@@ -429,7 +429,7 @@ export class characterRank extends plugin {
 
   async arkGetBindUid(e) {
     let type = getGameType(e)
-    let ret = await api.sendApi('getVerifyCode', { uid: await getTargetUid(e), type })
+    let ret = await ArkApi.req('api/verify/code', { uid: await getTargetUid(e), type })
     if (ret.retcode === 100) {
       e.reply(`验证码: ${ret.data.verifyCode}\n使用方式：\n①原神：派蒙头像——右上角编辑资料——设置签名——填入验证码，待签名审核通过后输入 #ark验证原神uid\n②星铁：手机——右上角三点——漫游签证——设置签名——填入验证码，5-10分钟后输入 #ark验证星铁uid\n验证码有效期24小时，验证通过后自动与QQ绑定，在其他Bot上无需再次绑定`)
     } else {
@@ -439,7 +439,7 @@ export class characterRank extends plugin {
 
   async arkBindUid(e) {
     let type = getGameType(e)
-    let ret = await api.sendApi('verify', { uid: await getTargetUid(e), qq: e.user_id, type })
+    let ret = await ArkApi.req('api/verify', { uid: await getTargetUid(e), qq: e.user_id, type })
     if (ret.retcode === 100) {
       e.reply('验证成功')
     } else {
@@ -458,7 +458,7 @@ export class characterRank extends plugin {
     let ret = ''
     let pm = Cfg.get('exportPanelRequire', 1)
     if (pm === 1) {
-      ret = await api.sendApi('verifyUser', { uid, qq: e.user_id, type })
+      ret = await ArkApi.req('api/verify/user', { uid, qq: e.user_id, type })
     }
     if ((pm <= 2 && pm >= 1 && !user.hasCk) || (pm === 1 && ret?.retcode === 200) || pm === 3) {
       let filePath = `./data/PlayerData/${type}/${uid}.json`
@@ -498,14 +498,14 @@ export class characterRank extends plugin {
     let [enableArk, enableAkasha] = [[0, 2].includes(stygianData), [1, 2].includes(stygianData)]
     const versionStr = `${Math.floor(stygianVersion / 9)}_${Number(stygianVersion) % 9}`
 
-    let ret_ark = (enableArk && !queryOld) ? await api.sendApi('stygianRank', { uid: uids }) : null
+    let ret_ark = (enableArk && !queryOld) ? await ArkApi.req('api/rank/stygian', { uid: uids }) : null
     if (ret_ark?.retcode !== 100) ret_ark = null
 
     let uidsInfo = uids.map(uid => `[uid]${uid}`).join('')
     let [ret_akasha, ret_akasha_total] = enableAkasha
       ? await Promise.all([
-        api.sendAkashaApi(`leaderboards/stygian?sort=stygianScore&order=-1&size=50&page=1&uids=${uidsInfo}&p=&fromId=&li=&uid=251890729&version=${versionStr}`),
-        api.sendAkashaApi(`leaderboards/stygian?sort=stygianScore&order=1&size=1&page=1&uids=&p=&fromId=&li=&uid=&version=${versionStr}`)
+        AkashaApi.req(`leaderboards/stygian?sort=stygianScore&order=-1&size=50&page=1&uids=${uidsInfo}&p=&fromId=&li=&uid=251890729&version=${versionStr}`),
+        AkashaApi.req(`leaderboards/stygian?sort=stygianScore&order=1&size=1&page=1&uids=&p=&fromId=&li=&uid=&version=${versionStr}`)
       ])
       : [null, null]
 

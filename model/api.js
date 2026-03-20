@@ -1,68 +1,47 @@
 import fetch from 'node-fetch'
 import { Version } from '../components/index.js'
 const version = Version.version
-export const sendApi = async function(type, data) {
-  data = {
-    type: type,
-    data: data,
-    version: version
-  }
-  const url = 'http://ark.ivny.top/api'
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 10000)
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data),
-      signal: controller.signal
-    })
-    clearTimeout(timeout)
-    if (!response.ok) {
-      return {
-        retcode: 105
+
+export const AkashaApi = {
+  async req(url) {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 10000)
+    try {
+      const response = await fetch(`https://akasha.cv/api/${url}`, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'ark-plugin'
+        },
+        signal: controller.signal
+      })
+      clearTimeout(timeout)
+      if (!response.ok) {
+        return false
       }
-    }
-    const ret = await response.json()
-    return ret
-  } catch (err) {
-    return { retcode: 105 }
-  }
-}
-export const sendAkashaApi = async function(url) {
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 10000)
-  try {
-    const response = await fetch(`https://akasha.cv/api/${  url}`, {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'ark-plugin'
-      },
-      signal: controller.signal
-    })
-    clearTimeout(timeout)
-    if (!response.ok) {
+      const ret = await response.json()
+      return ret
+    } catch (err) {
       return false
     }
-    const ret = await response.json()
-    return ret
-  } catch (err) {
-    return false
   }
 }
+
 export const ArkApi = {
-  async req(url, param = {}) {
+  async req(route, data = {}) {
     try {
+      if (typeof data !== 'object') data = {}
+      data = {
+        ...data,
+        version: version
+      }
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 30000)
-      const response = await fetch(`https://ark.ivny.top/${url}`, {
-        method: param.method || 'POST',
+      const response = await fetch(`https://beta.ivny.top/${route}`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: param.body,
+        body: JSON.stringify(data),
         signal: controller.signal
       })
       clearTimeout(timeout)
@@ -75,4 +54,4 @@ export const ArkApi = {
     }
   },
 }
-export default { sendApi, sendAkashaApi, ArkApi }
+export default { AkashaApi, ArkApi }

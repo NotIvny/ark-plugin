@@ -22,11 +22,19 @@ const readLogFile = function (root, versionCount = 4) {
   let currentVersion
 
   try {
+    let pkgPath = `${root}/package.json`
+    if (fs.existsSync(pkgPath)) {
+      currentVersion = JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version
+    }
+  } catch (e) {}
+
+  try {
     if (fs.existsSync(logPath)) {
       logs = fs.readFileSync(logPath, 'utf8') || ''
       logs = logs.split('\n')
       let temp = {}
       let lastLine = {}
+      let isFirst = true
       lodash.forEach(logs, (line) => {
         if (versionCount <= -1) {
           return false
@@ -34,8 +42,9 @@ const readLogFile = function (root, versionCount = 4) {
         let versionRet = /^#\s*([0-9a-zA-Z\\.~\\s\\-]+?)\s*$/.exec(line)
         if (versionRet && versionRet[1]) {
           let v = versionRet[1].trim()
-          if (!currentVersion) {
-            currentVersion = v
+          if (isFirst) {
+            isFirst = false
+            if (!currentVersion) currentVersion = v
           } else {
             changelogs.push(temp)
             if (/0\s*$/.test(v) && versionCount > 0) {
