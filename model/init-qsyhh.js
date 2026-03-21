@@ -703,7 +703,7 @@ const ArkInit = {
               }
             }
             if (uid) {
-              let userInfo = await ProfileRank.getUidInfo(uid)
+              let userInfo = await ProfileRank.getUidInfo(uid, game)
               try {
                 if (userInfo?.qq && e?.group?.pickMember) {
                   let member = e.group.pickMember(userInfo.qq)
