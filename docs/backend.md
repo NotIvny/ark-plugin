@@ -16,7 +16,6 @@ API提供了以下接口
 - /api/verify
 - /api/panel/data
 - /api/verify/user
-- /api/server/data
 - /api/rank/stygian
 
 目前暂不提供API文档，如需调用请自行通过插件代码了解API参数。

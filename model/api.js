@@ -29,9 +29,8 @@ export const AkashaApi = {
 export const ArkApi = {
   async req(route, data = {}) {
     try {
-      if (typeof data !== 'object') data = {}
       data = {
-        ...data,
+        data: data,
         version: version
       }
       const controller = new AbortController()

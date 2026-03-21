@@ -203,7 +203,7 @@ const ArkInit = {
         if (imgUrls.length > 0) {
           const results = await Promise.all(imgUrls.map(async (imageUrl) => {
             try {
-              return await ArkApi.req(`ocr/profilechange/${char.game}`, { body: JSON.stringify({ image: imageUrl }) })
+              return await ArkApi.req(`ocr/profilechange/${char.game}`, { image: imageUrl })
             } catch (err) {
               return null
             }
