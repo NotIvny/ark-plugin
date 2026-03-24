@@ -630,7 +630,7 @@ const ArkInit = {
           const charId = safeGsCfg.roleNameToID(char.name, true) || safeGsCfg.roleNameToID(char.name, false)
           const queryType = ArkCfg.get('queryType', 2)
           const isLocal = ArkCfg.get('localPanelRank', true)
-          let ret = await ArkApi.req('api/rank/data', {
+          let ret = await ArkApi.req('rank/data', {
             id: charId, 
             uid: isLocal ? '999999999' : uid, 
             update: 0,
@@ -663,7 +663,7 @@ const ArkInit = {
           })
 
           if (queryType === 3) {
-            let res = await ArkApi.req('api/rank/specific', { id: charId, percent: 0 }) || []
+            let res = await ArkApi.req('rank/specific', { id: charId, percent: 0 }) || []
             ret1 = res[1]
             ret2 = res[0]
           }
@@ -839,7 +839,7 @@ const ArkInit = {
           if (mode === 'dmg' || mode === 'mark') {
             let query = mode === 'mark' ? 'mark' : 'dmg'
             let rankTitle = mode === 'mark' ? '圣遗物' : '伤害'
-            ret = await ArkApi.req('api/rank/group', {
+            ret = await ArkApi.req('rank/group', {
               id: list[0]?.id,
               uids: uids_,
               update: 2,
