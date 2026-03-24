@@ -7,7 +7,7 @@ export const AkashaApi = {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 10000)
     try {
-      const response = await fetch(`https://akasha.cv/api/${url}`, {
+      const response = await fetch(`https://akasha.cv/${url}`, {
         method: 'GET',
         headers: {
           'User-Agent': 'ark-plugin'

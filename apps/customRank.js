@@ -1,13 +1,13 @@
 ﻿﻿import { Common, Format } from '../../miao-plugin/components/index.js'
 import { Character, Avatar } from '../../miao-plugin/models/index.js'
 import { ArkApi } from '../model/api.js'
-
 const ALLOWED_COLS = new Set([
   'level', 'promote', 'cons',
   'talent_a', 'talent_e', 'talent_q',
   'weapon_level', 'weapon_promote', 'weapon_affix',
   'dmg_avg', 'mark_score', 'data_time',
-  'artis_sets'
+  'artis_sets',
+  'pos1', 'pos2', 'pos3', 'pos4', 'pos5', 'pos6'
 ])
 const ALIAS_MAP = {
   '等级': 'level', '突破': 'promote', '命座': 'cons', '命': 'cons',
@@ -18,13 +18,47 @@ const ALIAS_MAP = {
   '圣遗物': 'artis_sets', '套装': 'artis_sets'
 }
 
+const srStatNameMap = {
+  '生命': 'hp', '大生命': 'hp', '生命值': 'hp',
+  '攻击': 'atk', '大攻击': 'atk', '攻击力': 'atk',
+  '防御': 'def', '大防御': 'def', '防御力': 'def',
+  '速度': 'speed',
+  '暴击': 'cpct', '暴击率': 'cpct',
+  '爆伤': 'cdmg', '暴伤': 'cdmg', '暴击伤害': 'cdmg',
+  '治疗': 'heal', '治疗加成': 'heal',
+  '命中': 'effPct', '效果命中': 'effPct',
+  '物伤': 'phy', '物理': 'phy', '物理属性伤害提高': 'phy',
+  '火伤': 'fire', '火': 'fire', '火属性伤害提高': 'fire',
+  '冰伤': 'ice', '冰': 'ice', '冰属性伤害提高': 'ice',
+  '雷伤': 'elec', '雷': 'elec', '雷属性伤害提高': 'elec',
+  '风伤': 'wind', '风': 'wind', '风属性伤害提高': 'wind',
+  '量子伤': 'quantum', '量子': 'quantum', '量子属性伤害提高': 'quantum',
+  '虚数伤': 'imaginary', '虚数': 'imaginary', '虚数属性伤害提高': 'imaginary',
+  '击破': 'be', '击破特攻': 'be',
+  '充能': 'recharge', '能量回复效率': 'recharge', '充能效率': 'recharge',
+  '小生命': 'hpPlus',
+  '小攻击': 'atkPlus'
+}
+
+const srMainIdx = { 
+  "1": { "1": "hpPlus" }, 
+  "2": { "1": "atkPlus" }, 
+  "3": { "1": "hp", "2": "atk", "3": "def", "4": "cpct", "5": "cdmg", "6": "heal", "7": "effPct" }, 
+  "4": { "1": "hp", "2": "atk", "3": "def", "4": "speed" }, 
+  "5": { "1": "hp", "2": "atk", "3": "def", "4": "phy", "5": "fire", "6": "ice", "7": "elec", "8": "wind", "9": "quantum", "10": "imaginary" }, 
+  "6": { "1": "be", "2": "recharge", "3": "hp", "4": "atk", "5": "def" }
+}
+
 function resolveCol (name) {
+  if (/^pos[1-6]$/i.test(name)) return name.toLowerCase()
+  if (/^部位[1-6]$/i.test(name)) return 'pos' + name.slice(2)
   return ALIAS_MAP[name] || name.toLowerCase()
 }
 
 function parseRankArgs (raw) {
   const tokens = raw.split(/\s+/)
   let charName = ''
+  let nums = 20
   const rank = { col: 'dmg_avg', order: 'desc' }
   const filter = []
   const OP_TO_RULE = { '>=': 0, '=': 1, '<=': 2, '>': 3, '<': 4, '!=': 5 }
@@ -32,6 +66,12 @@ function parseRankArgs (raw) {
   for (const t of tokens) {
     if (/^(升序|asc)$/i.test(t)) { rank.order = 'asc'; continue }
     if (/^(降序|desc)$/i.test(t)) { rank.order = 'desc'; continue }
+
+    const numsMatch = /^(?:nums|数量)[:：=](\d+)$/i.exec(t)
+    if (numsMatch) {
+      nums = Math.min(Math.max(Number(numsMatch[1]), 1), 50)
+      continue
+    }
 
     const sortMatch = /^(?:sort|排序)[:：]([\w\u4e00-\u9fff]+)$/i.exec(t)
     if (sortMatch) {
@@ -45,16 +85,26 @@ function parseRankArgs (raw) {
     if (condMatch) {
       const col = resolveCol(condMatch[1])
       const opStr = condMatch[2]
-      const val = Number(condMatch[3])
+      let val = condMatch[3]
+      
+      if (col.startsWith('pos')) {
+      } else if (col !== 'artis_sets') {
+        let numVal = Number(val)
+        if (isNaN(numVal)) throw new Error(condMatch[1] + ' 的值必须是数字')
+        val = numVal
+      } else {
+        const numVal = Number(val)
+        if (!isNaN(numVal)) val = numVal
+      }
+
       if (!ALLOWED_COLS.has(col)) throw new Error('不支持筛选列 ' + condMatch[1])
-      if (isNaN(val)) throw new Error(condMatch[1] + ' 的值必须是数字')
       if (OP_TO_RULE[opStr] == null) throw new Error('不支持运算符 ' + opStr)
-      filter.push({ type: col, rule: OP_TO_RULE[opStr], value: val })
+      filter.push({ type: col, rule: OP_TO_RULE[opStr], value: val, rawValue: condMatch[3] })
       continue
     }
     charName += t
   }
-  return { charName, data: { rank, filter } }
+  return { charName, data: { rank, filter, nums } }
 }
 
 export class CustomRank extends plugin {
@@ -83,12 +133,44 @@ export class CustomRank extends plugin {
     if (!char) return e.reply('找不到角色：' + charName)
 
     const game = char.id * 1 < 10000 ? 'sr' : 'gs'
+
+    if (game === 'sr') {
+      for (let f of data.filter) {
+        if (f.type.startsWith('pos')) {
+          const posNum = f.type.slice(3)
+          let statName = srStatNameMap[f.value] || f.value
+          let foundId = null
+          const posMap = srMainIdx[posNum]
+          if (posMap) {
+            for (let [id, name] of Object.entries(posMap)) {
+              if (name === statName) {
+                foundId = Number(id)
+                break
+              }
+            }
+          }
+          if (foundId !== null) {
+            f.value = foundId
+          } else {
+            return e.reply(`部位 ${posNum} 不存在主词条：${f.rawValue}`)
+          }
+        }
+      }
+    } else {
+      for (let f of data.filter) {
+        if (f.type.startsWith('pos')) {
+          return e.reply('原神暂不支持指定部位主词条筛选')
+        }
+      }
+    }
+
     const sortCol = data.rank.col || 'dmg_avg'
     const mode = sortCol === 'mark_score' ? 'mark' : 'dmg'
 
     let apiRes
     try {
-      apiRes = await ArkApi.req('rank/query', { charId: char.id, data, game })
+      logger.error(data)
+      apiRes = await ArkApi.req('rank/query', { charId: char.id, data, game }, true)
       if (!apiRes) throw new Error('接口返回为空')
     } catch (err) {
       logger.error('ArkAPI 请求失败:', err.message)
@@ -168,12 +250,17 @@ export class CustomRank extends plugin {
     const orderLabel = (data.rank.order || 'desc') === 'asc' ? '升序' : '降序'
     const RULE_LABEL = { 0: '>=', 1: '=', 2: '<=', 3: '>', 4: '<', 5: '!=' }
     const filterDesc = data.filter.length
-      ? data.filter.map(f => f.type + (RULE_LABEL[f.rule] || '?') + f.value).join(' ')
+      ? data.filter.map(f => {
+          let typeLabel = f.type
+          if (typeLabel.startsWith('pos')) typeLabel = '部位' + typeLabel.slice(3)
+          let valLabel = f.rawValue ?? f.value
+          return typeLabel + (RULE_LABEL[f.rule] || '?') + valLabel
+        }).join(' ')
       : '无'
     const rankCfg = {
       time: '全服数据',
       limitTxt: '排序: ' + (sortLabel[sortCol] || sortCol) + ' ' + orderLabel + ' / 筛选: ' + filterDesc,
-      number: 20
+      number: data.nums || 20
     }
 
     return e.reply([

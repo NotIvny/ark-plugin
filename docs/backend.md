@@ -5,18 +5,18 @@ API基于云崽及miao-plugin实现，排名支持范围为：
 - 星铁：qsyhh/miao-plugin支持伤害计算的角色
 
 API提供了以下接口
-- /api/rank/data
-- /api/panel/refresh
-- /api/rank/self
-- /api/rank/group
-- /api/panel/upload
-- /api/panel/download
-- /api/rank/specific
-- /api/verify/code
-- /api/verify
-- /api/panel/data
-- /api/verify/user
-- /api/rank/stygian
+- /rank/data
+- /panel/refresh
+- /rank/self
+- /rank/group
+- /panel/upload
+- /panel/download
+- /rank/specific
+- /verify/code
+- /verify
+- /panel/data
+- /verify/user
+- /rank/stygian
 
 目前暂不提供API文档，如需调用请自行通过插件代码了解API参数。
 ### 2025/5/7
