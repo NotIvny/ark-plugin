@@ -170,7 +170,7 @@ export class CustomRank extends plugin {
     let apiRes
     try {
       logger.error(data)
-      apiRes = await ArkApi.req('rank/query', { charId: char.id, data, game }, true)
+      apiRes = await ArkApi.req('rank/custom', { charId: char.id, data, game }, true)
       if (!apiRes) throw new Error('接口返回为空')
     } catch (err) {
       logger.error('ArkAPI 请求失败:', err.message)

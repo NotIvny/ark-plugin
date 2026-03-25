@@ -241,7 +241,7 @@ export class characterRank extends plugin {
       return true
     }
     let imgUrls = await collectImageUrls(e)
-    let ret = await ArkApi.req(`ocr/profilechange/${e.isSr ? 'sr' : 'gs'}`, { body: JSON.stringify({ image: imgUrls[0], forge: true }) })
+    let ret = await ArkApi.req(`ocr/profilechange/${e.isSr ? 'sr' : 'gs'}`, { image: imgUrls[0], forge: true })
     let original = ret.data[0]?.data || ret.data[0]
     let replacement = ret.data[1]?.data || ret.data[1]
 
