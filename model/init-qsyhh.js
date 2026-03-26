@@ -821,7 +821,7 @@ const ArkInit = {
           title: _dmg?.title,
           isMemosprite,
           isJoy,
-          style: `<style>body .container {width: ${(isMemosprite ? 1000 : e.isSr ? 930 : 850) + !noRankFlag * 180}px;}</style>`
+          style: `<style>body .container {width: ${(isMemosprite ? 1000 : isJoy ? 960 : e.isSr ? 930 : 850) + !noRankFlag * 180}px;}</style>`
         }
         // 渲染图像
         let exPath = ArkCfg.get('lnFiles', false) ? '-ark' : ''
