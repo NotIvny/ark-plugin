@@ -819,6 +819,7 @@ const ArkInit = {
           list = lodash.sortBy(list, ['uid', '_star', 'id'])
         }
         const isMemosprite = e.isSr && char.weaponType === '记忆'
+        const isJoy = e.isSr && char.weaponType === '欢愉'
         const rankCfg = await ProfileRank.getGroupCfg(groupId)
         let noRankFlag = true
         if (ArkCfg.get('groupRank', true)) {
@@ -860,14 +861,15 @@ const ArkInit = {
             }
           } 
         }
-        const bodyContainerStyle = `<style>body .container {width: ${(isMemosprite ? 1000 : e.isSr ? 930 : 850) + !noRankFlag * 180}px;}</style>`
-        let cont_width = (isMemosprite ? 1000 : e.isSr ? 930 : 850) + !noRankFlag * 180  
+        const bodyContainerStyle = `<style>body .container {width: ${(isMemosprite ? 1000 : isJoy ? 960 : e.isSr ? 930 : 850) + !noRankFlag * 180}px;}</style>`
+        let cont_width = (isMemosprite ? 1000 : isJoy ? 960 : e.isSr ? 930 : 850) + !noRankFlag * 180  
         // 渲染图像
         let exPath = ArkCfg.get('lnFiles', false) ? '-ark' : ''
         return e.reply([await Common.render(`character/rank-profile-list${exPath}`, {
           save_id: char.id,
           game: e.isSr ? 'sr' : 'gs',
           isMemosprite,
+          isJoy,
           bodyContainerStyle,
           list,
           title,
