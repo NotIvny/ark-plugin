@@ -5,6 +5,7 @@
       "srcfile": [
         "apps/profile/ProfileDetail.js",
         "apps/profile/ProfileRank.js",
+        "apps/profile.js",
         "resources/character/rank-profile-list.html",
         "resources/character/profile-detail.html"
       ]
