@@ -110,10 +110,12 @@ const CharRank = {
     }
 
     const isMemosprite = e.isSr && char.weaponType === "记忆"
+    const isJoy = e.isSr && char.weaponType === "欢愉"
     const data = {
       title: _dmg?.title,
       isMemosprite,
-      style: `<style>body .container {width: ${isMemosprite ? 970 : e.isSr ? 900 : 820}px;}</style>`
+      isJoy,
+      style: `<style>body .container {width: ${isMemosprite ? 970 : isJoy ? 930 : e.isSr ? 900 : 820}px;}</style>`
     }
     const rankCfg = await ProfileRank.getGroupCfg(groupId, game)
     // 渲染图像
