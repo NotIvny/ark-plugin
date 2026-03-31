@@ -397,6 +397,12 @@
     
     
     <style>
+      {{if dmgCalc?.isWrap}}
+      .dmg-title {
+        white-space: normal !important;
+        word-break: break-all;
+      }
+      {{/if}}
       .no-data {
         position: absolute;
         top: 50%;
