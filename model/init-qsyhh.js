@@ -621,6 +621,37 @@ const ArkInit = {
             ])
           }
         }
+        const charWidth = (c) => /[1()]/.test(c) ? 0.5 : 1
+        const titleWidth = (str) => {
+          let w = 0
+          for (const c of str) w += charWidth(c)
+          return w
+        }
+        if (ArkCfg.get('profileChangeDiff', true) && e._profileMsg) {
+          let dealLength = mode !== 'profile' ? 10 : 20
+          switch (ArkCfg.get('DealLongDmgTitle', 1)) {
+            case 0:
+              break
+            case 1:
+              if (dmgCalc?.dmgData) {
+                const truncTitle = (str) => {
+                  let w = 0
+                  for (let i = 0; i < str.length; i++) {
+                    w += charWidth(str[i])
+                    if (w > dealLength) return str.slice(0, i) + '...'
+                  }
+                  return str
+                }
+                dmgCalc.dmgData = dmgCalc.dmgData.map(item => ({ ...item, title: truncTitle((item.title || '').trim()) }))
+              }
+              break
+            case 2:
+              if (dmgCalc?.dmgData) {
+                dmgCalc.isWrap = dmgCalc.dmgData.some(item => titleWidth((item.title || '').trim()) > dealLength)
+              }
+              break
+          }
+        }
         let background = await Common.getBackground('profile')
         if (mode === 'dmg') dmgCalc.dmgCfg.dmgAttr = attrFn(dmgCalc.dmgCfg.dmgAttr, profile.base)
 
