@@ -405,6 +405,12 @@
     
     
     <style>
+      {{if dmgCalc?.isWrap}}
+      .dmg-title {
+        white-space: normal !important;
+        word-break: break-all;
+      }
+      {{/if}}
       .no-data {
         position: absolute;
         top: 50%;
@@ -481,7 +487,7 @@
             )
             target = {{selfRank[0]}}
             targetScore = ({{selfRank[1]}}).toFixed(2) 
-            {{/if}}
+          {{/if}}
         }else{
           {{if artisRankData}}
             myChart = echarts.init(document.getElementById('artisChart'), null, { renderer: 'svg' })
