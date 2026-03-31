@@ -114,6 +114,7 @@ const CharRank = {
     const data = {
       title: _dmg?.title,
       isMemosprite,
+      isJoy,
       style: `<style>body .container {width: ${isMemosprite ? 970 : isJoy ? 930 : e.isSr ? 900 : 820}px;}</style>`
     }
     const rankCfg = await ProfileRank.getGroupCfg(groupId, game)
