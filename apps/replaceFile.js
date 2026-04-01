@@ -171,13 +171,14 @@ export class replaceFile extends plugin {
 
   async backupFile(ID, recover) {
     const allData = this.readBackupData()
-    const data = allData[ID]
+    const resolvedID = (ID === 'miao-rank' && Version.isQsyhh) ? 'miao-rank-qsyhh' : ID
+    const data = allData[resolvedID]
     if (!data) {
-      this.e.reply(`未查找到ID:${ID}的备份数据`)
+      this.e.reply(`未查找到ID:${resolvedID}的备份数据`)
       return true
     }
     const dest = this.ensureSlash(data.dest)
-    const backup = `${BACKUP_DIR}/${ID}-backup/`
+    const backup = `${BACKUP_DIR}/${resolvedID}-backup/`
     const [from, to] = recover ? [backup, dest] : [dest, backup]
     try {
       for (const i of data.srcfile) {
