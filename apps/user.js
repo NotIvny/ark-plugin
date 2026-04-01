@@ -127,10 +127,6 @@ export class characterRank extends plugin {
         fnc: 'stygian',
       },
       {
-        reg: /^#(星铁|原神)?(群|群内)?.+(排名|排行)(榜)?$/,
-        fnc: 'playerRank',
-      },
-      {
         reg: /^#(星铁|原神)?(全部面板更新|更新全部面板|获取游戏角色详情|更新面板|面板更新)\s*(\d{9,10})?$/,
         fnc: 'refreshPanel',
       },
@@ -190,26 +186,6 @@ export class characterRank extends plugin {
     return false
   }
 
-  async playerRank(e) {
-    let name = e.msg.replace(/(#|星铁|最强|最高分|第一|词条|双爆|双暴|极限|最高|最多|最牛|圣遗物|遗器|评分|群内|群|排名|排行|面板|面版|详情|榜)/g, '')
-    let id = getCharId(name)
-    if (id) name = safeGsCfg.roleIdToName(id)
-    let uid = getUid(e, id < 10000 ? 'sr' : 'gs')
-    api.sendApi('getRankData', { id, uid, update: 1 }).then(ret => {
-      switch (ret.retcode) {
-        case 100:
-        case 101:
-        case 102:
-          break
-        default:
-          e.reply(this.dealError(ret.retcode))
-      }
-    }).catch(err => {
-      logger.error('[ark-plugin] playerRank API 请求失败', err)
-    })
-    return false
-  }
-
   async getAllRank(e) {
     let uid = await getTargetUid(e)
     if (!uid) {
@@ -241,6 +217,7 @@ export class characterRank extends plugin {
       return true
     }
     let imgUrls = await collectImageUrls(e)
+    if (!imgUrls.length) return e.reply('请发送圣遗物重塑图片')
     let ret = await api.ArkApi.req(`ocr/profilechange/${e.isSr ? 'sr' : 'gs'}`, { body: JSON.stringify({ image: imgUrls[0], forge: true }) })
     let original = ret.data[0]?.data || ret.data[0]
     let replacement = ret.data[1]?.data || ret.data[1]
@@ -376,7 +353,7 @@ export class characterRank extends plugin {
     if (!await this.checkPermission(e, user, 'importPanelData')) return true
     let ret = await api.sendApi('downloadPanelData', { uid, type: e.game })
     if (ret.retcode === 100) {
-      fs.writeFileSync(`./data/playerData/${e.game}/${uid}.json`, JSON.stringify(ret.data, null, 2))
+      fs.writeFileSync(`./data/PlayerData/${e.game}/${uid}.json`, JSON.stringify(ret.data, null, 2))
       e.reply('导入成功')
     } else {
       e.reply(this.dealError(ret.retcode))
@@ -486,11 +463,10 @@ export class characterRank extends plugin {
     let uids = stygianUids.map(item => item.value)
     let ranks = stygianUids.map(item => item.score)
     if (queryOld) {
-      const stygianUidsOld = await redis.zRangeWithScores(`ark-plugin:stygianRank:${version}:${e.group_id}`, 0, -1)
-      let uidsOld = stygianUidsOld.map(item => item.value)
+      let stygianUidsOld = await redis.zRangeWithScores(`ark-plugin:stygianRank:${version}:${e.group_id}`, 0, -1)
       stygianVersion = version
-      const mergedMap = new Map(uids.map(uid => [uid, null]))
-      uidsOld.forEach((uid, index) => !mergedMap.has(uid) && mergedMap.set(uid, ranks[index]))
+      const mergedMap = new Map(uids.map((uid, index) => [uid, ranks[index]]))
+      stygianUidsOld.forEach(({ value, score }) => !mergedMap.has(value) && mergedMap.set(value, score))
       uids = Array.from(mergedMap.keys())
       ranks = Array.from(mergedMap.values())
     }

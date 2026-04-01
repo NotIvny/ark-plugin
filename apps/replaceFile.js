@@ -103,6 +103,10 @@ export class replaceFile extends plugin {
   async readSrc() {
     const src = this.e.msg
     const redisdata = JSON.parse(await redis.get(this.redisKey()))
+    if (!redisdata) {
+      this.e.reply('会话已过期，请重新使用命令 #ark替换文件')
+      return this.finish('readSrc')
+    }
     redisdata.src = src
     await redis.set(this.redisKey(), JSON.stringify(redisdata), { EX: 300 })
     this.e.reply('请输入dest path')
@@ -113,6 +117,10 @@ export class replaceFile extends plugin {
   async readDest() {
     const dest = this.e.msg
     const redisdata = JSON.parse(await redis.get(this.redisKey()))
+    if (!redisdata) {
+      this.e.reply('会话已过期，请重新使用命令 #ark替换文件')
+      return this.finish('readDest')
+    }
     redisdata.dest = dest
     this.finish('readDest')
 
