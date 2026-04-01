@@ -104,7 +104,7 @@ export class replaceFile extends plugin {
     const src = this.e.msg
     const redisdata = JSON.parse(await redis.get(this.redisKey()))
     if (!redisdata) {
-      this.e.reply('会话已过期，请重新使用命令 #ark替换文件')
+      this.e.reply('会话已过期，请重新使用命令 #ark创建备份')
       return this.finish('readSrc')
     }
     redisdata.src = src
@@ -118,7 +118,7 @@ export class replaceFile extends plugin {
     const dest = this.e.msg
     const redisdata = JSON.parse(await redis.get(this.redisKey()))
     if (!redisdata) {
-      this.e.reply('会话已过期，请重新使用命令 #ark替换文件')
+      this.e.reply('会话已过期，请重新使用命令 #ark创建备份')
       return this.finish('readDest')
     }
     redisdata.dest = dest
@@ -149,8 +149,12 @@ export class replaceFile extends plugin {
     data[ID] = redisdata
     this.writeBackupData(data)
 
-    this.e.reply(`创建成功！备份了${srcfile.length}个文件\n`)
-    await this.backupFile(ID, false)
+    const success = await this.backupFile(ID, false)
+    if (success) {
+      this.e.reply(`创建成功！备份了${srcfile.length}个文件\n`)
+    } else {
+      logger.error(`[ark-plugin] 创建备份失败 ID:${ID}`)
+    }
   }
 
   async replaceFile(ID) {
@@ -186,7 +190,9 @@ export class replaceFile extends plugin {
       }
     } catch (err) {
       this.e.reply(`${recover ? '恢复' : '备份'}失败\n${err.stack}`)
+      return false
     }
-    this.e.reply(`${recover ? '恢复' : '备份'}完毕,重启后生效`)
+    this.e.reply(`${recover ? '恢复' : '备份'}完毕${recover ? ',重启后生效' : ''}`)
+    return true
   }
 }
