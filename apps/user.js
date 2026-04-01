@@ -185,7 +185,7 @@ export class characterRank extends plugin {
     }
     return false
   }
-
+  
   async getAllRank(e) {
     let uid = await getTargetUid(e)
     if (!uid) {
