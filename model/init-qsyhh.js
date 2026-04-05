@@ -621,7 +621,6 @@ const ArkInit = {
             ])
           }
         }
-        let background = await Common.getBackground('profile')
         const charWidth = (c) => /[1()]/.test(c) ? 0.5 : 1
         const titleWidth = (str) => {
           let w = 0
@@ -653,6 +652,7 @@ const ArkInit = {
               break
           }
         }
+        let background = await Common.getBackground('profile')
         if (mode === 'dmg') dmgCalc.dmgCfg.dmgAttr = attrFn(dmgCalc.dmgCfg.dmgAttr, profile.base)
 
         let renderData = {

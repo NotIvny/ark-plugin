@@ -45,8 +45,8 @@ let Data = {
       try {
         return JSON.parse(fs.readFileSync(`${root}/${file}`, 'utf8'))
       } catch (e) {
-        console.error(`JSON数据错误: ${root}/${file}`)
-        console.log(e)
+        logger.error(`JSON数据错误: ${root}/${file}`)
+        logger.error(e)
       }
     }
     return {}
@@ -97,7 +97,7 @@ let Data = {
         return JSON.parse(txt)
       }
     } catch (e) {
-      console.log(e)
+      logger.error(e)
     }
     return {}
   },
@@ -113,7 +113,7 @@ let Data = {
         return JSON.parse(txt)
       }
     } catch (e) {
-      console.log(e)
+      logger.error(e)
     }
     return def
   },
@@ -132,8 +132,8 @@ let Data = {
         let data = await import(`file://${root}/${file}?t=${new Date() * 1}`)
         return data || {}
       } catch (e) {
-        console.error(`import module错误: ${root}/${file}`)
-        console.log(e)
+        logger.error(`import module错误: ${root}/${file}`)
+        logger.error(e)
       }
     }
     return {}
@@ -148,8 +148,8 @@ let Data = {
     let sysCfg = await Data.importModule(`config/system/${key}_system.js`)
     let diyCfg = await Data.importModule(`config/${key}.js`)
     if (diyCfg.isSys) {
-      console.error(`ark-plugin: config/${key}.js无效，已忽略`)
-      console.error(`如需配置请复制config/${key}_default.js为config/${key}.js，请勿复制config/system下的系统文件`)
+      logger.error(`ark-plugin: config/${key}.js无效，已忽略`)
+      logger.error(`如需配置请复制config/${key}_default.js为config/${key}.js，请勿复制config/system下的系统文件`)
       diyCfg = {}
     }
     return {
