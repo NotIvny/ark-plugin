@@ -7,6 +7,90 @@ import { Button, ProfileRank, Player, Character, Avatar } from '../../miao-plugi
 import { Cfg, Common } from '../components/index.js'
 import ProfileDetail from '../../miao-plugin/apps/profile/ProfileDetail.js'
 import lodash from 'lodash'
+
+function getGameType(e) {
+  let type = e.msg.includes('星铁') ? 'sr' : 'gs'
+  e.game = type
+  return type
+}
+
+function getUid(e, type) {
+  return type === 'sr' ? e.user?._games?.sr?.uid : e.user?._games?.gs?.uid
+}
+
+function getCharId(name) {
+  return safeGsCfg.roleNameToID(name, true) || safeGsCfg.roleNameToID(name, false)
+}
+
+async function collectImageUrls(e) {
+  let imgUrls = []
+  const pushImages = (msg) => {
+    if (!msg) return
+    msg.forEach(item => {
+      if (item.type === 'image') imgUrls.push(item.url)
+    })
+  }
+  if (e.getReply) {
+    let source = await e.getReply()
+    pushImages(source?.message)
+  } else if (e.source) {
+    let source
+    if (e.group?.getChatHistory) {
+      source = (await e.group.getChatHistory(e.source?.seq, 1)).pop()
+    } else if (e.friend?.getChatHistory) {
+      source = (await e.friend.getChatHistory((e.source?.time + 1), 1)).pop()
+    }
+    pushImages(source?.message)
+  }
+  pushImages(e.message)
+  return imgUrls
+}
+
+const ERROR_MAP = {
+  [-1]: '插件版本过低，请更新插件',
+  101: '角色ID不存在',
+  102: '未查询到角色信息',
+  103: '请求参数错误',
+  104: '请求超过速率限制',
+  105: '未知错误',
+  106: '数据过大，请确保导出的数据小于2MB',
+  201: '请求超过速率限制，请5分钟后重试',
+  202: '未发现该用户的数据，请重新导出面板',
+  301: '请求类型仅支持原神/星铁',
+  302: '验证失败，个人签名不匹配，请五分钟后重试',
+  303: '验证失败，请稍后再试',
+  304: '该uid未验证号主，请通过 #ark验证原神/星铁uid 验证uid',
+  305: '验证超时，请重新绑定',
+  306: '验证失败，未获取到签名，请五分钟后重试',
+  307: '服务器中无该uid数据...',
+}
+
+async function getUserDisplay(uid, e) {
+  let qqFace = null
+  let sName = null
+  let userInfo = await ProfileRank.getUidInfo(uid)
+  try {
+    if (userInfo?.qq && e?.group?.pickMember) {
+      let member = e.group.pickMember(userInfo.qq)
+      if (member?.getAvatarUrl) {
+        let img = await member.getAvatarUrl()
+        if (img) qqFace = img
+        try {
+          let info = await member.getInfo()
+          sName = info.card || info.nickname
+        } catch { /* ignore */ }
+      }
+    }
+  } catch { /* ignore */ }
+  if (!sName) {
+    try {
+      let jsonData = JSON.parse(fs.readFileSync(`./data/PlayerData/gs/${uid}.json`, 'utf8'))
+      sName = jsonData.name || ''
+    } catch { /* ignore */ }
+  }
+  return { qqFace, sName }
+}
+
 export class characterRank extends plugin {
   constructor() {
     super({
@@ -61,26 +145,27 @@ export class characterRank extends plugin {
       ]
     })
   }
+
+  dealError(retcode) {
+    return ERROR_MAP[retcode] || '未知错误'
+  }
+
   async refreshPanel(e) {
     let type = e.msg.includes('星铁') ? 'sr' : 'gs'
-    let uid = type === 'sr' ? e.user?._games?.sr?.uid : e.user?._games?.gs?.uid
+    let uid = getUid(e, type)
     if (uid && Cfg.get('newUserPanel', false) && !fs.existsSync(`./data/PlayerData/${type}/${uid}.json`)) {
-      let ret = await api.sendApi('getPanelData', { uid: uid, type: type, qq: e.user_id })
-      switch (ret.retcode) {
-        case 100:
-          fs.writeFileSync(`./data/PlayerData/${type}/${uid}.json`, JSON.stringify(ret.data.playerData, null, 2))
-          let player = new Player(uid, type)
-            		player.reload()
-          e.reply(`[ark-plugin]已自动从API获取${ Object.keys(ret.data.playerData.avatars).length }个数据`)
-          break
+      let ret = await api.sendApi('getPanelData', { uid, type, qq: e.user_id })
+      if (ret.retcode === 100) {
+        fs.writeFileSync(`./data/PlayerData/${type}/${uid}.json`, JSON.stringify(ret.data.playerData, null, 2))
+        let player = new Player(uid, type)
+        player.reload()
+        e.reply(`[ark-plugin]已自动从API获取${Object.keys(ret.data.playerData.avatars).length}个数据`)
       }
     }
-    api.sendApi('refreshPanel', {
-      uid: uid,
-      type: type
-    }, '0.2.0')
+    api.sendApi('refreshPanel', { uid, type })
     return false
   }
+
   async getRank(e) {
     let msg = this.e.msg.replace('#角色排名', '').trim()
     const characterName = msg.replace(/\d+/g, '').trim()
@@ -89,25 +174,18 @@ export class characterRank extends plugin {
       e.reply('命令格式错误，示例：#角色排名雷电将军123456789')
       return true
     }
-    let name = characterName
-    let id = safeGsCfg.roleNameToID(name, true) || safeGsCfg.roleNameToID(name, false)
-    if (id) {
-      name = safeGsCfg.roleIdToName(id)
-    }
-    let ret = await api.sendApi('getRankData', {
-      uid: uid,
-      id: id,
-      update: 1
-    })
-    switch (ret.retcode) {
-      case 100:
-        e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret?.rank}，伤害评分: ${ret?.score?.toFixed(2)}`)
-        break
-      default:
-        e.reply(await this.dealError(ret.retcode))
+    let id = getCharId(characterName)
+    if (!id) return false
+    let name = safeGsCfg.roleIdToName(id)
+    let ret = await api.sendApi('getRankData', { uid, id, update: 1 })
+    if (ret.retcode === 100) {
+      e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret?.rank}，伤害评分: ${ret?.score?.toFixed(2)}`)
+    } else {
+      e.reply(this.dealError(ret.retcode))
     }
     return false
   }
+  
   async getAllRank(e) {
     let uid = await getTargetUid(e)
     if (!uid) {
@@ -116,124 +194,71 @@ export class characterRank extends plugin {
     }
     let player = Player.create(e)
     let profiles = player.getProfiles()
-    let profile = []
-    for (let id in profiles) {
-      profile.push(id)
-    }
-    let ret = await api.sendApi('selfAllRank', {
-      ids: profile,
-      uid: uid,
-      type: e.game
-    })
-    switch (ret.retcode) {
-      case 100:
-        let msg = ''
-        let count = 0
-        let type = e.game === 'sr' ? '星铁' : '原神'
-        msg += `uid:${uid}的${type}全服排名数据:\n`
-        ret?.rank?.forEach(ret => {
-          if (ret.retcode === 100) {
-            msg += (`${safeGsCfg.roleIdToName(profile[count])}全服伤害排名为${ret?.rank}，伤害评分: ${ret?.score?.toFixed(2)}\n`)
-          }
-          count++
-        })
-        e.reply(msg)
-        break
-      default:
-        e.reply(await this.dealError(ret.retcode))
+    let profileIds = Object.keys(profiles)
+    let ret = await api.sendApi('selfAllRank', { ids: profileIds, uid, type: e.game })
+    if (ret.retcode === 100) {
+      let type = e.game === 'sr' ? '星铁' : '原神'
+      let msg = `uid:${uid}的${type}全服排名数据:\n`
+      ret?.rank?.forEach((item, idx) => {
+        if (item.retcode === 100) {
+          msg += `${safeGsCfg.roleIdToName(profileIds[idx])}全服伤害排名为${item?.rank}，伤害评分: ${item?.score?.toFixed(2)}\n`
+        }
+      })
+      e.reply(msg)
+    } else {
+      e.reply(this.dealError(ret.retcode))
     }
   }
+
   async arkReforgeRecog(e) {
     let uid = await getTargetUid(e)
     if (!uid) {
       e.reply('请先绑定UID')
       return true
     }
-    let imgUrls = []
-    if (e.getReply) {
-      let source = await e.getReply()
-      if (source && source.message) {
-        source.message.forEach(item => {
-          if (item.type === 'image') imgUrls.push(item.url)
-        })
-      }
-    } else if (e.source) {
-      let source
-      if (e.group?.getChatHistory) {
-        source = (await e.group.getChatHistory(e.source?.seq, 1)).pop()
-      } else if (e.friend?.getChatHistory) {
-        source = (await e.friend.getChatHistory((e.source?.time + 1), 1)).pop()
-      }
-      if (source && source.message) {
-        source.message.forEach(item => {
-          if (item.type === 'image') imgUrls.push(item.url)
-        })
-      }
-    }
-    if (e.message) {
-      e.message.forEach(item => {
-        if (item.type === 'image') imgUrls.push(item.url)
-      })
-    }
+    let imgUrls = await collectImageUrls(e)
+    if (!imgUrls.length) return e.reply('请发送圣遗物重塑图片')
     let ret = await api.ArkApi.req(`ocr/profilechange/${e.isSr ? 'sr' : 'gs'}`, { body: JSON.stringify({ image: imgUrls[0], forge: true }) })
     let original = ret.data[0]?.data || ret.data[0]
     let replacement = ret.data[1]?.data || ret.data[1]
-    let isSr = false
-    if (original.attrIds && original.attrIds.length > 0 && typeof original.attrIds[0] === 'string') {
-      isSr = true
-    }
 
-    let game = isSr ? 'sr' : 'gs'
+    let game = e.isSr ? 'sr' : 'gs'
     let dataPath = `./data/PlayerData/${game}/${uid}.json`
-    
+
     if (!fs.existsSync(dataPath)) {
-      e.reply(`未找到UID:${uid}的${isSr ? '星铁' : '原神'}本地数据，请确保面板中包含此圣遗物`)
+      e.reply(`未找到UID:${uid}的${e.isSr ? '星铁' : '原神'}本地数据，请确保面板中包含此圣遗物`)
       return true
     }
 
     let playerData = JSON.parse(fs.readFileSync(dataPath, 'utf8'))
     let targetCharId = null
     let targetSlot = null
-    // 在角色面板数据中寻找对应的词条
+
     const matchAttrs = (localAttrs, remoteAttrs) => {
       if (!localAttrs || !remoteAttrs) return false
-      
-      if (isSr) {
+      if (e.isSr) {
         if (localAttrs.length !== remoteAttrs.length) return false
-        
         const parse = (str) => {
           const [id, count, step] = str.split(',').map(Number)
           return { id, count, step }
         }
-
         const l = localAttrs.map(parse).sort((a, b) => a.id - b.id)
         const r = remoteAttrs.map(parse).sort((a, b) => a.id - b.id)
-        const isMatch = l.every((a, i) => {
+        return l.every((a, i) => {
           const b = r[i]
-          if (a.id !== b.id) {
-            return false
-          }
+          if (a.id !== b.id) return false
           const scoreA = a.count * 8 + a.step
           const scoreB = b.count * 8 + b.step
           // 速度特殊处理：分值差小于4即可
-          if (a.id === 7) {
-            if (Math.abs(scoreA - scoreB) > 4) {
-              return false
-            }
-            return true
-          }
-          if (scoreA !== scoreB) {
-            return false
-          }
-          return true
+          if (a.id === 7) return Math.abs(scoreA - scoreB) <= 4
+          return scoreA === scoreB
         })
-        return isMatch
       } else {
         const getType = (id) => Math.floor(id / 10)
-        const l = localAttrs.map(getType).sort((a, b) => a - b)
-        const r = remoteAttrs.map(getType).sort((a, b) => a - b)
-        const isMatch = lodash.isEqual(l, r)
-        return isMatch
+        return lodash.isEqual(
+          localAttrs.map(getType).sort((a, b) => a - b),
+          remoteAttrs.map(getType).sort((a, b) => a - b)
+        )
       }
     }
 
@@ -241,7 +266,6 @@ export class characterRank extends plugin {
     for (let charId in playerData.avatars) {
       let avatar = playerData.avatars[charId]
       if (!avatar.artis) continue
-
       for (let slot in avatar.artis) {
         let arti = avatar.artis[slot]
         if (matchAttrs(arti.attrIds, original.attrIds)) {
@@ -251,15 +275,9 @@ export class characterRank extends plugin {
     }
 
     if (candidates.length > 0) {
-      //优先匹配mainId
-      let best = candidates.find(c => c.arti.mainId === original.mainId)
-      if (best) {
-        targetCharId = best.charId
-        targetSlot = best.slot
-      } else {
-        targetCharId = candidates[0].charId
-        targetSlot = candidates[0].slot
-      }
+      let best = candidates.find(c => c.arti.mainId === original.mainId) || candidates[0]
+      targetCharId = best.charId
+      targetSlot = best.slot
     }
 
     if (!targetCharId) {
@@ -279,9 +297,8 @@ export class characterRank extends plugin {
       return true
     }
 
-    let rawData = profile.toJSON()
-    rawData = lodash.cloneDeep(rawData)
-    
+    let rawData = lodash.cloneDeep(profile.toJSON())
+
     if (rawData.artis && rawData.artis[targetSlot]) {
       rawData.artis[targetSlot] = {
         ...rawData.artis[targetSlot],
@@ -314,43 +331,35 @@ export class characterRank extends plugin {
     let prefix = e.game === 'gs' ? '#' : '*'
     let user = e?.runtime?.user || {}
     let uid = await getTargetUid(e)
-    if (!await this.checkPermission(e, user, 'exportPanelData')) {
+    if (!await this.checkPermission(e, user, 'exportPanelData')) return true
+    let dataPath = `./data/PlayerData/${e.game}/${uid}.json`
+    if (!fs.existsSync(dataPath)) {
+      e.reply('面板数据文件不存在，请先更新面板数据')
       return true
     }
-    let playerData = fs.readFileSync(`./data/PlayerData/${e.game}/${uid}.json`, 'utf8')
-    let ret = await api.sendApi('uploadPanelData', {
-      uid: uid,
-      type: e.game,
-      data: playerData
-    })
-    switch (ret.retcode) {
-      case 100:
-        e.reply(`导出成功，请在另一个安装此插件的Bot上输入 ${prefix}导入面板数据${uid} ，有效期十分钟~`)
-        break
-      default:
-        e.reply(await this.dealError(ret.retcode))
+    let playerData = fs.readFileSync(dataPath, 'utf8')
+    let ret = await api.sendApi('uploadPanelData', { uid, type: e.game, data: playerData })
+    if (ret.retcode === 100) {
+      e.reply(`导出成功，请在另一个安装此插件的Bot上输入 ${prefix}导入面板数据${uid} ，有效期十分钟~`)
+    } else {
+      e.reply(this.dealError(ret.retcode))
     }
   }
+
   async downloadPanelData(e) {
     e.game = e.game || 'gs'
     let user = e?.runtime?.user || {}
     let uid = await getTargetUid(e)
-    if (!await this.checkPermission(e, user, 'importPanelData')) {
-      return true
-    }
-    let ret = await api.sendApi('downloadPanelData', {
-      uid: uid,
-      type: e.game
-    })
-    switch (ret.retcode) {
-      case 100:
-        fs.writeFileSync(`./data/playerData/${e.game}/${uid}.json`, JSON.stringify(ret.data, null, 2))
-        e.reply('导入成功')
-        break
-      default:
-        e.reply(await this.dealError(ret.retcode))
+    if (!await this.checkPermission(e, user, 'importPanelData')) return true
+    let ret = await api.sendApi('downloadPanelData', { uid, type: e.game })
+    if (ret.retcode === 100) {
+      fs.writeFileSync(`./data/PlayerData/${e.game}/${uid}.json`, JSON.stringify(ret.data, null, 2))
+      e.reply('导入成功')
+    } else {
+      e.reply(this.dealError(ret.retcode))
     }
   }
+
   async checkPermission(e, user, type) {
     switch (Cfg.get(type, 3)) {
       case 0:
@@ -368,289 +377,179 @@ export class characterRank extends plugin {
         }
         break
       case 3:
-        e.reply('当s前功能已被禁用...')
+        e.reply('当前功能已被禁用...')
         return false
       default:
         return false
     }
     return true
   }
+
   async getSpecificRank(e) {
     let name = this.e.msg.replace('排名统计', '').replace('#', '').replace('星铁', '').trim()
-    let id = safeGsCfg.roleNameToID(name, true) || safeGsCfg.roleNameToID(name, false)
+    let id = getCharId(name)
     logger.debug(id)
-    if (!name || !id) {
-      return true
-    }
+    if (!name || !id) return true
     let characterName = safeGsCfg.roleIdToName(id)
-    let ret = await api.sendApi('getSpecificRank', {
-      id: id,
-      percent: 0
-    })
-    switch (ret.retcode) {
-      case 100:
-        // eslint-disable-next-line no-return-await
-        return await Common.render('graph/stats', {
-          rankData: ret.data.scores,
-          characterName: characterName,
-          total: ret.data.total,
-          dmgTitle: ret.data.name
-        }, { e, scale: 1.4 })
-      default:
-        e.reply(await this.dealError(ret.retcode))
+    let ret = await api.sendApi('getSpecificRank', { id, percent: 0 })
+    if (ret.retcode === 100) {
+      // eslint-disable-next-line no-return-await
+      return await Common.render('graph/stats', {
+        rankData: ret.data.scores,
+        characterName,
+        total: ret.data.total,
+        dmgTitle: ret.data.name
+      }, { e, scale: 1.4 })
     }
+    e.reply(this.dealError(ret.retcode))
   }
+
   async arkGetBindUid(e) {
-    let type = ''
-    if (e.msg.includes('原神')) {
-      type = 'gs'
-      e.game = 'gs'
+    let type = getGameType(e)
+    let ret = await api.sendApi('getVerifyCode', { uid: await getTargetUid(e), type })
+    if (ret.retcode === 100) {
+      e.reply(`验证码: ${ret.data.verifyCode}\n使用方式：\n①原神：派蒙头像——右上角编辑资料——设置签名——填入验证码，待签名审核通过后输入 #ark验证原神uid\n②星铁：手机——右上角三点——漫游签证——设置签名——填入验证码，5-10分钟后输入 #ark验证星铁uid\n验证码有效期24小时，验证通过后自动与QQ绑定，在其他Bot上无需再次绑定`)
     } else {
-      type = 'sr'
-      e.game = 'sr'
-    }
-    let ret = await api.sendApi('getVerifyCode',
-      {
-        uid: await getTargetUid(e),
-        type: type
-      }
-    )
-    switch (ret.retcode) {
-      case 100:
-        e.reply(`验证码: ${ret.data.verifyCode}\n使用方式：\n①原神：派蒙头像——右上角编辑资料——设置签名——填入验证码，待签名审核通过后输入 #ark验证原神uid\n②星铁：手机——右上角三点——漫游签证——设置签名——填入验证码，5-10分钟后输入 #ark验证星铁uid\n验证码有效期24小时，验证通过后自动与QQ绑定，在其他Bot上无需再次绑定`)
-        break
-      default:
-        e.reply(await this.dealError(ret.retcode))
+      e.reply(this.dealError(ret.retcode))
     }
   }
+
   async arkBindUid(e) {
-    let type = ''
-    if (e.msg.includes('原神')) {
-      type = 'gs'
-      e.game = 'gs'
+    let type = getGameType(e)
+    let ret = await api.sendApi('verify', { uid: await getTargetUid(e), qq: e.user_id, type })
+    if (ret.retcode === 100) {
+      e.reply('验证成功')
     } else {
-      type = 'sr'
-      e.game = 'sr'
-    }
-    let ret = await api.sendApi('verify',
-      {
-        uid: await getTargetUid(e),
-        qq: e.user_id,
-        type: type
-      }
-    )
-    switch (ret.retcode) {
-      case 100:
-        e.reply(`验证成功`)
-        break
-      default:
-        e.reply(await this.dealError(ret.retcode))
+      e.reply(this.dealError(ret.retcode))
     }
   }
+
   async exportPanel(e) {
     let user = e?.runtime?.user || {}
     let type = e.msg.includes('星铁') ? 'sr' : 'gs'
-    let uid = type === 'sr' ? e.user?._games?.sr?.uid : e.user?._games?.gs?.uid
+    let uid = getUid(e, type)
     if (!uid) {
       e.reply('请先绑定uid')
+      return
     }
     let ret = ''
     let pm = Cfg.get('exportPanelRequire', 1)
     if (pm === 1) {
-      ret = await api.sendApi('verifyUser', { uid: uid, qq: e.user_id, type: type })
-    } 
+      ret = await api.sendApi('verifyUser', { uid, qq: e.user_id, type })
+    }
     if ((pm <= 2 && pm >= 1 && !user.hasCk) || (pm === 1 && ret?.retcode === 200) || pm === 3) {
       let filePath = `./data/PlayerData/${type}/${uid}.json`
       if (!fs.existsSync(filePath)) {
         e.reply('面板数据文件不存在，请先更新面板数据')
         return true
       }
-      if (e.group?.sendFile)
-        await e.group.sendFile(filePath)
-      else if (e.friend?.sendFile)
-        await e.friend.sendFile(filePath)
-      else
-        e.reply('当前环境不支持发送文件')
+      if (e.group?.sendFile) await e.group.sendFile(filePath)
+      else if (e.friend?.sendFile) await e.friend.sendFile(filePath)
+      else e.reply('当前环境不支持发送文件')
     }
   }
-  async dealError(retcode) {
-    switch (retcode) {
-      case -1:
-        return '插件版本过低，请更新插件'
-      case 101:
-        return '角色ID不存在'
-      case 102:
-        return '未查询到角色信息'
-      case 103:
-        return '请求参数错误'
-      case 104:
-        return '请求超过速率限制'
-      case 105:
-        return '未知错误'
-      case 106:
-        return '数据过大，请确保导出的数据小于2MB'
-      case 201:
-        return '请求超过速率限制，请5分钟后重试'
-      case 202:
-        return '未发现该用户的数据，请重新导出面板'
-      case 301:
-        return '请求类型仅支持原神/星铁'
-      case 302:
-        return '验证失败，个人签名不匹配，请五分钟后重试'
-      case 303:
-        return '验证失败，请稍后再试'
-      case 304:
-        return '该uid未验证号主，请通过 #ark验证原神/星铁uid 验证uid'
-      case 305:
-        return '验证超时，请重新绑定'
-      case 306:
-        return '验证失败，未获取到签名，请五分钟后重试'
-      case 307:
-        return '服务器中无该uid数据...'
-      default:
-        return '未知错误'
-    }
-  }
+
   async stygian(e) {
     if (!e.isGroup) return true
-    const regex = /^#(top)?幽境危战排名(?:(\d+\.\d+))?$/
-    const match = e.msg.match(regex)
-    //let hasTop = !!match[1]
+    const match = e.msg.match(/^#(top)?幽境危战排名(?:(\d+\.\d+))?$/)
     let version = match[2] || null
     if (version) {
       const [bVersion, sVersion] = version.split('.').map(Number)
       version = (bVersion * 9 + sVersion >= 52) ? bVersion * 9 + sVersion : null
     }
     let stygianVersion = getStygianVersion()
-    	const queryOld = version && version !== stygianVersion
-    let uidsOld = [] //, ranksOld = []
-    let stygianUids = await redis.zRangeWithScores(`ark-plugin:stygianRank:${stygianVersion}:${e.group_id}`, 0, -1);
+    const queryOld = version && version !== stygianVersion
+    let stygianUids = await redis.zRangeWithScores(`ark-plugin:stygianRank:${stygianVersion}:${e.group_id}`, 0, -1)
     let uids = stygianUids.map(item => item.value)
     let ranks = stygianUids.map(item => item.score)
     if (queryOld) {
-      const stygianUidsOld = await redis.zRangeWithScores(`ark-plugin:stygianRank:${version}:${e.group_id}`, 0, -1)
-      uidsOld = stygianUidsOld.map(item => item.value)
-      //ranksOld = stygianUidsOld.map(item => item.score)
+      let stygianUidsOld = await redis.zRangeWithScores(`ark-plugin:stygianRank:${version}:${e.group_id}`, 0, -1)
       stygianVersion = version
-      const mergedMap = new Map(uids.map(uid => [uid, null]))
-      uidsOld.forEach((uid, index) => !mergedMap.has(uid) && mergedMap.set(uid, ranks[index]))
+      const mergedMap = new Map(uids.map((uid, index) => [uid, ranks[index]]))
+      stygianUidsOld.forEach(({ value, score }) => !mergedMap.has(value) && mergedMap.set(value, score))
       uids = Array.from(mergedMap.keys())
       ranks = Array.from(mergedMap.values())
     }
-    let stygianData = Cfg.get('stygianDataFrom', 2) 
+    let stygianData = Cfg.get('stygianDataFrom', 2)
     let [enableArk, enableAkasha] = [[0, 2].includes(stygianData), [1, 2].includes(stygianData)]
-    //仅支持6.0+版本，下个版本再支持查询旧版本的
+    const versionStr = `${Math.floor(stygianVersion / 9)}_${Number(stygianVersion) % 9}`
+
     let ret_ark = (enableArk && !queryOld) ? await api.sendApi('stygianRank', { uid: uids }) : null
-    if (ret_ark?.retcode !== 100) {
-      ret_ark = null
-    }
+    if (ret_ark?.retcode !== 100) ret_ark = null
+
     let uidsInfo = uids.map(uid => `[uid]${uid}`).join('')
-    //5.7+
-    let ret_akasha = enableAkasha ? await api.sendAkashaApi(`leaderboards/stygian?sort=stygianScore&order=-1&size=50&page=1&uids=${uidsInfo}&p=&fromId=&li=&uid=251890729&version=${Math.floor(stygianVersion / 9)}_${Number(stygianVersion) % 9}`) : null
-    let ret_akasha_to_get_total = enableAkasha ? await api.sendAkashaApi(`leaderboards/stygian?sort=stygianScore&order=1&size=1&page=1&uids=&p=&fromId=&li=&uid=&version=${Math.floor(stygianVersion / 9)}_${Number(stygianVersion) % 9}`) : null
-    if (ret_akasha) {
+    let [ret_akasha, ret_akasha_total] = enableAkasha
+      ? await Promise.all([
+        api.sendAkashaApi(`leaderboards/stygian?sort=stygianScore&order=-1&size=50&page=1&uids=${uidsInfo}&p=&fromId=&li=&uid=251890729&version=${versionStr}`),
+        api.sendAkashaApi(`leaderboards/stygian?sort=stygianScore&order=1&size=1&page=1&uids=&p=&fromId=&li=&uid=&version=${versionStr}`)
+      ])
+      : [null, null]
+
+    if (ret_akasha && ret_akasha.data) {
       ret_akasha = ret_akasha.data
-        .filter(item => item?.playerInfo?.nickname && 
-							item?.stygianIndex !== undefined && 
-							item?.stygianSeconds !== undefined && 
-							item?.profilePictureLink &&
-							item?.uid &&
-							item?.index)
-        .map(item => ({
-          nickname: item.playerInfo.nickname,
-          stygianIndex: item.stygianIndex,
-          stygianSeconds: item.stygianSeconds,
-          profilePictureLink: item.profilePictureLink,
-          uid: item.uid,
-          index: item.index
+        .filter(item => item?.playerInfo?.nickname &&
+          item?.stygianIndex !== undefined &&
+          item?.stygianSeconds !== undefined &&
+          item?.profilePictureLink && item?.uid && item?.index)
+        .map(({ playerInfo, stygianIndex, stygianSeconds, profilePictureLink, uid, index }) => ({
+          nickname: playerInfo.nickname, stygianIndex, stygianSeconds, profilePictureLink, uid, index
         }))
     }
-    let akasha_total_players = null
-    if (ret_akasha_to_get_total) {
-      akasha_total_players = ret_akasha_to_get_total?.data[0]?.index
-    }
+    let akasha_total_players = ret_akasha_total?.data?.[0]?.index || null
+
     let list = []
     for (const [index, uid] of uids.entries()) {
-      const item_akasha = ret_akasha ? ret_akasha?.find(element => element.uid === uid) : {}
+      const item_akasha = ret_akasha ? ret_akasha.find(el => el.uid === uid) : {}
       const item_ark = ret_ark?.data[index]
-      let final_stygianSeconds = Math.min(item_akasha?.stygianSeconds || 99999, item_ark?.time || 99999, Number(ranks[index]) % 2048 || 99999)
-      if (final_stygianSeconds === 99999) continue
-      let final_stygianIndex = Math.min(item_akasha?.stygianIndex || 99999, item_ark?.hard || 99999, (6 - Math.floor(ranks[index] / 2048) || 99999))
-      if (final_stygianIndex === 99999) continue
-      let rank_ark = item_ark?.rank || '?' 
-      let rank_akasha = item_akasha?.index || '?' 
+      let final_seconds = Math.min(item_akasha?.stygianSeconds || 99999, item_ark?.time || 99999, Number(ranks[index]) % 2048 || 99999)
+      if (final_seconds === 99999) continue
+      let final_index = Math.min(item_akasha?.stygianIndex || 99999, item_ark?.hard || 99999, (6 - Math.floor(ranks[index] / 2048) || 99999))
+      if (final_index === 99999) continue
+
+      let rank_ark = item_ark?.rank || '?'
+      let rank_akasha = item_akasha?.index || '?'
       let sum = item_ark?.sum || '?'
-      let img = ''
-      if (final_stygianIndex === 6 && final_stygianSeconds <= 180) {
-        img = `/character/img/medal_6_plus.png`
-      } else {
-        img = `/character/img/medal_${final_stygianIndex}.png`
-      }
+
       let elem = {
         uid,
         stygianIndex: {
           title: '难度',
-          info: final_stygianIndex,
-          img: img
+          info: final_index,
+          img: (final_index === 6 && final_seconds <= 180)
+            ? '/character/img/medal_6_plus.png'
+            : `/character/img/medal_${final_index}.png`
         },
-        stygianTime: {
-          title: '时间',
-          info: `${final_stygianSeconds}秒`
-        },
-        rank_ark: {
-          title: '全服排名(ark)',
-          info: `${rank_ark} / ${sum}`
-        },
+        stygianTime: { title: '时间', info: `${final_seconds}秒` },
+        rank_ark: { title: '全服排名(ark)', info: `${rank_ark} / ${sum}` },
         rank_akasha: {
           title: '全服排名(akasha)',
           info: akasha_total_players ? `${rank_akasha} / ${akasha_total_players}` : `${rank_akasha}`
         },
         qqFace: item_akasha?.profilePictureLink
       }
+
       if (uid) {
-        let userInfo = await ProfileRank.getUidInfo(uid)
-        try {
-          if (userInfo?.qq && e?.group?.pickMember) {
-            let member = e.group.pickMember(userInfo.qq)
-            if (member?.getAvatarUrl) {
-              let img = await member.getAvatarUrl()
-              if (img) {
-                elem.qqFace = img
-              } 
-              try {
-                let username = await member.getInfo()
-                elem.sName = username.card || username.nickname
-               
-              } catch (e) {
-                // do nothing
-              }
-            }
-          }
-         
-        } catch (e) {
-          // logger.error(e)
-        }
-        try {
-          let playerData = fs.readFileSync(`./data/PlayerData/gs/${uid}.json`, 'utf8')
-          let jsonData = JSON.parse(playerData)
-          if (!elem.sName) elem.sName = jsonData.name || ret_akasha.username || ''
-         
-        } catch (e) {
-          //logger.error(e)
+        let display = await getUserDisplay(uid, e)
+        if (display.qqFace) elem.qqFace = display.qqFace
+        if (display.sName) elem.sName = display.sName
+        if (!elem.sName && ret_akasha?.find?.(el => el.uid === uid)?.nickname) {
+          elem.sName = ret_akasha.find(el => el.uid === uid).nickname
         }
       }
       list.push(elem)
     }
-    let validList = list.filter(elem => 
+
+    let validList = list.filter(elem =>
       elem && (elem.stygianTime?.info?.includes('秒') || elem.stygianIndex?.info != null)
     ).sort((a, b) => {
-      const getValue = elem => {
-        const seconds = parseInt(elem.stygianTime?.info?.match(/(\d+)秒/)?.[1] || 0)
-        const index = parseFloat(elem.stygianIndex?.info) || 0
-        return seconds + (6 - index) * 2048
+      const getValue = el => {
+        const seconds = parseInt(el.stygianTime?.info?.match(/(\d+)秒/)?.[1] || 0)
+        const idx = parseFloat(el.stygianIndex?.info) || 0
+        return seconds + (6 - idx) * 2048
       }
       return getValue(a) - getValue(b)
     })
+
     if (validList.length === 0) {
       e.reply('当前版本无排名....')
       return true
@@ -664,13 +563,9 @@ export class characterRank extends plugin {
     }
     return e.reply([
       await Common.render('character/stygian-rank-list', {
-        list: validList,
-        data,
-        period,
-        stygianVersion,
+        list: validList, data, period, stygianVersion,
         pageGotoParams: { waitUntil: 'networkidle2' }
       }, { e, scale: 1.4, retType: 'base64' })
     ])
-		
   }
 }

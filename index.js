@@ -13,7 +13,7 @@ files.forEach((file) => {
 })
 ret = await Promise.allSettled(ret)
 let apps = {}
-for (let i in files) {
+for (let i = 0; i < files.length; i++) {
   let name = files[i].replace('.js', '')
   if (ret[i].status !== 'fulfilled') {
     logger.error(`载入插件错误：${logger.red(name)}`)
