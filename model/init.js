@@ -685,7 +685,7 @@ const ArkInit = {
                   let w = 0
                   for (let i = 0; i < str.length; i++) {
                     w += charWidth(str[i])
-                    if (w > dealLength) return str.slice(0, i) + '...'
+                    if (w > dealLength) return `${str.slice(0, i)  }...`
                   }
                   return str
                 }
@@ -837,7 +837,9 @@ const ArkInit = {
             穹·同谐: '开拓者·同谐',
             星·同谐: '开拓者·同谐',
             穹·记忆: '开拓者·记忆',
-            星·记忆: '开拓者·记忆'
+            星·记忆: '开拓者·记忆',
+            穹·欢愉: '开拓者·欢愉',
+            星·欢愉: '开拓者·欢愉'
           }
           if (titleName[char.name]) {
             title = `${e.isSr ? '*' : '#'}${titleName[char.name]}${modeTitleMap[mode]}排行`

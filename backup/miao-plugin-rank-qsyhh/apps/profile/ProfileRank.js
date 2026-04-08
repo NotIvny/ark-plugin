@@ -96,7 +96,9 @@ const CharRank = {
         穹·同谐: "开拓者·同谐",
         星·同谐: "开拓者·同谐",
         穹·记忆: "开拓者·记忆",
-        星·记忆: "开拓者·记忆"
+        星·记忆: '开拓者·记忆',
+        穹·欢愉: '开拓者·欢愉',
+        星·欢愉: '开拓者·欢愉'
       }
       if (titleName[char.name]) {
         title = `${e.isSr ? "*" : "#"}${titleName[char.name]}${modeTitleMap[mode]}排行`
