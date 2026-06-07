@@ -26,6 +26,14 @@ export const helpCfg = {
 export const helpList = [{
   group: '角色面板相关',
   list: [{
+    icon: 64,
+    title: '#ark自定义排行 <角色> <筛选>',
+    desc: '按条件查询角色自定义排行'
+  }, {
+    icon: 67,
+    title: '#ark自定义排行帮助',
+    desc: '查看自定义排行筛选规则'
+  }, {
     icon: 61,
     title: '#星铁|原神导入面板数据',
     desc: '从云端导入面板数据'
@@ -53,6 +61,14 @@ export const helpList = [{
     icon: 58,
     title: '#星铁|原神导出面板',
     desc: '导出面板数据为文件'
+  }, {
+    icon: 65,
+    title: '#幽境危战排名',
+    desc: '查看幽境危战排名'
+  }, {
+    icon: 62,
+    title: '#星铁|原神ark重塑|重投识别',
+    desc: '重塑/重投识别'
   }]
 }, {
   group: '管理插件优先级，仅主人可用',
@@ -105,6 +121,22 @@ export const helpList = [{
     icon: 85,
     title: '#ark设置',
     desc: '配置ark-plugin功能'
+  }, {
+    icon: 86,
+    title: '#ark配置token',
+    desc: '配置自定义排名token（私聊）'
+  }, {
+    icon: 87,
+    title: '#arktoken用量',
+    desc: '查询token用量'
+  }, {
+    icon: 89,
+    title: '#ark分支列表',
+    desc: '查看分支列表'
+  }, {
+    icon: 90,
+    title: '#ark切换分支',
+    desc: '切换git分支'
   }]
 }]
 

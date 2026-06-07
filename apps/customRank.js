@@ -115,8 +115,44 @@ export class CustomRank extends plugin {
       name: 'ark自定义排行',
       event: 'message',
       priority: 50,
-      rule: [{ reg: /^#ark自定义排行\s+.+/, fnc: 'rank' }]
+      rule: [
+        { reg: /^#ark自定义排行帮助$/, fnc: 'rankHelp' },
+        { reg: /^#ark自定义排行\s+.+/, fnc: 'rank' }
+      ]
     })
+  }
+
+  async rankHelp (e) {
+    const token = await redis.get('ark-plugin:customRank:token')
+    if (e.isMaster && token) {
+      return e.reply([
+        '【ark自定义排行 · 高级】',
+        '用法：#ark自定义排行 <角色> [筛选/排序/数量...]',
+        '',
+        '筛选：列+运算符+值，运算符支持 >= <= > < = !=',
+        '可用列：命座(命) 等级 突破 普攻 战技 爆发 武器等级 武器突破 精炼 伤害 评分 圣遗物',
+        '排序：sort:列 或 排序:列，配合 升序/降序（默认降序、按伤害）',
+        '数量：nums:N 或 数量:N（1-50，默认20）',
+        '星铁可筛部位主词条：部位1~6=词条，如 部位3=暴击',
+        '',
+        '示例：',
+        '#ark自定义排行 胡桃 命=6 sort:伤害 降序',
+        '#ark自定义排行 雷电将军 等级>=90 精炼>=1 数量:10',
+        '#ark自定义排行 符玄 部位4=速度 排序:评分'
+      ].join('\n'))
+    }
+    return e.reply([
+      '【ark自定义排行】',
+      '用法：#ark自定义排行 <角色> [命座筛选]',
+      '',
+      '普通用户仅支持按命座(cons)筛选/排序，',
+      '更多筛选项需主人 #ark配置token 后使用。',
+      '命座列名：命座 / 命 / cons，运算符 >= <= > < = !=',
+      '',
+      '示例：',
+      '#ark自定义排行 胡桃 cons=0',
+      '#ark自定义排行 雷电将军 命座<=2'
+    ].join('\n'))
   }
 
   async rank (e) {
