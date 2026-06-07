@@ -45,7 +45,7 @@ export const cfgSchema = {
       DealLongDmgTitle: {
         title: '面板变换伤害标题过长处理',
         key: '伤害标题',
-        def: 2,
+        def: 1,
         input: (n) => /[0-2]{1}/.test(n) ? (n * 1) : 2,
         desc: '启用后对面板变换过长的伤害标题进行处理，0-不处理，1-过长部分截断、2-换行'
       },

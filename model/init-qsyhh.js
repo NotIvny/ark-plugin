@@ -651,6 +651,7 @@ const ArkInit = {
           }
         }
         let background = await Common.getBackground('profile')
+        
         if (mode === 'dmg') dmgCalc.dmgCfg.dmgAttr = attrFn(dmgCalc.dmgCfg.dmgAttr, profile.base)
         let renderData = {
           dmgRankData: ret1?.data?.scores?.map(score => (score / (ret1?.data?.top1 ?? 1)) * 100),

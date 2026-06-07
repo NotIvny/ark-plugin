@@ -103,6 +103,10 @@ export class replaceFile extends plugin {
   async readSrc() {
     const src = this.e.msg
     const redisdata = JSON.parse(await redis.get(this.redisKey()))
+    if (!redisdata) {
+      this.e.reply('会话已过期，请重新使用命令 #ark创建备份')
+      return this.finish('readSrc')
+    }
     redisdata.src = src
     await redis.set(this.redisKey(), JSON.stringify(redisdata), { EX: 300 })
     this.e.reply('请输入dest path')
@@ -113,6 +117,10 @@ export class replaceFile extends plugin {
   async readDest() {
     const dest = this.e.msg
     const redisdata = JSON.parse(await redis.get(this.redisKey()))
+    if (!redisdata) {
+      this.e.reply('会话已过期，请重新使用命令 #ark创建备份')
+      return this.finish('readDest')
+    }
     redisdata.dest = dest
     this.finish('readDest')
 
@@ -141,8 +149,12 @@ export class replaceFile extends plugin {
     data[ID] = redisdata
     this.writeBackupData(data)
 
-    this.e.reply(`创建成功！备份了${srcfile.length}个文件\n`)
-    await this.backupFile(ID, false)
+    const success = await this.backupFile(ID, false)
+    if (success) {
+      this.e.reply(`创建成功！备份了${srcfile.length}个文件\n`)
+    } else {
+      logger.error(`[ark-plugin] 创建备份失败 ID:${ID}`)
+    }
   }
 
   async replaceFile(ID) {
@@ -163,13 +175,14 @@ export class replaceFile extends plugin {
 
   async backupFile(ID, recover) {
     const allData = this.readBackupData()
-    const data = allData[ID]
+    const resolvedID = (ID === 'miao-rank' && Version.isQsyhh) ? 'miao-rank-qsyhh' : ID
+    const data = allData[resolvedID]
     if (!data) {
-      this.e.reply(`未查找到ID:${ID}的备份数据`)
+      this.e.reply(`未查找到ID:${resolvedID}的备份数据`)
       return true
     }
     const dest = this.ensureSlash(data.dest)
-    const backup = `${BACKUP_DIR}/${ID}-backup/`
+    const backup = `${BACKUP_DIR}/${resolvedID}-backup/`
     const [from, to] = recover ? [backup, dest] : [dest, backup]
     try {
       for (const i of data.srcfile) {
@@ -177,7 +190,9 @@ export class replaceFile extends plugin {
       }
     } catch (err) {
       this.e.reply(`${recover ? '恢复' : '备份'}失败\n${err.stack}`)
+      return false
     }
-    this.e.reply(`${recover ? '恢复' : '备份'}完毕,重启后生效`)
+    this.e.reply(`${recover ? '恢复' : '备份'}完毕${recover ? ',重启后生效' : ''}`)
+    return true
   }
 }

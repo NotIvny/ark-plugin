@@ -61,7 +61,7 @@ const stygianInit = {
       }
       return true
     }
-    ProfileReq.prototype.requestProfile = async function(player, serv) {
+    ProfileReq.prototype.requestProfile = async function (player, serv) {
       let self = this
       this.serv = serv
       let uid = this.uid
@@ -81,9 +81,13 @@ const stygianInit = {
       this.log(`${logger.yellow('开始请求数据')}，面板服务：${serv.name}...`)
       const startTime = new Date() * 1
       let data = {}
+      let timerId
       try {
         let params = reqParam.params || {}
         params.timeout = params.timeout || 1000 * 20
+        const controller = new AbortController()
+        timerId = setTimeout(() => controller.abort(), params.timeout)
+        params.signal = controller.signal
         self._isReq = true
         let mys
         switch (serv._cfg.id) {
@@ -108,6 +112,7 @@ const stygianInit = {
             let req = await fetch(reqParam.url, params)
             data = await req.text()
         }
+        clearTimeout(timerId)
         self._isReq = false
         const reqTime = new Date() * 1 - startTime
         this.log(`${logger.green(`请求结束，请求用时${reqTime}ms`)}，面板服务：${serv.name}...`)
@@ -123,6 +128,7 @@ const stygianInit = {
         }
       } catch (e) {
         logger.error('面板请求错误', e)
+        clearTimeout(timerId)
         self._isReq = false
         data = {}
       }
