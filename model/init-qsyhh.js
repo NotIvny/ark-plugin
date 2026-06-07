@@ -848,11 +848,15 @@ const ArkInit = {
         }
         const isMemosprite = e.isSr && char.weaponType === '记忆'
         const isJoy = e.isSr && char.weaponType === '欢愉'
+        const maxSNameLen = Math.max(0, ...list.map(item => (String(item.artisSet?.sName || '').match(/\p{Unified_Ideograph}/gu) || []).length))
+        let contWidth = (isMemosprite ? 870 : isJoy ? 790 : e.isSr ? 800 : 720) + !noRankFlag * 180
+        let artisWidth = 130 + 10 * Math.max(0, maxSNameLen - 5)
         const data = {
           title: _dmg?.title,
           isMemosprite,
           isJoy,
-          style: `<style>body .container {width: ${(isMemosprite ? 1000 : isJoy ? 960 : e.isSr ? 930 : 850) + !noRankFlag * 180}px;}</style>`
+          style: `<style>body .container {width: ${contWidth + artisWidth}px;}</style>`,
+          artisWidth
         }
         // 渲染图像
         let exPath = ArkCfg.get('lnFiles', false) ? '-ark' : ''
