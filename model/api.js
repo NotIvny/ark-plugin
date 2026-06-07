@@ -1,7 +1,6 @@
 import fetch from 'node-fetch'
 import { Version } from '../components/index.js'
 const version = Version.version
-
 export const AkashaApi = {
   async req(url) {
     const controller = new AbortController()
@@ -28,29 +27,35 @@ export const AkashaApi = {
 
 export const ArkApi = {
   async req(route, data = {}) {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 30000)
     try {
       if (typeof data !== 'object') data = {}
       data = {
         ...data,
         version: version
       }
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 30000)
+      const headers = {
+        'Content-Type': 'application/json'
+      }
+      const token = await redis.get('ark-plugin:customRank:token')
+      if (token) {
+        headers.Authorization = `Bearer ${token}`
+      }
       const response = await fetch(`https://beta.ivny.top/${route}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers,
         body: JSON.stringify(data),
         signal: controller.signal
       })
-      clearTimeout(timeout)
       if (!response.ok) {
         return false
       }
       return await response.json()
     } catch (err) {
       return false
+    } finally {
+      clearTimeout(timeout)
     }
   },
 }

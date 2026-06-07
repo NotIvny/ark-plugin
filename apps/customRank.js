@@ -48,6 +48,7 @@ const srMainIdx = {
   "5": { "1": "hp", "2": "atk", "3": "def", "4": "phy", "5": "fire", "6": "ice", "7": "elec", "8": "wind", "9": "quantum", "10": "imaginary" }, 
   "6": { "1": "be", "2": "recharge", "3": "hp", "4": "atk", "5": "def" }
 }
+const TOKENLESS_ALLOWED_COLS = new Set(['cons'])
 
 function resolveCol (name) {
   if (/^pos[1-6]$/i.test(name)) return name.toLowerCase()
@@ -55,13 +56,14 @@ function resolveCol (name) {
   return ALIAS_MAP[name] || name.toLowerCase()
 }
 
-function parseRankArgs (raw) {
+function parseRankArgs (raw, allowedCols = ALLOWED_COLS, defaultSortCol = 'dmg_avg', deniedMessage = '') {
   const tokens = raw.split(/\s+/)
   let charName = ''
   let nums = 20
-  const rank = { col: 'dmg_avg', order: 'desc' }
+  const rank = { col: defaultSortCol, order: 'desc' }
   const filter = []
   const OP_TO_RULE = { '>=': 0, '=': 1, '<=': 2, '>': 3, '<': 4, '!=': 5 }
+  const getDeniedError = (fallback) => new Error(deniedMessage || fallback)
 
   for (const t of tokens) {
     if (/^(升序|asc)$/i.test(t)) { rank.order = 'asc'; continue }
@@ -76,7 +78,7 @@ function parseRankArgs (raw) {
     const sortMatch = /^(?:sort|排序)[:：]([\w\u4e00-\u9fff]+)$/i.exec(t)
     if (sortMatch) {
       const col = resolveCol(sortMatch[1])
-      if (!ALLOWED_COLS.has(col)) throw new Error('不支持按 ' + sortMatch[1] + ' 排序')
+      if (!allowedCols.has(col)) throw getDeniedError('不支持按 ' + sortMatch[1] + ' 排序')
       rank.col = col
       continue
     }
@@ -97,7 +99,7 @@ function parseRankArgs (raw) {
         if (!isNaN(numVal)) val = numVal
       }
 
-      if (!ALLOWED_COLS.has(col)) throw new Error('不支持筛选列 ' + condMatch[1])
+      if (!allowedCols.has(col)) throw getDeniedError('不支持筛选列 ' + condMatch[1])
       if (OP_TO_RULE[opStr] == null) throw new Error('不支持运算符 ' + opStr)
       filter.push({ type: col, rule: OP_TO_RULE[opStr], value: val, rawValue: condMatch[3] })
       continue
@@ -120,10 +122,17 @@ export class CustomRank extends plugin {
   async rank (e) {
     const raw = (e.original_msg || e.msg || '').replace(/^#ark自定义排行\s*/, '').trim()
     if (!raw) return e.reply('请输入角色名，如：#自定义排行 胡桃')
+    const token = await redis.get('ark-plugin:customRank:token')
+    const canUseAdvancedCols = e.isMaster && token
+    const allowedCols = canUseAdvancedCols ? ALLOWED_COLS : TOKENLESS_ALLOWED_COLS
+    const defaultSortCol = 'dmg_avg'
+    const deniedMessage = !e.isMaster
+      ? '除 cons 之外的筛选和排序仅主人可用'
+      : (!token ? '请先使用 #ark配置tokenxxxxxx 配置自定义排名 token' : '')
 
     let charName, data
     try {
-      ({ charName, data } = parseRankArgs(raw))
+      ({ charName, data } = parseRankArgs(raw, allowedCols, defaultSortCol, deniedMessage))
     } catch (err) {
       return e.reply(err.message)
     }
@@ -169,16 +178,16 @@ export class CustomRank extends plugin {
 
     let apiRes
     try {
-      logger.error(data)
       apiRes = await ArkApi.req('rank/custom', { charId: char.id, data, game }, true)
-      if (!apiRes) throw new Error('接口返回为空')
     } catch (err) {
-      logger.error('ArkAPI 请求失败:', err.message)
       return e.reply('排名服务暂不可用')
     }
-
+    logger.error(apiRes.retcode)
     if (apiRes.retcode !== 0) {
       const msg = apiRes.message || '未知错误'
+      if (apiRes.retcode === 401 || apiRes.retcode === 403 || apiRes.retcode === 429) {
+        return e.reply('查询失败：' + msg)
+      }
       return e.reply('查询失败：' + (msg.includes('does not exist') ? '该角色暂无数据' : msg))
     }
 
@@ -262,12 +271,19 @@ export class CustomRank extends plugin {
       limitTxt: '排序: ' + (sortLabel[sortCol] || sortCol) + ' ' + orderLabel + ' / 筛选: ' + filterDesc,
       number: data.nums || 20
     }
-
+    const isMemosprite = char?.weaponType === '记忆'
+    const isJoy = char?.weaponType === '欢愉'
+    const data_ = {
+      title: '',
+      isMemosprite,
+      isJoy,
+      style: `<style>body .container {width: ${(isMemosprite ? 1000 : isJoy ? 960 : e.isSr ? 930 : 850)}px;}</style>`
+    }
     return e.reply([
       await Common.render('character/rank-profile-list', {
         save_id: char.id, game, list, title,
         elem: char.elem,
-        data: { title: '', style: '<style>body .container {width: 850px;}</style>' },
+        data: data_,
         noRankFlag: true,
         bodyClass: 'char-' + char.name,
         rankCfg, mode,
