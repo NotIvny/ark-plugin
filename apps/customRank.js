@@ -127,6 +127,7 @@ export class CustomRank extends plugin {
     if (e.isMaster && token) {
       return e.reply([
         '【ark自定义排行 · 高级】',
+        '从API获取某角色在特定筛选条件下全服top20的数据',
         '用法：#ark自定义排行 <角色> [筛选/排序/数量...]',
         '',
         '筛选：列+运算符+值，运算符支持 >= <= > < = !=',
@@ -143,6 +144,7 @@ export class CustomRank extends plugin {
     }
     return e.reply([
       '【ark自定义排行】',
+      '从API获取某角色在特定筛选条件下全服top20的数据',
       '用法：#ark自定义排行 <角色> [命座筛选]',
       '',
       '普通用户仅支持按命座(cons)筛选/排序，',

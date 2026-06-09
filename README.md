@@ -37,11 +37,11 @@ git clone https://gitcode.com/EmptyLava/ark-plugin.git ./plugins/ark-plugin
 > [!NOTE]
 > 如需使用最新测试功能，可切换到 v2.0.1-beta 分支：
 > ```bash
-> git clone -b v2.1.0-beta https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
+> git clone -b v2.0.1 https://github.com/NotIvny/ark-plugin.git ./plugins/ark-plugin
 > ```
 > **GitCode 源 (网络不佳推荐)**
 > ```bash
-> git clone -b v2.1.0-beta https://gitcode.com/EmptyLava/ark-plugin.git ./plugins/ark-plugin
+> git clone -b v2.0.1 https://gitcode.com/EmptyLava/ark-plugin.git ./plugins/ark-plugin
 > ```
 
 ## 🛠️ 配置与替换
@@ -91,9 +91,16 @@ git clone https://gitcode.com/EmptyLava/ark-plugin.git ./plugins/ark-plugin
 
 </details>
 
+## API token申请
+
+1. 对于通用API接口，所有IP有**极高**的请求频率（正常使用不会触发速率限制）
+2. 对于**自定义排名**，由于暂未配置redis缓存，每个IP每日有**60**次普通请求限制，后续可能会放宽限制
+3. 对于**自定义排名**的高级请求（支持更多筛选条件），由于有数据安全风险，不向普通用户开放
+4. API token可提高请求速率限制，如需请联系我申请（qsyhh的群里找我或从git log获取邮箱联系我），如需申请高级请求额度还需额外提供用途和相关证明。
+
 ## ⚠️ 免责声明
 
-1. 总排名数据源于用户更新面板，目前数据量在 320k 左右。
+1. 总排名数据源于用户更新面板，目前UID数据量 350k 左右，共有 2.7M 条角色数据。
 2. 插件只会上传用户 UID 和面板数据，OCR 上传的图片仅用于测试集和识别，不会上传其他个人信息。
 3. 本插件仅限内部交流与小范围使用，**严禁**用于任何以盈利为目的的场景。
 4. 图片与其他素材均来自于网络，如有侵权请联系删除。
