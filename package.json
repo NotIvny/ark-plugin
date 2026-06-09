@@ -1,6 +1,6 @@
 {
   "name": "ark-plugin",
-  "version": "2.0.1-beta",
+  "version": "2.0.1",
   "author": "NotIvny",
   "description": "ark-plugin",
   "type": "module",
