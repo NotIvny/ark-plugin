@@ -118,7 +118,7 @@
     {{set mark = ds.artisMark || false }}
     {{set marks = ds._formatmark || false }}
     {{set aImgs = ds?.artisSet?.imgs || []}}
-    <div class="char-item char-artis class-{{mark?.markClass||'D'}}">
+    <div class="char-item char-artis class-{{mark?.markClass||'D'}}" style="width: {{data.artisWidth}}px;">
       <div
           class="item artis item-icon avatar-artis  {{aImgs.length>0?'star5':'no-artis'}} artis{{aImgs.length>2 ? 2 : aImgs.length}}">
         {{each aImgs img idx}}

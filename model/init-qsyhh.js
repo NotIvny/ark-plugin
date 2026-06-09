@@ -7,10 +7,9 @@ import { profileArtis } from '../../miao-plugin/apps/profile/ProfileArtis.js'
 import { Data, Common, Format, Cfg, Meta  } from '../../miao-plugin/components/index.js'
 import { Button, MysApi, ProfileRank, Weapon, Artifact, Player, Character, ArtifactSet, Avatar } from '../../miao-plugin/models/index.js'
 import safeGsCfg from './safeGsCfg.js'
-import api from '../../ark-plugin/model/api.js'
 import ArkCfg from '../components/Cfg.js'
 import { ProfileWeapon } from '../../miao-plugin/apps/profile/ProfileWeapon.js'
-import { ArkApi } from './api.js'
+import { ArkApi, AkashaApi } from './api.js'
 
 let ProfileDetail
 let CharRank
@@ -185,7 +184,7 @@ const ArkInit = {
         if (imgUrls.length > 0) {
           const results = await Promise.all(imgUrls.map(async (imageUrl) => {
             try {
-              return await ArkApi.req(`ocr/profilechange/${char.game}`, { body: JSON.stringify({ image: imageUrl }) })
+              return await ArkApi.req(`ocr/profilechange/${char.game}`, { image: imageUrl })
             } catch (err) {
               return null
             }
@@ -582,7 +581,7 @@ const ArkInit = {
           const charId = safeGsCfg.roleNameToID(char.name, true) || safeGsCfg.roleNameToID(char.name, false)
           const queryType = ArkCfg.get('queryType', 2)
           const isLocal = ArkCfg.get('localPanelRank', true)
-          let ret = await api.sendApi('getRankData', {
+          let ret = await ArkApi.req('rank/data', {
             id: charId, 
             uid: isLocal ? '999999999' : uid, 
             update: 0,
@@ -615,10 +614,40 @@ const ArkInit = {
           })
 
           if (queryType === 3) {
-            [ret1, ret2] = await Promise.all([
-              api.sendApi('getSpecificRank', { id: charId, percent: 0 }),
-              api.sendApi('getSpecificRank', { id: charId, artis: true, percent: 0 })
-            ])
+            let res = await ArkApi.req('rank/specific', { id: charId, percent: 0 }) || []
+            ret1 = res[1]
+            ret2 = res[0]
+          }
+        }
+        const charWidth = (c) => /[1()]/.test(c) ? 0.5 : 1
+        const titleWidth = (str) => {
+          let w = 0
+          for (const c of str) w += charWidth(c)
+          return w
+        }
+        if (ArkCfg.get('profileChangeDiff', true) && e._profileMsg) {
+          let dealLength = mode !== 'profile' ? 10 : 20
+          switch (ArkCfg.get('DealLongDmgTitle', 1)) {
+            case 0:
+              break
+            case 1:
+              if (dmgCalc?.dmgData) {
+                const truncTitle = (str) => {
+                  let w = 0
+                  for (let i = 0; i < str.length; i++) {
+                    w += charWidth(str[i])
+                    if (w > dealLength) return `${str.slice(0, i)  }...`
+                  }
+                  return str
+                }
+                dmgCalc.dmgData = dmgCalc.dmgData.map(item => ({ ...item, title: truncTitle((item.title || '').trim()) }))
+              }
+              break
+            case 2:
+              if (dmgCalc?.dmgData) {
+                dmgCalc.isWrap = dmgCalc.dmgData.some(item => titleWidth((item.title || '').trim()) > dealLength)
+              }
+              break
           }
         }
         const charWidth = (c) => /[1()]/.test(c) ? 0.5 : 1
@@ -653,8 +682,8 @@ const ArkInit = {
           }
         }
         let background = await Common.getBackground('profile')
+        
         if (mode === 'dmg') dmgCalc.dmgCfg.dmgAttr = attrFn(dmgCalc.dmgCfg.dmgAttr, profile.base)
-
         let renderData = {
           dmgRankData: ret1?.data?.scores?.map(score => (score / (ret1?.data?.top1 ?? 1)) * 100),
           artisRankData: ret2?.data?.scores,
@@ -827,7 +856,7 @@ const ArkInit = {
           if (mode === 'dmg' || mode === 'mark') {
             let query = mode === 'mark' ? 'mark' : 'dmg'
             let rankTitle = mode === 'mark' ? '圣遗物' : '伤害'
-            ret = await api.sendApi('groupAllRank', {
+            ret = await ArkApi.req('rank/group', {
               id: list[0]?.id,
               uids: uids_,
               update: 2,
@@ -850,11 +879,15 @@ const ArkInit = {
         }
         const isMemosprite = e.isSr && char.weaponType === '记忆'
         const isJoy = e.isSr && char.weaponType === '欢愉'
+        const maxSNameLen = Math.max(0, ...list.map(item => (String(item.artisSet?.sName || '').match(/\p{Unified_Ideograph}/gu) || []).length))
+        let contWidth = (isMemosprite ? 870 : isJoy ? 790 : e.isSr ? 800 : 720) + !noRankFlag * 180
+        let artisWidth = 130 + 10 * Math.max(0, maxSNameLen - 5)
         const data = {
           title: _dmg?.title,
           isMemosprite,
           isJoy,
-          style: `<style>body .container {width: ${(isMemosprite ? 1000 : isJoy ? 960 : e.isSr ? 930 : 850) + !noRankFlag * 180}px;}</style>`
+          style: `<style>body .container {width: ${contWidth + artisWidth}px;}</style>`,
+          artisWidth
         }
         // 渲染图像
         let exPath = ArkCfg.get('lnFiles', false) ? '-ark' : ''
