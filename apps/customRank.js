@@ -1,6 +1,8 @@
 ﻿﻿import { Common, Format } from '../../miao-plugin/components/index.js'
 import { Character, Avatar } from '../../miao-plugin/models/index.js'
 import { ArkApi } from '../model/api.js'
+
+
 const ALLOWED_COLS = new Set([
   'level', 'promote', 'cons',
   'talent_a', 'talent_e', 'talent_q',
@@ -127,7 +129,6 @@ export class CustomRank extends plugin {
     if (e.isMaster && token) {
       return e.reply([
         '【ark自定义排行 · 高级】',
-        '从API获取某角色在特定筛选条件下全服top20的数据',
         '用法：#ark自定义排行 <角色> [筛选/排序/数量...]',
         '',
         '筛选：列+运算符+值，运算符支持 >= <= > < = !=',
@@ -144,7 +145,6 @@ export class CustomRank extends plugin {
     }
     return e.reply([
       '【ark自定义排行】',
-      '从API获取某角色在特定筛选条件下全服top20的数据',
       '用法：#ark自定义排行 <角色> [命座筛选]',
       '',
       '普通用户仅支持按命座(cons)筛选/排序，',
@@ -317,24 +317,34 @@ export class CustomRank extends plugin {
       isJoy,
       style: `<style>body .container {width: ${(isMemosprite ? 1000 : isJoy ? 960 : e.isSr ? 930 : 850)}px;}</style>`
     }
-    const bodyContainerStyle = `<style>body .container {width: ${(isMemosprite ? 1000 : isJoy ? 960 : e.isSr ? 930 : 850)}px;}</style>`
-    return e.reply([
-      await Common.render('character/rank-profile-list', {
-        save_id: char.id,
-        game,
-        list,
-        title,
-        elem: char.elem,
-        data: data_,
-        isMemosprite,
-        isJoy,
-        noRankFlag: true,
-        bodyContainerStyle,
-        bodyClass: 'char-' + char.name,
-        rankCfg,
-        mode,
-        pageGotoParams: { waitUntil: 'networkidle2' }
-      }, { e, scale: 1.4, retType: 'base64' })
-    ])
+    const img = await Common.render('character/rank-profile-list', {
+      save_id: char.id, game, list, title,
+      elem: char.elem,
+      data: data_,
+      noRankFlag: true,
+      bodyClass: 'char-' + char.name,
+      rankCfg, mode,
+      pageGotoParams: { waitUntil: 'networkidle2' }
+    }, { e, scale: 1.4, retType: 'base64' })
+    const msgRes = await e.reply([img])
+    const queryId = result.query_id || result.queryId
+    if (msgRes && queryId) {
+      const message_id = [e.message_id]
+      if (Array.isArray(msgRes.message_id)) {
+        message_id.push(...msgRes.message_id)
+      } else {
+        message_id.push(msgRes.message_id)
+      }
+      for (const i of message_id) {
+        if (!i) continue
+        await redis.set(`miao:ark-query-cache:${i}`, JSON.stringify({
+          query_id: queryId,
+          game,
+          charId: char.id,
+          charName: char.name
+        }), { EX: 300 })
+      }
+    }
+    return true
   }
 }

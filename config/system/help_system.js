@@ -33,7 +33,13 @@ export const helpList = [{
     icon: 67,
     title: '#ark自定义排行帮助',
     desc: '查看自定义排行筛选规则'
-  }, {
+  }, 
+  {
+    icon: 62,
+    title: '#ark获取面板1-20',
+    desc: '引用自定义排行图片获取面板数据'
+  },
+  {
     icon: 61,
     title: '#星铁|原神导入面板数据',
     desc: '从云端导入面板数据'
