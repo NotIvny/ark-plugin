@@ -51,7 +51,7 @@ const stygianInit = {
         if (uid && e.group_id && bindThisUid) {
           let stygianVersion = getStygianVersion()
           let stygianTime = await redis.get(`ark-plugin:stygianInfo:${stygianVersion}:${uid}`)
-          if (stygianTime && stygianTime !== -1) {
+          if (stygianTime && Number(stygianTime) !== -1) {
             logger.error('push')
             await redis.zAdd(`ark-plugin:stygianRank:${stygianVersion}:${e.group_id}`, { 
               score: stygianTime, 
@@ -158,4 +158,4 @@ const stygianInit = {
     }
   }
 }
-export default stygianInit 
+export default stygianInit

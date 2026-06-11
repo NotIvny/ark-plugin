@@ -219,22 +219,22 @@ export class CustomRank extends plugin {
     } catch (err) {
       return e.reply('排名服务暂不可用')
     }
-    if (apiRes.retcode !== 0) {
-      const msg = apiRes.message || '未知错误'
-      if (apiRes.retcode === 401 || apiRes.retcode === 403 || apiRes.retcode === 429) {
+    if (apiRes?.retcode !== 0) {
+      const msg = apiRes?.message || '未知错误'
+      if (apiRes?.retcode === 401 || apiRes?.retcode === 403 || apiRes?.retcode === 429) {
         return e.reply('查询失败：' + msg)
       }
       return e.reply('查询失败：' + (msg.includes('does not exist') ? '该角色暂无数据' : msg))
     }
 
-    const result = apiRes.data
-    if (!result.rows.length) return e.reply(char.name + ' 暂无符合条件的排名数据')
+    const result = apiRes?.data
+    if (!result?.rows?.length) return e.reply(char.name + ' 暂无符合条件的排名数据')
 
-    const dmgTitle = result.dmgTitle || ''
+    const dmgTitle = result?.dmgTitle || ''
     const isSr = game === 'sr'
 
     let list = []
-    for (let row of result.rows) {
+    for (let row of result?.rows) {
       let avatar = Avatar.create({ id: char.id }, game)
       if (!avatar) continue
 

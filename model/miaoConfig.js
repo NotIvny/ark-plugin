@@ -104,9 +104,9 @@ let changeConfig = function (fnc) {
   }
   fnc.default.getCfgSchema = () => {
     //let cfg = getPMFile(lastMsg.user_id, lastMsg.group_id)
-    let schema = cfgData.getCfgSchema()
+    let schema = lodash.cloneDeep(cfgData.getCfgSchema())
     Object.keys(schema).forEach(mainKey => {
-      const mainObj = schema[mainKey];
+      const mainObj = schema[mainKey]
       if (mainObj.cfg) {
         Object.keys(mainObj.cfg).forEach(subKey => {
           const subObj = mainObj.cfg[subKey]
@@ -115,7 +115,7 @@ let changeConfig = function (fnc) {
           }
         })
       }
-      if (Object.keys(mainObj.cfg).length === 0) {
+      if (mainObj.cfg && Object.keys(mainObj.cfg).length === 0) {
         delete schema[mainKey]
       }
     })

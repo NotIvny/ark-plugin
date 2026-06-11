@@ -155,11 +155,12 @@ export class characterRank extends plugin {
     let uid = getUid(e, type)
     if (uid && Cfg.get('newUserPanel', false) && !fs.existsSync(`./data/PlayerData/${type}/${uid}.json`)) {
       let ret = await ArkApi.req('panel/data', { uid, type, qq: e.user_id })
-      if (ret.retcode === 100) {
-        fs.writeFileSync(`./data/PlayerData/${type}/${uid}.json`, JSON.stringify(ret.data.playerData, null, 2))
+      const playerData = ret?.data?.playerData
+      if (ret?.retcode === 100 && playerData) {
+        fs.writeFileSync(`./data/PlayerData/${type}/${uid}.json`, JSON.stringify(playerData, null, 2))
         let player = new Player(uid, type)
         player.reload()
-        e.reply(`[ark-plugin]已自动从API获取${Object.keys(ret.data.playerData.avatars).length}个数据`)
+        e.reply(`[ark-plugin]已自动从API获取${Object.keys(playerData?.avatars || {}).length}个数据`)
       }
     }
     ArkApi.req('panel/refresh', { uid, type })
@@ -178,10 +179,10 @@ export class characterRank extends plugin {
     if (!id) return false
     let name = safeGsCfg.roleIdToName(id)
     let ret = await ArkApi.req('rank/data', { uid, id, update: 1 })
-    if (ret.retcode === 100) {
+    if (ret?.retcode === 100) {
       e.reply(`uid:${uid}的${name}全服伤害排名为 ${ret?.rank}，伤害评分: ${ret?.score?.toFixed(2)}`)
     } else {
-      e.reply(this.dealError(ret.retcode))
+      e.reply(this.dealError(ret?.retcode))
     }
     return false
   }
@@ -196,17 +197,17 @@ export class characterRank extends plugin {
     let profiles = player.getProfiles()
     let profileIds = Object.keys(profiles)
     let ret = await ArkApi.req('rank/self', { ids: profileIds, uid, type: e.game })
-    if (ret.retcode === 100) {
+    if (ret?.retcode === 100) {
       let type = e.game === 'sr' ? '星铁' : '原神'
       let msg = `uid:${uid}的${type}全服排名数据:\n`
       ret?.rank?.forEach((item, idx) => {
-        if (item.retcode === 100) {
+        if (item?.retcode === 100) {
           msg += `${safeGsCfg.roleIdToName(profileIds[idx])}全服伤害排名为${item?.rank}，伤害评分: ${item?.score?.toFixed(2)}\n`
         }
       })
       e.reply(msg)
     } else {
-      e.reply(this.dealError(ret.retcode))
+      e.reply(this.dealError(ret?.retcode))
     }
   }
 
@@ -219,8 +220,12 @@ export class characterRank extends plugin {
     let imgUrls = await collectImageUrls(e)
     if (!imgUrls.length) return e.reply('请发送圣遗物重塑图片')
     let ret = await ArkApi.req(`ocr/profilechange/${e.isSr ? 'sr' : 'gs'}`, { image: imgUrls[0], forge: true })
-    let original = ret.data[0]?.data || ret.data[0]
-    let replacement = ret.data[1]?.data || ret.data[1]
+    let original = ret?.data?.[0]?.data || ret?.data?.[0]
+    let replacement = ret?.data?.[1]?.data || ret?.data?.[1]
+    if (!original || !replacement) {
+      e.reply('识别失败，请稍后再试')
+      return true
+    }
 
     let game = e.isSr ? 'sr' : 'gs'
     let dataPath = `./data/PlayerData/${game}/${uid}.json`
@@ -339,10 +344,10 @@ export class characterRank extends plugin {
     }
     let playerData = fs.readFileSync(dataPath, 'utf8')
     let ret = await ArkApi.req('panel/upload', { uid, type: e.game, data: playerData })
-    if (ret.retcode === 100) {
+    if (ret?.retcode === 100) {
       e.reply(`导出成功，请在另一个安装此插件的Bot上输入 ${prefix}导入面板数据${uid} ，有效期十分钟~`)
     } else {
-      e.reply(this.dealError(ret.retcode))
+      e.reply(this.dealError(ret?.retcode))
     }
   }
 
@@ -352,11 +357,11 @@ export class characterRank extends plugin {
     let uid = await getTargetUid(e)
     if (!await this.checkPermission(e, user, 'importPanelData')) return true
     let ret = await ArkApi.req('panel/download', { uid, type: e.game })
-    if (ret.retcode === 100) {
-      fs.writeFileSync(`./data/PlayerData/${e.game}/${uid}.json`, JSON.stringify(ret.data, null, 2))
+    if (ret?.retcode === 100) {
+      fs.writeFileSync(`./data/PlayerData/${e.game}/${uid}.json`, JSON.stringify(ret?.data, null, 2))
       e.reply('导入成功')
     } else {
-      e.reply(this.dealError(ret.retcode))
+      e.reply(this.dealError(ret?.retcode))
     }
   }
 
@@ -392,35 +397,36 @@ export class characterRank extends plugin {
     if (!name || !id) return true
     let characterName = safeGsCfg.roleIdToName(id)
     let ret = await ArkApi.req('rank/specific', { id, percent: 0 })
-    if (ret.retcode === 100) {
+    const rankData = ret?.data
+    if (ret?.retcode === 100 && rankData) {
       // eslint-disable-next-line no-return-await
       return await Common.render('graph/stats', {
-        rankData: ret.data.scores,
+        rankData: rankData?.scores,
         characterName,
-        total: ret.data.total,
-        dmgTitle: ret.data.name
+        total: rankData?.total,
+        dmgTitle: rankData?.name
       }, { e, scale: 1.4 })
     }
-    e.reply(this.dealError(ret.retcode))
+    e.reply(this.dealError(ret?.retcode))
   }
 
   async arkGetBindUid(e) {
     let type = getGameType(e)
     let ret = await ArkApi.req('verify/code', { uid: await getTargetUid(e), type })
-    if (ret.retcode === 100) {
-      e.reply(`验证码: ${ret.data.verifyCode}\n使用方式：\n①原神：派蒙头像——右上角编辑资料——设置签名——填入验证码，待签名审核通过后输入 #ark验证原神uid\n②星铁：手机——右上角三点——漫游签证——设置签名——填入验证码，5-10分钟后输入 #ark验证星铁uid\n验证码有效期24小时，验证通过后自动与QQ绑定，在其他Bot上无需再次绑定`)
+    if (ret?.retcode === 100) {
+      e.reply(`验证码: ${ret?.data?.verifyCode}\n使用方式：\n①原神：派蒙头像——右上角编辑资料——设置签名——填入验证码，待签名审核通过后输入 #ark验证原神uid\n②星铁：手机——右上角三点——漫游签证——设置签名——填入验证码，5-10分钟后输入 #ark验证星铁uid\n验证码有效期24小时，验证通过后自动与QQ绑定，在其他Bot上无需再次绑定`)
     } else {
-      e.reply(this.dealError(ret.retcode))
+      e.reply(this.dealError(ret?.retcode))
     }
   }
 
   async arkBindUid(e) {
     let type = getGameType(e)
     let ret = await ArkApi.req('verify', { uid: await getTargetUid(e), qq: e.user_id, type })
-    if (ret.retcode === 100) {
+    if (ret?.retcode === 100) {
       e.reply('验证成功')
     } else {
-      e.reply(this.dealError(ret.retcode))
+      e.reply(this.dealError(ret?.retcode))
     }
   }
 

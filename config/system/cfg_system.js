@@ -19,7 +19,7 @@ export const cfgSchema = {
         key: '排名类型',
         type: 'num',
         def: 3,
-        input: (n) => /[0-3]{1}/.test(n) ? (n * 1) : 2,
+        input: (n) => /^[0-3]$/.test(n) ? (n * 1) : 2,
         desc: '角色面板伤害计算中显示的排名类型：0-伤害排名，1-圣遗物排名, 2-均显示，3-显示图表排名'
       },
       RankType: {
@@ -27,7 +27,7 @@ export const cfgSchema = {
         key: '排名展示规则',
         type: 'num',
         def: 2,
-        input: (n) => /[0-2]{1}/.test(n) ? (n * 1) : 2,
+        input: (n) => /^[0-2]$/.test(n) ? (n * 1) : 2,
         desc: '排名展示规则：0-位次排名，1-百分比排名, 2-混合排名'
       },
       lnFiles: {
@@ -46,7 +46,7 @@ export const cfgSchema = {
         title: '面板变换伤害标题过长处理',
         key: '伤害标题',
         def: 1,
-        input: (n) => /[0-2]{1}/.test(n) ? (n * 1) : 2,
+        input: (n) => /^[0-2]$/.test(n) ? (n * 1) : 2,
         desc: '启用后对面板变换过长的伤害标题进行处理，0-不处理，1-过长部分截断、2-换行'
       },
       localPanelRank: {
@@ -72,7 +72,7 @@ export const cfgSchema = {
         key: '导出面板数据',
         type: 'num',
         def: 1,
-        input: (n) => /[0-3]{1}/.test(n) ? (n * 1) : 0,
+        input: (n) => /^[0-3]$/.test(n) ? (n * 1) : 0,
         desc: '允许导出面板数据：0-任何人，1-有ck或主人，2-仅主人，3-禁用'
       },
       importPanelData: {
@@ -80,7 +80,7 @@ export const cfgSchema = {
         key: '导入面板数据',
         type: 'num',
         def: 2,
-        input: (n) => /[0-3]{1}/.test(n) ? (n * 1) : 0,
+        input: (n) => /^[0-3]$/.test(n) ? (n * 1) : 0,
         desc: '允许导入面板数据：0-任何人，1-有ck或主人，2-仅主人，3-禁用'
       },
       markRankType: {
@@ -100,7 +100,7 @@ export const cfgSchema = {
         key: '新导出面板',
         type: 'num',
         def: 1,
-        input: (n) => /[0-3]{1}/.test(n) ? (n * 1) : 0,
+        input: (n) => /^[0-3]$/.test(n) ? (n * 1) : 0,
         desc: '允许导出面板数据：0-任何人，1-有ck或验证了uid，2-有ck，3-禁用'
       }
     }
@@ -119,7 +119,7 @@ export const cfgSchema = {
         key: '幽境危战数据源',
         type: 'num',
         def: 2,
-        input: (n) => /[0-2]{1}/.test(n) ? (n * 1) : 2,
+        input: (n) => /^[0-2]$/.test(n) ? (n * 1) : 2,
         desc: '选择幽境危战数据源，0-ark，1-akasha.cv，2-二者混合'
       }
     }
@@ -149,7 +149,7 @@ export const cfgSchema = {
         key: '功能禁用',
         type: 'num',
         def: 0,
-        input: (n) => /[0-2]{1}/.test(n) ? (n * 1) : 0,
+        input: (n) => /^[0-2]$/.test(n) ? (n * 1) : 0,
         desc: '当绑定的命令不在白名单/处于黑名单里时的处理：0-不处理，1-不显示在帮助图中，2-显示禁用'
       },
       miaoHelpNotFound: {
@@ -157,7 +157,7 @@ export const cfgSchema = {
         key: '绑定功能',
         type: 'num',
         def: 0,
-        input: (n) => /[0-2]{1}/.test(n) ? (n * 1) : 0,
+        input: (n) => /^[0-2]$/.test(n) ? (n * 1) : 0,
         desc: '当绑定的命令不存在时处理：0-不处理，1-不显示在帮助图中，2-显示不可用'
       }
     }

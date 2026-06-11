@@ -83,8 +83,8 @@ export class CustomRankPanel extends plugin {
       e.reply('面板服务暂不可用')
       return true
     }
-    if (ret.retcode !== 0) {
-      e.reply('获取面板失败：' + (ret.message || '未知错误'))
+    if (ret?.retcode !== 0) {
+      e.reply('获取面板失败：' + (ret?.message || '未知错误'))
       return true
     }
 

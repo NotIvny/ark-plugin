@@ -880,7 +880,7 @@ const ArkInit = {
               query: query,
               data: data.length ? data : null
             })
-            switch (ret.retcode) {
+            switch (ret?.retcode) {
               case 100:
                 ret?.rank?.forEach((item, index) => {
                   if (list[index] && list[index].dmg) {
@@ -925,4 +925,3 @@ const ArkInit = {
   }
 }
 export default ArkInit
-    
