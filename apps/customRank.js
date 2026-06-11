@@ -317,14 +317,22 @@ export class CustomRank extends plugin {
       isJoy,
       style: `<style>body .container {width: ${(isMemosprite ? 1000 : isJoy ? 960 : e.isSr ? 930 : 850)}px;}</style>`
     }
+    const bodyContainerStyle = `<style>body .container {width: ${(isMemosprite ? 1000 : isJoy ? 960 : e.isSr ? 930 : 850)}px;}</style>`
     const img = await Common.render('character/rank-profile-list', {
-      save_id: char.id, game, list, title,
-      elem: char.elem,
-      data: data_,
-      noRankFlag: true,
-      bodyClass: 'char-' + char.name,
-      rankCfg, mode,
-      pageGotoParams: { waitUntil: 'networkidle2' }
+      save_id: char.id,
+        game,
+        list,
+        title,
+        elem: char.elem,
+        data: data_,
+        isMemosprite,
+        isJoy,
+        noRankFlag: true,
+        bodyContainerStyle,
+        bodyClass: 'char-' + char.name,
+        rankCfg,
+        mode,
+        pageGotoParams: { waitUntil: 'networkidle2' }
     }, { e, scale: 1.4, retType: 'base64' })
     const msgRes = await e.reply([img])
     const queryId = result.query_id || result.queryId

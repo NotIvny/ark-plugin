@@ -98,7 +98,10 @@ export class CustomRankPanel extends plugin {
 
     let player, profiles
     try {
-      player = new Player(uid, game)
+      player = Object.create(Player.prototype)
+      player.uid = uid
+      player.game = game
+      player.save = () => false
       player.setBasicData(panelData)
       player.setAvatars(panelData.avatars || [], true)
       profiles = player.getProfiles()
