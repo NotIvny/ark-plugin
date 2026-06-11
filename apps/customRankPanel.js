@@ -40,13 +40,13 @@ export class CustomRankPanel extends plugin {
       event: 'message',
       priority: -3000,
       rule: [
-        { reg: /^#ark获取面板([1-9]|1[0-9]|20)$/i, fnc: 'getCustomRankPanel' }
+        { reg: /^#ark获取面板\s*([1-9]|1[0-9]|20)$/i, fnc: 'getCustomRankPanel' }
       ]
     })
   }
 
   async getCustomRankPanel (e) {
-    const match = /^#ark获取面板([1-9]|1[0-9]|20)$/i.exec(e.msg || e.original_msg || '')
+    const match = /^#ark获取面板\s*([1-9]|1[0-9]|20)$/i.exec(e.msg || e.original_msg || '')
     if (!match) return false
 
     const index = Number(match[1]) - 1

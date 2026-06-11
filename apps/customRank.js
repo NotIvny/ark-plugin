@@ -58,32 +58,23 @@ function resolveCol (name) {
   return ALIAS_MAP[name] || name.toLowerCase()
 }
 
-function parseRankArgs (raw, allowedCols = ALLOWED_COLS, defaultSortCol = 'dmg_avg', deniedMessage = '') {
+function parseRankArgs (raw, allowedCols = ALLOWED_COLS, sortCol = 'dmg_avg', deniedMessage = '') {
   const tokens = raw.split(/\s+/)
   let charName = ''
   let nums = 20
-  const rank = { col: defaultSortCol, order: 'desc' }
+  const rank = { col: sortCol, order: 'desc' }
   const filter = []
   const OP_TO_RULE = { '>=': 0, '=': 1, '<=': 2, '>': 3, '<': 4, '!=': 5 }
   const getDeniedError = (fallback) => new Error(deniedMessage || fallback)
 
   for (const t of tokens) {
-    if (/^(升序|asc)$/i.test(t)) { rank.order = 'asc'; continue }
-    if (/^(降序|desc)$/i.test(t)) { rank.order = 'desc'; continue }
-
     const numsMatch = /^(?:nums|数量)[:：=](\d+)$/i.exec(t)
     if (numsMatch) {
       nums = Math.min(Math.max(Number(numsMatch[1]), 1), 50)
       continue
     }
 
-    const sortMatch = /^(?:sort|排序)[:：]([\w\u4e00-\u9fff]+)$/i.exec(t)
-    if (sortMatch) {
-      const col = resolveCol(sortMatch[1])
-      if (!allowedCols.has(col)) throw getDeniedError('不支持按 ' + sortMatch[1] + ' 排序')
-      rank.col = col
-      continue
-    }
+    if (/^(?:sort|排序)[:：]/i.test(t) || /^(?:升序|降序|asc|desc)$/i.test(t)) throw new Error('当前命令仅支持默认降序排序')
 
     const condMatch = /^([\w\u4e00-\u9fff]+)(>=|<=|!=|>|<|=)(.+)$/.exec(t)
     if (condMatch) {
@@ -119,7 +110,7 @@ export class CustomRank extends plugin {
       priority: 50,
       rule: [
         { reg: /^#ark自定义排行帮助$/, fnc: 'rankHelp' },
-        { reg: /^#ark自定义排行\s+.+/, fnc: 'rank' }
+        { reg: /^#ark(?!伤害排行|圣遗物排行).+?(?:伤害|圣遗物)?排行\s*.*/, fnc: 'rank' }
       ]
     })
   }
@@ -129,48 +120,56 @@ export class CustomRank extends plugin {
     if (e.isMaster && token) {
       return e.reply([
         '【ark自定义排行 · 高级】',
-        '用法：#ark自定义排行 <角色> [筛选/排序/数量...]',
+        '用法：#ark<角色>排行 [筛选/数量...]（默认伤害）',
+        '用法：#ark<角色>伤害排行 [筛选/数量...]',
+        '用法：#ark<角色>圣遗物排行 [筛选/数量...]',
         '',
         '筛选：列+运算符+值，运算符支持 >= <= > < = !=',
         '可用列：命座(命) 等级 突破 普攻 战技 爆发 武器等级 武器突破 精炼 伤害 评分 圣遗物',
-        '排序：sort:列 或 排序:列，配合 升序/降序（默认降序、按伤害）',
+        '排序：由命令决定，伤害排行按伤害降序，圣遗物排行按圣遗物评分降序',
         '数量：nums:N 或 数量:N（1-50，默认20）',
         '星铁可筛部位主词条：部位1~6=词条，如 部位3=暴击',
         '',
         '示例：',
-        '#ark自定义排行 胡桃 命=6 sort:伤害 降序',
-        '#ark自定义排行 雷电将军 等级>=90 精炼>=1 数量:10',
-        '#ark自定义排行 符玄 部位4=速度 排序:评分'
+        '#ark胡桃排行 命=6',
+        '#ark雷电将军伤害排行 等级>=90 精炼>=1 数量:10',
+        '#ark符玄圣遗物排行 部位4=速度'
       ].join('\n'))
     }
     return e.reply([
       '【ark自定义排行】',
-      '用法：#ark自定义排行 <角色> [命座筛选]',
+      '用法：#ark<角色>排行 [命座筛选]（默认伤害）',
+      '用法：#ark<角色>伤害排行 [命座筛选]',
+      '用法：#ark<角色>圣遗物排行 [命座筛选]',
       '',
-      '普通用户仅支持按命座(cons)筛选/排序，',
+      '普通用户仅支持按命座(cons)筛选，',
       '更多筛选项需主人 #ark配置token 后使用。',
       '命座列名：命座 / 命 / cons，运算符 >= <= > < = !=',
       '',
       '示例：',
-      '#ark自定义排行 胡桃 cons=0',
-      '#ark自定义排行 雷电将军 命座<=2'
+      '#ark胡桃排行 cons=0',
+      '#ark雷电将军圣遗物排行 命座<=2'
     ].join('\n'))
   }
 
   async rank (e) {
-    const raw = (e.original_msg || e.msg || '').replace(/^#ark自定义排行\s*/, '').trim()
-    if (!raw) return e.reply('请输入角色名，如：#自定义排行 胡桃')
+    const msg = e.original_msg || e.msg || ''
+    const modeMatch = /^#ark(.+?)(伤害|圣遗物)排行\s*(.*)$/.exec(msg) || /^#ark(.+?)排行\s*(.*)$/.exec(msg)
+    const rankType = modeMatch?.[3] != null ? modeMatch[2] : ''
+    const args = modeMatch?.[3] != null ? modeMatch[3] : modeMatch?.[2]
+    const raw = [modeMatch?.[1], args].filter(Boolean).join(' ').trim()
+    const selectedSortCol = rankType === '圣遗物' ? 'mark_score' : 'dmg_avg'
+    if (!raw) return e.reply('请输入角色名，如：#ark胡桃排行')
     const token = await redis.get('ark-plugin:customRank:token')
     const canUseAdvancedCols = e.isMaster && token
     const allowedCols = canUseAdvancedCols ? ALLOWED_COLS : TOKENLESS_ALLOWED_COLS
-    const defaultSortCol = 'dmg_avg'
     const deniedMessage = !e.isMaster
-      ? '除 cons 之外的筛选和排序仅主人可用'
+      ? '除 cons 之外的筛选仅主人可用'
       : (!token ? '请先使用 #ark配置tokenxxxxxx 配置自定义排名 token' : '')
 
     let charName, data
     try {
-      ({ charName, data } = parseRankArgs(raw, allowedCols, defaultSortCol, deniedMessage))
+      ({ charName, data } = parseRankArgs(raw, allowedCols, selectedSortCol, deniedMessage))
     } catch (err) {
       return e.reply(err.message)
     }
@@ -220,7 +219,6 @@ export class CustomRank extends plugin {
     } catch (err) {
       return e.reply('排名服务暂不可用')
     }
-    logger.error(apiRes.retcode)
     if (apiRes.retcode !== 0) {
       const msg = apiRes.message || '未知错误'
       if (apiRes.retcode === 401 || apiRes.retcode === 403 || apiRes.retcode === 429) {
@@ -294,7 +292,6 @@ export class CustomRank extends plugin {
     const title = '#' + char.name + (modeTitleMap[mode] || '') + '排行'
 
     const sortLabel = { dmg_avg: '伤害均值', mark_score: '圣遗物评分' }
-    const orderLabel = (data.rank.order || 'desc') === 'asc' ? '升序' : '降序'
     const RULE_LABEL = { 0: '>=', 1: '=', 2: '<=', 3: '>', 4: '<', 5: '!=' }
     const filterDesc = data.filter.length
       ? data.filter.map(f => {
@@ -306,7 +303,7 @@ export class CustomRank extends plugin {
       : '无'
     const rankCfg = {
       time: '全服数据',
-      limitTxt: '排序: ' + (sortLabel[sortCol] || sortCol) + ' ' + orderLabel + ' / 筛选: ' + filterDesc,
+      limitTxt: '排序: ' + (sortLabel[sortCol] || sortCol) + ' 降序 / 筛选: ' + filterDesc,
       number: data.nums || 20
     }
     const isMemosprite = char?.weaponType === '记忆'

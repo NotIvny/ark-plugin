@@ -27,8 +27,8 @@ export const helpList = [{
   group: '角色面板相关',
   list: [{
     icon: 64,
-    title: '#ark自定义排行 <角色> <筛选>',
-    desc: '按条件查询角色自定义排行'
+    title: '#ark雷神(圣遗物|伤害)排行',
+    desc: '按条件查询角色top20排行'
   }, {
     icon: 67,
     title: '#ark自定义排行帮助',
