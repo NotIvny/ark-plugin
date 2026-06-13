@@ -109,8 +109,7 @@ export class CustomRank extends plugin {
       event: 'message',
       priority: 50,
       rule: [
-        { reg: /^#ark自定义排行帮助$/, fnc: 'rankHelp' },
-        { reg: /^#ark(?!伤害排行|圣遗物排行).+?(?:伤害|圣遗物)?排行\s*.*/, fnc: 'rank' }
+        { reg: /^#ark.+(伤害|圣遗物)?(排行|排名)(\s.*)?$/, fnc: 'rank' }
       ]
     })
   }
@@ -154,10 +153,9 @@ export class CustomRank extends plugin {
 
   async rank (e) {
     const msg = e.original_msg || e.msg || ''
-    const modeMatch = /^#ark(.+?)(伤害|圣遗物)排行\s*(.*)$/.exec(msg) || /^#ark(.+?)排行\s*(.*)$/.exec(msg)
-    const rankType = modeMatch?.[3] != null ? modeMatch[2] : ''
-    const args = modeMatch?.[3] != null ? modeMatch[3] : modeMatch?.[2]
-    const raw = [modeMatch?.[1], args].filter(Boolean).join(' ').trim()
+    const match = /^#ark(.+?)(伤害|圣遗物)?(排行|排名)(?:\s+(.+))?$/.exec(msg)
+    const rankType = match?.[2] || ''
+    const raw = [match?.[1], match?.[4]].filter(Boolean).join(' ').trim()
     const selectedSortCol = rankType === '圣遗物' ? 'mark_score' : 'dmg_avg'
     if (!raw) return e.reply('请输入角色名，如：#ark胡桃排行')
     const token = await redis.get('ark-plugin:customRank:token')

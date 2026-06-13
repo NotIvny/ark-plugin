@@ -123,7 +123,7 @@ export class characterRank extends plugin {
         fnc: 'getAllRank',
       },
       {
-        reg: '^#(top)?幽境危战排名(\\d+\.\\d+)?$',
+        reg: '^#(top)?幽境危战(排名|排行)(\\d+\.\\d+)?$',
         fnc: 'stygian',
       },
       {
@@ -457,7 +457,7 @@ export class characterRank extends plugin {
 
   async stygian(e) {
     if (!e.isGroup) return true
-    const match = e.msg.match(/^#(top)?幽境危战排名(?:(\d+\.\d+))?$/)
+    const match = e.msg.match(/^#(top)?幽境危战(?:排名|排行)(?:(\d+\.\d+))?$/)
     let version = match[2] || null
     if (version) {
       const [bVersion, sVersion] = version.split('.').map(Number)

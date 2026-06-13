@@ -3,32 +3,6 @@ import { Player, Character } from '../../miao-plugin/models/index.js'
 
 const CUSTOM_RANK_QUERY_CACHE_PREFIX = 'miao:ark-query-cache:'
 
-function getMessageIds (messageId) {
-  if (!messageId) return []
-  if (Array.isArray(messageId)) return messageId.filter(Boolean)
-  return [messageId]
-}
-
-async function getSourceMessageIds (e) {
-  let source
-  if (e.reply_id) {
-    source = { message_id: e.reply_id }
-  } else {
-    if (!e.hasReply && !e.source) return []
-    if (e.source?.user_id && e.source.user_id !== e.self_id) return []
-
-    if (e.group?.getChatHistory) {
-      source = (await e.group.getChatHistory(e.source?.seq, 1)).pop()
-    } else if (e.friend?.getChatHistory) {
-      source = (await e.friend.getChatHistory(e.source?.time, 1)).pop()
-    }
-
-    if (!(source?.message?.length === 1 && source?.message[0]?.type === 'image')) return []
-  }
-
-  return getMessageIds(source?.message_id)
-}
-
 function getPanelData (ret) {
   return ret?.data?.info || ret?.data?.playerData || ret?.data
 }
@@ -50,24 +24,13 @@ export class CustomRankPanel extends plugin {
     if (!match) return false
 
     const index = Number(match[1]) - 1
-    const messageIds = await getSourceMessageIds(e)
-    if (!messageIds.length) {
-      e.reply('请回复自定义排行图片使用 #ark获取面板1-20')
-      return true
-    }
+    let reply = await e.getReply()
+    if (!reply || !reply.message_id) return false
 
-    let cache
-    for (const messageId of messageIds) {
-      const raw = await redis.get(`${CUSTOM_RANK_QUERY_CACHE_PREFIX}${messageId}`)
-      if (!raw) continue
-      const data = JSON.parse(raw)
-      if (data?.query_id) {
-        cache = data
-        break
-      }
-    }
+    const raw = await redis.get(`${CUSTOM_RANK_QUERY_CACHE_PREFIX}${reply.message_id}`)
+    const cache = raw ? JSON.parse(raw) : false
 
-    if (!cache) {
+    if (!cache?.query_id) {
       e.reply('未找到该排行图片的查询缓存，请重新发送 #ark自定义排行 后再获取面板')
       return true
     }
