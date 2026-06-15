@@ -24,10 +24,24 @@ export class CustomRankPanel extends plugin {
     if (!match) return false
 
     const index = Number(match[1]) - 1
-    let reply = await e.getReply()
-    if (!reply || !reply.message_id) return false
+    let source
+    if (e.getReply) {
+      source = await e.getReply()
+    } else if (e.reply_id) {
+      source = { message_id: e.reply_id }
+    } else {
+      if (!e.hasReply && !e.source) return false
+      if (e.source?.user_id !== e.self_id) return false
+      if (e.group?.getChatHistory) {
+        source = (await e.group.getChatHistory(e.source.seq, 1)).pop()
+      } else if (e.friend?.getChatHistory) {
+        source = (await e.friend.getChatHistory(e.source.time, 1)).pop()
+      }
+      if (!(source?.message?.length === 1 && source?.message[0]?.type === 'image')) return false
+    }
+    if (!source?.message_id) return false
 
-    const raw = await redis.get(`${CUSTOM_RANK_QUERY_CACHE_PREFIX}${reply.message_id}`)
+    const raw = await redis.get(`${CUSTOM_RANK_QUERY_CACHE_PREFIX}${source.message_id}`)
     const cache = raw ? JSON.parse(raw) : false
 
     if (!cache?.query_id) {
