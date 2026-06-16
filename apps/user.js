@@ -502,7 +502,7 @@ export class characterRank extends plugin {
       const item_akasha = ret_akasha ? ret_akasha.find(el => el.uid === uid) : {}
       const item_ark = ret_ark?.data[index]
       let final_seconds = Math.min(item_akasha?.stygianSeconds || 99999, item_ark?.time || 99999, Number(ranks[index]) % 2048 || 99999)
-      if (final_seconds === 99999) continue
+      if (final_seconds === 99999 || final_seconds < 0) continue
       let final_index = Math.min(item_akasha?.stygianIndex || 99999, item_ark?.hard || 99999, (6 - Math.floor(ranks[index] / 2048) || 99999))
       if (final_index === 99999) continue
 
