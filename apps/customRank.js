@@ -109,6 +109,7 @@ export class CustomRank extends plugin {
       event: 'message',
       priority: 50,
       rule: [
+        { reg: /^#ark自定义排行帮助$/, fnc: 'rankHelp' },
         { reg: /^#ark.+(伤害|圣遗物)?(排行|排名)(\s.*)?$/, fnc: 'rank' }
       ]
     })
