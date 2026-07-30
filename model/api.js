@@ -42,7 +42,7 @@ export const ArkApi = {
       if (token) {
         headers.Authorization = `Bearer ${token}`
       }
-      const response = await fetch(`https://beta.ivny.top/${route}`, {
+      const response = await fetch(`https://ark.ivny.cn/${route}`, {
         method: 'POST',
         headers,
         body: JSON.stringify(data),
