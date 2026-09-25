@@ -151,12 +151,12 @@ const ArkInit = {
         return ret
       }
       this.matchMsg = async (msg, imgUrls = []) => {
-        if (!/(变|改|换)/.test(msg)) {
+        if (!/(换)/.test(msg)) {
           return false
         }
         let game = /星铁/.test(msg) ? 'sr' : 'gs'
         msg = msg.toLowerCase().replace(/uid ?:? ?/, '').replace('星铁', '')
-        let regRet = /^#*(\d{9,10})?(.+?)(详细|详情|面板|面版|圣遗物|伤害[1-7]?)?\s*(\d{9,10})?[变换改](.*)/.exec(msg)
+        let regRet = /^#*(\d{9,10})?(.+?)(详细|详情|面板|面版|圣遗物|伤害[1-7]?)?\s*(\d{9,10})?[换](.*)/.exec(msg)
         if (!imgUrls && (!regRet || !regRet[2])) return false
         let ret = {}
         let change = {}
