@@ -204,7 +204,6 @@ const ArkInit = {
           }
         }
         // 更换匹配
-        msg = msg.replace(/[变改]/g, '换')
         lodash.forEach(msg.split('换'), (txt) => {
           txt = lodash.trim(txt)
           if (!txt) return true
